@@ -32,17 +32,14 @@ def phases(arrival_times, frequencies):
     photon = 0
     derivative = np.gradient(frequencies)
     derivative2 = np.gradient(derivative)
-    values = np.zeros_like(arrival_times)
+    values = np.zeros(shape=(arrival_times.size, frequencies.size))
 
     for time in arrival_times:
-        partial1 = time * frequencies
-        partial2 = (time ** 2) * derivative / 2
-        partial3 = (time ** 3) * derivative2 / 6
-        csum1 = partial1.sum()
-        csum2 = partial2.sum()
-        csum3 = partial3.sum()
-        csum = csum1 + csum2 + csum3
-        values[photon] = csum
+        p1 = time * frequencies
+        p2 = (time ** 2) * derivative / 2
+        p3 = (time ** 3) * derivative2 / 6
+        p = p1 + p2 + p3
+        values[photon] = p
         photon += 1
 
     return values - np.floor(values)
@@ -51,20 +48,19 @@ def periodogram(phase_values, frequencies):
     """
     Transforms values to fourier domain and normalize
     """
-    freq = 0
     values = np.zeros_like(frequencies)
 
-    fft = np.sum(np.cos(phase_values)) ** 2 + np.sum(np.sin(phase_values)) ** 2
-    for frequency in frequencies:
+    for freq in range(frequencies.size):
+        cos = np.sum(np.cos(phase_values[:,freq])) ** 2
+        sin = np.sum(np.sin(phase_values[:,freq])) ** 2
+        fft = cos + sin
         values[freq] = fft
 
-    return (2/len(phase_values)) * values
+    return 2/phase_values.size * values
 
 @click.command()
 @click.argument('file', type=click.Path())
-@click.option('--fig', '-f', default='fase', type=str, help='Name of the output file')
-@click.option('--freq', '-hz', type=float, help='Range of frequencies to analyse')
-def z2n(file, fig, freq):
+def z2n(file):
     """
     A python package for optimized Z2n periodograms from fits datasets
 
@@ -76,7 +72,7 @@ def z2n(file, fig, freq):
     time = event.field(0)
     data.close()
 
-    frequencies = np.arange(0.0001, 0.0015, 0.000001)
+    frequencies = np.arange(1e-4, 1.5e-3, 1e-6)
 
     click.echo("\nTempo de chegada dos fótons\n")
     click.echo(time)
@@ -92,13 +88,12 @@ def z2n(file, fig, freq):
     #with Pool(initializer=tqdm.set_lock, initargs=(RLock(),)) as pool:
     #    result = tuple(tqdm(pool.imap(func, object), total=len(object)))
 
-    plt.xlim(0.0001, 0.0015)
-    plt.plot(out2)
+    plt.plot(frequencies, out2)
     plt.title('Periodograma Z2n')
     plt.xlabel('Frequência (Hz)')
     plt.ylabel('Amplitude')
-    plt.savefig("%s.png" %fig)
-    click.echo("\nArquivo salvo em %s.png\n" %fig)
+    plt.savefig("z2n.png")
+    click.echo("\nArquivo salvo em z2n.png\n")
 
     return 0
 
