@@ -1,12 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Other Libraries
+# Generic/Built-in
 import click
+from click_shell import shell
+
+# Other Libraries
 import globals
 import subprocess
-from click_shell import shell
-from file.fits import load_fits
+from file import fits
 from stats import z2n
 from figure import plot
 
@@ -56,29 +58,30 @@ def license():
         click.echo(line)
 
 @cli.command()
-def fits():
+@click.option('--path', '-p', type=click.Path(), help='Path to fits file.')
+def file(path):
     """
-    Open file and stores photon arrival times (type fits <path>).
+    Open file and stores photon arrival times (type file <path>).
     """
 
-    globals.time = load_fits()
+    globals.time = fits.load_fits(path)
 
     try:
         if globals.time.size != 0:
             click.echo("\nPhoton arrival times.\n")
             click.echo(globals.time)
-            click.echo("\nFits file loaded correctly. Try run z2n command for statistics.\n")
+            click.echo("\nFits file loaded correctly. Try run stats command for statistics.\n")
     except:
         pass
 
 @cli.command()
-def z2n():
+def stats():
     """
-    Applies the Z2n statistics to photon arrival times (type z2n).
+    Applies the Z2n statistics to photon arrival times (type stats).
     """
 
     if globals.time.size == 0:
-        click.echo("\nNo fits files were loaded yet. Try run fits command.\n")
+        click.echo("\nNo fits files were loaded yet. Try run file command.\n")
 
     else:
         click.echo("\nCalculating phase values.\n")
@@ -92,19 +95,30 @@ def z2n():
         click.echo("\n")
 
 @cli.command()
-def plot():
+@click.option('--title', '-t', type=str, help='Title of the output file.')
+@click.option('--xlabel', '-x', type=str, help='X label of the output file.')
+@click.option('--ylabel', '-y', type=str, help='Y label of the output file.')
+@click.option('--name', '-n', type=str, help='Name of the output file.')
+def figure(title, xlabel, ylabel, name):
     """
     Plots the periodogram into an output file (type plot <file>).
     """
+
+    globals.figure.set_title(title)
+    globals.figure.set_xlabel(xlabel)
+    globals.figure.set_yabel(ylabel)
+    globals.figure.set_file(name)
 
     if globals.periodogram.size == 0:
         click.echo("\nThe Z2n statistics were not calculated yet. Try run z2n command.\n")
     
     else:
-        plot.plot(globals.frequencies, globals.periodogram)
+        plot.savefig(globals.frequencies, globals.periodogram, globals.figure)
+        click.echo("\nFile saved at %s.png.\n" %globals.figure.file)
 
 @cli.command()
-def shell():
+@click.option('--command', '-c', type=str, help='Shell command to be prompted.')
+def shell(command):
     """
     Provides a quick acess to bash commands (type shell <command>).
     """
@@ -112,7 +126,7 @@ def shell():
     pipe = subprocess.Popen(['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, universal_newlines=True, bufsize=0)
 
-    pipe.stdin.write(args)
+    pipe.stdin.write(command)
     pipe.stdin.close()
 
     for line in pipe.stdout:
