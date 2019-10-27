@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from tqdm import trange, tqdm
 
 def phases(arrival_times, frequencies):
     """
@@ -14,13 +15,12 @@ def phases(arrival_times, frequencies):
 
     delta = arrival_times - arrival_times[0]
 
-    for time in delta:
+    for time in tqdm(delta):
         p = time * frequencies
         values[photon] = p
         photon += 1
 
     return values - np.floor(values)
-
 
 def periodogram(phase_values, frequencies):
     """
@@ -33,7 +33,7 @@ def periodogram(phase_values, frequencies):
 
     pi = 2 * np.pi * phase_values
     
-    for freq in range(frequencies.size):
+    for freq in trange(frequencies.size):
         cos = np.sum(np.cos(pi[:,freq])) ** 2
         sin = np.sum(np.sin(pi[:,freq])) ** 2
         fft = cos + sin

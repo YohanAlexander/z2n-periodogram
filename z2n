@@ -5,28 +5,14 @@
 import time, sys, os, functools
 
 # Other Libraries
-import click
-import prompt
+import globals
 
-@click.command()
-@click.option('--fits', '-f', type=(click.Path()), help='Path to FITS file.')
-def main(fits):
+def main():
     """
-    A python package for optimized Z2n periodograms from fits datasets
-
-    For more information go to https://z2n-periodogram.github.io
+    Entry point to Z2n Software.
     """
-    
-    path = fits
 
-    click.echo("""
-    Z2n Software, a package for periodograms from fits datasets.
-    Copyright (C) 2019, and MIT License, by Yohan Alexander.
-    Type "help", "copyright", "credits" or "license" for more information.
-    """)
-
-    prompt.z2n_prompt.prompt = '(z2n) >>> '
-    prompt.z2n_prompt().cmdloop()
+    globals.prompt.cli()
 
     return 0
 

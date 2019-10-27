@@ -8,6 +8,7 @@ with open("README.md", "r") as fh:
     py_modules=['z2n'],
     install_requires=[
         'Click',
+        'Click-shell',
     ],
     entry_points='''
         [console_scripts]

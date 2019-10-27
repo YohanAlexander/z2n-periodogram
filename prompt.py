@@ -1,88 +1,119 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Other Libraries
 import click
+import globals
 import subprocess
-from fits.fits import load_fits
+from click_shell import shell
+from file.fits import load_fits
 from stats import z2n
 from figure import plot
-from cmd import Cmd
-class z2n_prompt(Cmd):
 
-    def do_copyright(self, args):
-        """
-        Shows copyright of the software (type copyright).
-        """
+@shell(prompt = '(z2n) >>> ', intro = globals.intro)
+#@click.option('--fits', '-f', type=(click.Path()), help='Path to fits file.')
+#@click.option('--read', '-r', type=(click.Path()), help='Path to script file.')
+def cli():
+    """
+    A python package for optimized Z2n periodograms from fits datasets
 
-        click.echo("\nCopyright (c) 2019 Yohan Alexander.\nAll Rights Reserved.\n")
+    For more information go to https://z2n-periodogram.github.io
+    """
 
-    def do_credits(self, args):
-        """
-        Shows the credits of the software (type credits).
-        """
+@cli.command()
+def copyright():
+    """
+    Shows copyright of the software (type copyright).
+    """
+    click.echo("\n%s\nAll Rights Reserved.\n" %globals.__copyright__)
 
-        click.echo("""\nA python package for optimized Z2n periodograms from fits datasets.
-        \nFor more information go to https://z2n-periodogram.github.io\n""")
+@cli.command()
+def version():
+    """
+    Shows the current version of the Z2n software (type version).
+    """
 
-    def do_license(self, args):
-        """
-        Shows license under which the software is under (type license).
-        """
-        with open("LICENSE", "r") as file:
-            license = file.readlines()
-        
-        for line in license:
-            click.echo(line)
-                
-    def do_fits(self, args):
-        """
-        Open fits files and loads photon arrival times into variable (type fits <path>).
-        """
+    click.echo("\nZ2n %s\n" %globals.__version__)
 
-        time = load_fits(args)
-        click.echo("\nPhoton arrival times\n")
-        click.echo(time)
+@cli.command()
+def credits():
+    """
+    Shows the credits of the software (type credits).
+    """
+
+    click.echo("\n%s\n" %globals.__credits__)
+
+@cli.command()
+def license():
+    """
+    Shows the current software license (type license).
+    """
+
+    with open("LICENSE", "r") as file:
+        license = file.readlines()
     
-    def do_phases(self, args):
-        """
-        Calculates phase values from photon arrival times (type phases <times> <freq>).
-        """
+    for line in license:
+        click.echo(line)
 
-        phase = z2n.phases(args)
+@cli.command()
+def fits():
+    """
+    Open file and stores photon arrival times (type fits <path>).
+    """
 
-    def do_z2n(self, args):
-        """
-        Applies the Z2n statistics to phase values and normalize (type z2n <times> <freq>).
-        """
+    globals.time = load_fits()
 
-        stats = z2n.periodogram(args)
+    try:
+        if globals.time.size != 0:
+            click.echo("\nPhoton arrival times.\n")
+            click.echo(globals.time)
+            click.echo("\nFits file loaded correctly. Try run z2n command for statistics.\n")
+    except:
+        pass
 
-    def do_plot(self, args):
-        """
-        Plots the periodogram into an output file (type plot <file>).
-        """
+@cli.command()
+def z2n():
+    """
+    Applies the Z2n statistics to photon arrival times (type z2n).
+    """
 
-        plot.plot(args)
+    if globals.time.size == 0:
+        click.echo("\nNo fits files were loaded yet. Try run fits command.\n")
 
-    def do_quit(self, args):
-        """
-        Quits the software interactive command prompt (type quit).
-        """
+    else:
+        click.echo("\nCalculating phase values.\n")
+        globals.phase = z2n.phases(globals.time, globals.frequencies)
+        click.echo("\n")            
+        click.echo(globals.phase)
+        click.echo("\nApplying the Z2n statistics.\n")
+        globals.periodogram = z2n.periodogram(globals.phase, globals.frequencies)
+        click.echo("\n")
+        click.echo(globals.periodogram)
+        click.echo("\n")
 
-        click.echo("\nQuitting the Z2n Peridogram Software.\n")
+@cli.command()
+def plot():
+    """
+    Plots the periodogram into an output file (type plot <file>).
+    """
 
-        raise SystemExit
+    if globals.periodogram.size == 0:
+        click.echo("\nThe Z2n statistics were not calculated yet. Try run z2n command.\n")
+    
+    else:
+        plot.plot(globals.frequencies, globals.periodogram)
 
-    def do_bash(self, args):
-        """
-        Provides a quick acess to bash commands using pipe (type bash <command>).
-        """
+@cli.command()
+def shell():
+    """
+    Provides a quick acess to bash commands (type shell <command>).
+    """
+    
+    pipe = subprocess.Popen(['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, universal_newlines=True, bufsize=0)
 
-        pipe = subprocess.Popen(['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, universal_newlines=True, bufsize=0)
+    pipe.stdin.write(args)
+    pipe.stdin.close()
 
-        pipe.stdin.write(args)
-        pipe.stdin.close()
-
-        for line in pipe.stdout:
-            print(line)
+    for line in pipe.stdout:
+        click.echo(line)
