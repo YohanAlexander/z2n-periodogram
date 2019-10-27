@@ -1,0 +1,34 @@
+#! /home/yohan/anaconda3/bin/python
+# -*- coding: utf-8 -*-
+
+# Generic/Built-in
+import time, sys, os, functools
+
+# Other Libraries
+import click
+import prompt
+
+@click.command()
+@click.option('--fits', '-f', type=(click.Path()), help='Path to FITS file.')
+def main(fits):
+    """
+    A python package for optimized Z2n periodograms from fits datasets
+
+    For more information go to https://z2n-periodogram.github.io
+    """
+    
+    path = fits
+
+    click.echo("""
+    Z2n Software, a package for periodograms from fits datasets.
+    Copyright (C) 2019, and MIT License, by Yohan Alexander.
+    Type "help", "copyright", "credits" or "license" for more information.
+    """)
+
+    prompt.z2n_prompt.prompt = '(z2n) >>> '
+    prompt.z2n_prompt().cmdloop()
+
+    return 0
+
+if __name__ == "__main__":
+    main()
