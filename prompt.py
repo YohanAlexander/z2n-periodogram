@@ -43,7 +43,8 @@ def credits():
     Shows the credits of the software (type credits).
     """
 
-    click.echo("\n%s\n" %globals.__credits__)
+    for line in globals.__credits__:
+        click.echo("\n%s\n" %line)
 
 @cli.command()
 def license():
@@ -61,7 +62,7 @@ def license():
 @click.option('--path', '-p', type=click.Path(), help='Path to fits file.')
 def file(path):
     """
-    Open file and stores photon arrival times (type file <path>).
+    Open fits and stores photon arrival times (type file -p <path>).
     """
 
     globals.time = fits.load_fits(path)
@@ -77,7 +78,7 @@ def file(path):
 @cli.command()
 def stats():
     """
-    Applies the Z2n statistics to photon arrival times (type stats).
+    Applies the Z2n stats to photon arrival times (type stats).
     """
 
     if globals.time.size == 0:
@@ -101,7 +102,7 @@ def stats():
 @click.option('--name', '-n', type=str, help='Name of the output file.')
 def figure(title, xlabel, ylabel, name):
     """
-    Plots the periodogram into an output file (type plot <file>).
+    Plots the periodogram into an output file (type figure -n <file>).
     """
 
     globals.figure.set_title(title)
@@ -110,7 +111,7 @@ def figure(title, xlabel, ylabel, name):
     globals.figure.set_file(name)
 
     if globals.periodogram.size == 0:
-        click.echo("\nThe Z2n statistics were not calculated yet. Try run z2n command.\n")
+        click.echo("\nThe Z2n statistics were not calculated yet. Try run stats command.\n")
     
     else:
         plot.savefig(globals.frequencies, globals.periodogram, globals.figure)
@@ -120,7 +121,7 @@ def figure(title, xlabel, ylabel, name):
 @click.option('--command', '-c', type=str, help='Shell command to be prompted.')
 def shell(command):
     """
-    Provides a quick acess to bash commands (type shell <command>).
+    Provides a quick acess to bash commands (type shell -c <command>).
     """
     
     pipe = subprocess.Popen(['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,

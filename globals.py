@@ -4,7 +4,8 @@
 # Wrapping Header
 __author__ = 'Yohan Alexander'
 __copyright__ = 'Copyright (C) 2019, Z2n Software.' 
-__credits__ = ['Yohan Alexander']
+__credits__ = ['''The Z2n Software was developed by Yohan Alexander 
+                and is supported by the Open Source community.''']
 __license__ = 'MIT LICENSE'
 __version__ = '0.1.0'
 __maintainer__ = 'Yohan Alexander'
@@ -26,7 +27,7 @@ import numpy as np
 
 class Figure():
 
-    def __init__(self, title, x_label, y_label, file):
+    def __init__(self, title="", x_label="", y_label="", file=""):
         self.title = title
         self.x_label = x_label
         self.y_label = y_label
