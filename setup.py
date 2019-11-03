@@ -9,7 +9,6 @@ with open("README.md", "r") as fh:
     install_requires=[
         'Click',
         'Click-shell',
-        'Subprocess',
     ],
     entry_points='''
         [console_scripts]

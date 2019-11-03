@@ -4,6 +4,19 @@
 import numpy as np
 from tqdm import trange, tqdm
 
+def nyquist(arrival_times):
+    """
+    Calculates sampling rate of the given time series.
+    """
+
+    interval = np.mean(np.diff(arrival_times))
+
+    period = arrival_times.size * interval
+
+    freq = 1 / period
+
+    return freq / 2
+
 def phases(arrival_times, frequencies):
     """
     Calculates phase values from photon arrival times.

@@ -45,8 +45,9 @@ class Figure():
     def set_file(self, f):
         self.file = f
 
+sample_rate = 0
 time = np.array([])
 phase = np.array([])
 periodogram = np.array([])
-frequencies = np.arange(1e-4, 1.5e-3, 1e-6)
+frequencies = np.array([])
 figure = Figure()
