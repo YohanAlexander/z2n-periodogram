@@ -10,8 +10,8 @@ def load_fits(path):
 
     try:
         data = fits.open('%s' %path) # open fits file
-        event = data[1].data # acesses event header
-        time_series = event.field(0) # stores time series on numpy array
+        event = data['EVENTS'].data # acesses event header
+        time_series = event['TIME'] # stores time series on numpy array
         data.close()
         
         return time_series
