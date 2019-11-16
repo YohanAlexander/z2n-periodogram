@@ -3,22 +3,23 @@
 
 # Wrapping Header
 __author__ = 'Yohan Alexander'
-__copyright__ = 'Copyright (C) 2019, Z2n Software.' 
-__credits__ = ['''The Z2n Software was developed by Yohan Alexander and is supported by the Open Source community.''']
+__version__ = '0.2.0'
+__copyright__ = 'Copyright (C) 2019, Z2n Software, by Yohan Alexander.'
+__credits__ = ['''The Z2n Software was developed by Yohan Alexander and it is supported by the Open Source community.''']
 __license__ = 'MIT LICENSE'
-__version__ = '0.1.0'
 __maintainer__ = 'Yohan Alexander'
 __email__ = 'yohanfranca@gmail.com'
 __status__ = 'Developer'
 
 intro = """
-        Z2n Software, a package for periodograms from fits datasets.
-        Copyright (C) 2019, and MIT License, by Yohan Alexander.
-        Type "help", "copyright", "credits" or "license" for more information.
-        """
+        Z2n Software (%s), a python package for periodograms from fits datasets.
+        Type "help", "copyright", "credits", "license" or "docs" for more information.
+
+        If you wish to run the software with the default values type auto.
+        """ %__version__
 
 # Generic/Built-in
-import time, sys, os, functools
+import time, sys, os, functools, webbrowser
 
 # Other Libraries
 import prompt
@@ -44,6 +45,9 @@ class Figure():
     def set_file(self, f):
         self.file = f
 
+fmax = 0
+fmin = 0
+delta = 0
 sample_rate = 0
 time = np.array([])
 phase = np.array([])

@@ -4,11 +4,15 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
     name='z2n-periodogram',
-    version='0.1',
+    version='0.2.0',
     py_modules=['z2n'],
     install_requires=[
         'Click',
         'Click-shell',
+        'matplotlib',
+        'astropy',
+        'numpy',
+        'tqdm',
     ],
     entry_points='''
         [console_scripts]
@@ -16,7 +20,7 @@ with open("README.md", "r") as fh:
     ''',
     author="Yohan Alexander",
     author_email="yohanfranca@gmail.com",
-    description="A fitting package for Z2n Statistics from FITS files.",
+    description="A fitting package for Z2n Periodograms from FITS files.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/yohanalexander/z2n-periodogram",
