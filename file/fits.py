@@ -16,7 +16,5 @@ def load_fits(path):
         
         return time_series
 
-    except FileNotFoundError as error:
-        print("\n")
+    except Exception as error:
         print(error)
-        print("\n")

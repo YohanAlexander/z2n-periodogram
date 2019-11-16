@@ -36,20 +36,23 @@ def auto(run):
             oversample = int(input("\nOver sampling of the frequency steps: "))
             if type(oversample) != int:
                 raise Exception
-        except:
-            print("\nInvalid value of steps.\n")
+
+        except Exception as error:
+            print(error)
        
         try:
+            
             globals.time = fits.load_fits(run)
-            globals.delta =  ((1 / 10) / z2n.period(globals.time))
+            globals.delta =  ((1 / oversample) / z2n.period(globals.time))
             click.echo("\nPhoton arrival times.\n")
             click.echo(globals.time)
-            globals.fmin = z2n.frequency(globals.time) * 2
+            globals.fmin = z2n.frequency(globals.time)
             globals.fmax = z2n.frequency(globals.time) * 100
             globals.frequencies = globals.np.arange(globals.fmin, globals.fmax, globals.delta)
             click.echo("\nMinimum frequency used on the spectrum: %s" %globals.fmin)
             click.echo("\nMaximum frequency used on the spectrum: %s" %globals.fmax)
             click.echo("\nFrequency step used on the spectrum: %s" %globals.delta)
+
             click.echo("\nCalculating phase values.\n")
             globals.phase = z2n.phases(globals.time, globals.frequencies)
             click.echo("\n")
@@ -58,19 +61,21 @@ def auto(run):
             globals.periodogram = z2n.periodogram(globals.phase, globals.frequencies)
             click.echo("\n")
             click.echo(globals.periodogram)
+
             globals.figure.set_title("Z2n Periodogram")
             globals.figure.set_xlabel("Frequencies (Hz)")
             globals.figure.set_yabel("Amplitude")
             globals.figure.set_file("z2n")
             plot.savefig(globals.frequencies, globals.periodogram, globals.figure)
             click.echo("\nImage file saved at %s.png.\n" %globals.figure.file)
+
             with open('%s.txt' %globals.figure.file, 'w') as file:
                 for spec, freq in zip(globals.periodogram, globals.frequencies):
                     file.write(str(freq) + " " + str(spec) + "\n")
             click.echo("\nText file saved at %s.txt.\n" %globals.figure.file)
 
-        except:
-            pass
+        except Exception as error:
+            click.echo(error)
 
 @cli.command()
 def docs():
@@ -136,8 +141,9 @@ def file(path):
             click.echo("\nPhoton arrival times.\n")
             click.echo(globals.time)
             click.echo("\nFits file loaded correctly. Try run rate command.\n")
-    except:
-        pass
+
+    except Exception as error:
+        click.echo(error)
 
 @cli.command()
 @click.option('--fmin', '-fm', type=int, help="Minimum frequency of the spectrum.")
