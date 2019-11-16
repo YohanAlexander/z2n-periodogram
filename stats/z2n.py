@@ -15,8 +15,7 @@ def period(arrival_times):
 
     return period
 
-
-def nyquist(arrival_times):
+def frequency(arrival_times):
     """
     Calculates sampling rate of the given time series.
     """
@@ -27,7 +26,7 @@ def nyquist(arrival_times):
 
     freq = 1 / period
 
-    return freq / 2
+    return freq
 
 def phases(arrival_times, frequencies):
     """

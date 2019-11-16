@@ -41,15 +41,14 @@ def auto(run):
        
         try:
             globals.time = fits.load_fits(run)
-            size = z2n.period(globals.time) * (1 / oversample)
+            globals.delta =  ((1 / 10) / z2n.period(globals.time))
             click.echo("\nPhoton arrival times.\n")
             click.echo(globals.time)
-            click.echo("\nCalculating the Nyquist frequency.\n")
-            globals.sample_rate = z2n.nyquist(globals.time)
-            click.echo(globals.sample_rate)
-            globals.frequencies = globals.np.arange(1e-4, 1.5e-3, 1e-5)
-            click.echo("\nMaximum frequency used on the spectrum: %s" %globals.fmax)
+            globals.fmin = z2n.frequency(globals.time) * 2
+            globals.fmax = z2n.frequency(globals.time) * 100
+            globals.frequencies = globals.np.arange(globals.fmin, globals.fmax, globals.delta)
             click.echo("\nMinimum frequency used on the spectrum: %s" %globals.fmin)
+            click.echo("\nMaximum frequency used on the spectrum: %s" %globals.fmax)
             click.echo("\nFrequency step used on the spectrum: %s" %globals.delta)
             click.echo("\nCalculating phase values.\n")
             globals.phase = z2n.phases(globals.time, globals.frequencies)
