@@ -6,10 +6,11 @@ from tqdm import trange, tqdm
 
 def period(arrival_times):
     """
-    Calculates sampling period of the given time series.
+    Calculates period of the given time series.
     """
 
     try:
+        
         interval = np.mean(np.diff(arrival_times))
 
         period = arrival_times.size * interval
@@ -25,6 +26,7 @@ def frequency(arrival_times):
     """
     
     try:
+
         interval = np.mean(np.diff(arrival_times))
 
         period = arrival_times.size * interval

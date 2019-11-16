@@ -33,7 +33,7 @@ def auto(run):
            run = input("\nPath to fits file: ")
         
         try:
-            oversample = int(input("\nOver sampling of the frequency steps: "))
+            oversample = int(input("\nFrequency steps (delta): "))
             if type(oversample) != int:
                 raise Exception
 
@@ -43,20 +43,28 @@ def auto(run):
         try:
             
             globals.time = fits.load_fits(run)
-            globals.delta =  ((1 / oversample) / z2n.period(globals.time))
             click.echo("\nPhoton arrival times.\n")
             click.echo(globals.time)
-            globals.fmin = z2n.frequency(globals.time)
-            globals.fmax = z2n.frequency(globals.time) * 100
+            
+            globals.period = z2n.period(globals.time)
+            click.echo("\nPeriod of the signal: %f s" %globals.period)
+
+            globals.frequency = z2n.frequency(globals.time)
+            click.echo("\nSampling Frequency of the signal: %f Hz" %globals.frequency)
+
+            globals.fmin = globals.frequency
+            globals.fmax = globals.frequency * 100
+            globals.delta =  ((1 / oversample) / globals.period)
+            click.echo("\nMinimum frequency used on the spectrum: %s Hz" %globals.fmin)
+            click.echo("\nMaximum frequency used on the spectrum: %s Hz" %globals.fmax)
+            click.echo("\nFrequency step used on the spectrum: %s Hz" %globals.delta)
             globals.frequencies = globals.np.arange(globals.fmin, globals.fmax, globals.delta)
-            click.echo("\nMinimum frequency used on the spectrum: %s" %globals.fmin)
-            click.echo("\nMaximum frequency used on the spectrum: %s" %globals.fmax)
-            click.echo("\nFrequency step used on the spectrum: %s" %globals.delta)
 
             click.echo("\nCalculating phase values.\n")
             globals.phase = z2n.phases(globals.time, globals.frequencies)
             click.echo("\n")
             click.echo(globals.phase)
+            
             click.echo("\nApplying the Z2n statistics.\n")
             globals.periodogram = z2n.periodogram(globals.phase, globals.frequencies)
             click.echo("\n")

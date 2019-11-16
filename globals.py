@@ -25,6 +25,7 @@ import time, sys, os, functools, webbrowser
 import prompt
 import numpy as np
 
+# Global Variables
 class Figure():
 
     def __init__(self, title="", x_label="", y_label="", file=""):
@@ -48,7 +49,8 @@ class Figure():
 fmax = 0
 fmin = 0
 delta = 0
-sample_rate = 0
+period = 0
+frequency = 0
 time = np.array([])
 phase = np.array([])
 periodogram = np.array([])
