@@ -4,9 +4,18 @@
 # Generic/Built-in
 import globals
 import subprocess
+import numpy as np
+import matplotlib.pyplot as plt
 from file import fits
 from stats import z2n
-from figure import plot
+from figure import fig
+
+# Plotting Style
+plt.rc('font', family='serif')
+plt.rc('text', usetex=True)
+plt.rc('xtick', labelsize=8)
+plt.rc('ytick', labelsize=8)
+plt.rc('axes', labelsize=8)
 
 # Other Libraries
 import click
@@ -15,10 +24,28 @@ from click_shell import shell
 @shell(prompt = '(z2n) >>> ', intro = globals.intro)
 def cli():
     """
-    A python package for optimized Z2n periodograms from fits datasets
-
-    For more information go to https://z2n-periodogram.readthedocs.io
+    A python package for optimized Z2n periodograms from fits datasets.
     """
+
+@cli.command()
+def plot():
+    """
+    Opens the interactive plotting window (type plot).
+    """
+
+    if globals.periodogram.size == 0:
+        click.echo("The frequency spectrum was not calculated yet. Try run stats command.")
+
+    else:
+
+        plt.ion()
+        plt.tight_layout()
+        plt.plot(globals.frequencies, globals.periodogram, label="Z2n Statistics")
+        plt.legend()
+        plt.show()
+    
+        globals.Plot().cmdloop()
+
 
 @cli.command()
 @click.option('--run', '-r', type=(click.Path()), help='Path to fits file.')
@@ -30,10 +57,10 @@ def auto(run):
     if(click.confirm("Do you wish to auto run with the default values?")):
        
         if(run is None):
-           run = input("\nPath to fits file: ")
+           run = input("Path to fits file: ")
         
         try:
-            oversample = int(input("\nFrequency steps (delta): "))
+            oversample = int(input("Frequency steps (delta): "))
             if type(oversample) != int:
                 raise Exception
 
@@ -43,44 +70,38 @@ def auto(run):
         try:
             
             globals.time = fits.load_fits(run)
-            click.echo("\nPhoton arrival times.\n")
+            click.echo("Photon arrival times.")
             click.echo(globals.time)
             
             globals.period = z2n.period(globals.time)
-            click.echo("\nPeriod of the signal: %f s" %globals.period)
+            click.echo("Period of the signal: %f s" %globals.period)
 
             globals.frequency = z2n.frequency(globals.time)
-            click.echo("\nSampling Frequency of the signal: %f Hz" %globals.frequency)
+            click.echo("Sampling Frequency of the signal: %f Hz" %globals.frequency)
 
             globals.fmin = globals.frequency
             globals.fmax = globals.frequency * 100
             globals.delta =  ((1 / oversample) / globals.period)
-            click.echo("\nMinimum frequency used on the spectrum: %s Hz" %globals.fmin)
-            click.echo("\nMaximum frequency used on the spectrum: %s Hz" %globals.fmax)
-            click.echo("\nFrequency step used on the spectrum: %s Hz" %globals.delta)
-            globals.frequencies = globals.np.arange(globals.fmin, globals.fmax, globals.delta)
+            click.echo("Minimum frequency used on the spectrum: %s Hz" %globals.fmin)
+            click.echo("Maximum frequency used on the spectrum: %s Hz" %globals.fmax)
+            click.echo("Frequency step used on the spectrum: %s Hz" %globals.delta)
+            globals.frequencies = np.arange(globals.fmin, globals.fmax, globals.delta)
 
-            click.echo("\nCalculating phase values.\n")
+            click.echo("Calculating phase values.")
             globals.phase = z2n.phases(globals.time, globals.frequencies)
-            click.echo("\n")
-            click.echo(globals.phase)
             
-            click.echo("\nApplying the Z2n statistics.\n")
+            click.echo("Applying the Z2n statistics.")
             globals.periodogram = z2n.periodogram(globals.phase, globals.frequencies)
-            click.echo("\n")
-            click.echo(globals.periodogram)
 
-            globals.figure.set_title("Z2n Periodogram")
-            globals.figure.set_xlabel("Frequencies (Hz)")
-            globals.figure.set_yabel("Amplitude")
-            globals.figure.set_file("z2n")
-            plot.savefig(globals.frequencies, globals.periodogram, globals.figure)
-            click.echo("\nImage file saved at %s.png.\n" %globals.figure.file)
+            fig.savefig(globals.frequencies, globals.periodogram, "z2n")
 
-            with open('%s.txt' %globals.figure.file, 'w') as file:
+            click.echo("Image file saved at z2n.png")
+
+            with open('z2n.txt', 'w') as file:
                 for spec, freq in zip(globals.periodogram, globals.frequencies):
                     file.write(str(freq) + " " + str(spec) + "\n")
-            click.echo("\nText file saved at %s.txt.\n" %globals.figure.file)
+            
+            click.echo("Text file saved at z2n.txt")
 
         except Exception as error:
             click.echo(error)
@@ -91,9 +112,9 @@ def docs():
     Opens the documentation on the software (type docs).
     """
 
-    globals.webbrowser.open('https://z2n-periodogram.readthedocs.io')
+    globals.webbrowser.open(globals.__url__)
 
-    click.echo("\nTo read the documentation on the software go to https://z2n-periodogram.readthedocs.io\n")
+    click.echo("To read the documentation on the software go to %s" %globals.__url__)
 
 @cli.command()
 def copyright():
@@ -101,7 +122,7 @@ def copyright():
     Shows copyright of the software (type copyright).
     """
     
-    click.echo("\n%s\nAll Rights Reserved.\n" %globals.__copyright__)
+    click.echo("%sAll Rights Reserved." %globals.__copyright__)
 
 @cli.command()
 def version():
@@ -109,7 +130,7 @@ def version():
     Shows the current version of the Z2n software (type version).
     """
 
-    click.echo("\nZ2n %s\n" %globals.__version__)
+    click.echo("Z2n %s" %globals.__version__)
 
 @cli.command()
 def credits():
@@ -118,7 +139,7 @@ def credits():
     """
 
     for line in globals.__credits__:
-        click.echo("\n%s\n" %line)
+        click.echo("%s" %line)
 
 @cli.command()
 def license():
@@ -134,21 +155,22 @@ def license():
 
 @cli.command()
 @click.option('--path', '-p', type=click.Path(), help='Path to fits file.')
-def file(path):
+def data(path):
     """
     Open fits and stores photon arrival times (type file).
     """
 
     if(path is None):
-        path = input("\nPath to fits file: ")
+        path = input("Path to fits file: ")
 
     globals.time = fits.load_fits(path)
 
     try:
+        
         if globals.time.size != 0:
-            click.echo("\nPhoton arrival times.\n")
+            click.echo("Photon arrival times.")
             click.echo(globals.time)
-            click.echo("\nFits file loaded correctly. Try run rate command.\n")
+            click.echo("Fits file loaded correctly. Try run rate command.")
 
     except Exception as error:
         click.echo(error)
@@ -163,20 +185,20 @@ def rate(fmin, fmax, delta):
     """
 
     if(globals.time.size == 0):
-        click.echo("\nNo fits files were loaded yet. Try run file command.\n")
+        click.echo("No fits files were loaded yet. Try run data command.")
 
     else:
 
         if(fmin is None):
-            fmin = float(input("\nMinimum frequency of the spectrum: "))
+            fmin = float(input("Minimum frequency of the spectrum: "))
     
         if(fmax is None):
-            fmax = float(input("\nMaximum frequency of the spectrum: "))
+            fmax = float(input("Maximum frequency of the spectrum: "))
 
         if(delta is None):
-            delta = float(input("\nFrequency steps of the spectrum: "))
+            delta = float(input("Frequency steps of the spectrum: "))
         
-        globals.frequencies = globals.np.arange(fmin, fmax, delta)
+        globals.frequencies = np.arange(fmin, fmax, delta)
 
 @cli.command()
 def stats():
@@ -185,21 +207,17 @@ def stats():
     """
 
     if globals.time.size == 0:
-        click.echo("\nNo fits files were loaded yet. Try run file command.\n")
+        click.echo("No fits files were loaded yet. Try run data command.")
 
     elif globals.frequencies.size == 0:
-        click.echo("\nThe frequency spectrum was not defined yet. Try run rate command.\n")
+        click.echo("The frequency spectrum was not defined yet. Try run rate command.")
 
     else:
-        click.echo("\nCalculating phase values.\n")
+        click.echo("Calculating phase values.")
         globals.phase = z2n.phases(globals.time, globals.frequencies)
-        click.echo("\n")            
-        click.echo(globals.phase)
-        click.echo("\nApplying the Z2n statistics.\n")
+
+        click.echo("Applying the Z2n statistics.")
         globals.periodogram = z2n.periodogram(globals.phase, globals.frequencies)
-        click.echo("\n")
-        click.echo(globals.periodogram)
-        click.echo("\n")
 
 @cli.command()
 @click.option('--text', '-t', type=str, help='Name of the output file.')
@@ -209,18 +227,19 @@ def ascii(text):
     """
 
     if globals.periodogram.size == 0:
-        click.echo("\nThe frequency spectrum was not calculated yet. Try run stats command.\n")
+        click.echo("The frequency spectrum was not calculated yet. Try run stats command.")
 
     else:
         
         if(text is None):
-            text = input("\nName of the output file: ")
+            text = input("Name of the output file: ")
         
         with open('%s.txt' %text, 'w') as file:
 
             for spec, freq in zip(globals.periodogram, globals.frequencies):
                 file.write(str(freq) + " " + str(spec) + "\n")
-
+        
+        click.echo("Text file saved at %s.txt" %text)
 
 @cli.command()
 @click.option('--title', '-t', type=str, help='Title to plot on the image.')
@@ -233,29 +252,28 @@ def figure(title, xlabel, ylabel, name):
     """
 
     if globals.periodogram.size == 0:
-        click.echo("\nThe frequency spectrum was not calculated yet. Try run stats command.\n")
+        click.echo("The frequency spectrum was not calculated yet. Try run stats command.")
 
     else:
 
         if(title is None):
-            title = input("\nTitle to plot on the image: ")
+            title = input("Title to plot on the image: ")
 
         if(xlabel is None):
-            xlabel = input("\nX label to plot on the image: ")
+            xlabel = input("X label to plot on the image: ")
 
         if(ylabel is None):
-            ylabel = input("\nY label to plot on the image: ")
+            ylabel = input("Y label to plot on the image: ")
 
         if(name is None):
-            name = input("\nName of the output file: ")
+            name = input("Name of the output file: ")
 
-        globals.figure.set_title(title)
-        globals.figure.set_xlabel(xlabel)
-        globals.figure.set_yabel(ylabel)
-        globals.figure.set_file(name)
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
         
-        plot.savefig(globals.frequencies, globals.periodogram, globals.figure)
-        click.echo("\nFile saved at %s.png.\n" %globals.figure.file)
+        fig.savefig(globals.frequencies, globals.periodogram, name)
+        click.echo("File saved at %s.png" %name)
 
 @cli.command()
 @click.option('--command', '-c', type=str, help='Shell command to be prompted.')
@@ -265,7 +283,7 @@ def shell(command):
     """
 
     if(command is None):
-        command = input("\nType the shell command: ")
+        command = input("Type the shell command: ")
     
     pipe = subprocess.Popen(['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, universal_newlines=True, bufsize=0)
@@ -274,4 +292,4 @@ def shell(command):
     pipe.stdin.close()
 
     for line in pipe.stdout:
-        click.echo(line)
+        click.echo(line.strip())

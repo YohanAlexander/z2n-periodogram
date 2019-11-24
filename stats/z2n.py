@@ -87,7 +87,7 @@ def periodogram(phase_values, frequencies):
             fft = cos + sin
             values[freq] = fft
 
-        return 2/phase_values.size * values
+        return (2/phase_values.size) * values
 
     except Exception as error:
         print(error)
