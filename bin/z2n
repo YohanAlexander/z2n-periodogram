@@ -1,4 +1,4 @@
-#! /home/yohan/anaconda3/bin/python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
@@ -7,7 +7,7 @@ import time, sys, os, functools
 # Other Libraries
 import globals
 
-def main():
+def main() -> int:
     """
     Entry point to Z2n Software.
     """

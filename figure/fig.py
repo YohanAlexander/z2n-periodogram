@@ -1,21 +1,34 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import click
+import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import style
-from matplotlib import rc
 
-rc('font', family='serif')
-rc('text', usetex=True)
-rc('xtick', labelsize=8)
-rc('ytick', labelsize=8)
-rc('axes', labelsize=8)
+plt.rc('font', family='serif')
+plt.rc('text', usetex=True)
+plt.rc('xtick', labelsize=8)
+plt.rc('ytick', labelsize=8)
+plt.rc('axes', labelsize=8)
 
-#style.use('science')
+#plt.style.use('science')
 
-def savefig(frequencies, statistics, name):
+def save_fig(frequencies: np.array, statistics: np.array, name: str) -> None:
     """
-    Plots periodogram and saves into a png file.
+    Plots the periodogram and saves into a png file.
+
+    Parameters
+    ----------
+    frequencies : numpy.array
+        Numpy array that represents the frequency spectrum.
+    statistics : numpy.array
+        Numpy array that represents the power spectrum of each frequency on the spectrum.
+    name : str
+        Name of the output file.
+
+    Returns
+    -------
+    None
     """
     
     try:
@@ -23,8 +36,10 @@ def savefig(frequencies, statistics, name):
         plt.tight_layout()
         plt.plot(frequencies, statistics, label="Z2n Statistics")
         plt.legend()
-        plt.savefig("%s.png" %name)
+        plt.savefig(f"{name}.png")
+        click.echo(f"Image file saved at {name}.png")
         plt.show()
-    
+
     except Exception as error:
-        print(error)
+        click.echo(error)
+        
