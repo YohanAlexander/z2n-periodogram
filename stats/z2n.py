@@ -141,7 +141,7 @@ def periodogram(phase_values: np.array, frequencies: np.array) -> np.array:
     except Exception as error:
         click.echo(error)
 
-def peak(periodogram: np.ndarray, frequencies: np.ndarray) -> float:
+def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
     """
     Gets the value of the natural frequency on the periodogram.
 

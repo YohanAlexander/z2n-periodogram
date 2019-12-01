@@ -4,7 +4,7 @@
 import click
 import numpy as np
 
-def save_ascii(periodogram: np.array, frequencies: np.array, text: str) -> None:
+def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
     """
     Saves the frequency spectrum into an formatted ascii file.
 
@@ -26,7 +26,7 @@ def save_ascii(periodogram: np.array, frequencies: np.array, text: str) -> None:
         
         with open(f'{text}', 'w') as file:
 
-            for spec, freq in zip(periodogram, frequencies):
+            for freq, spec in zip(frequencies, periodogram):
                 file.write(str(freq) + " " + str(spec) + "\n")
         
         click.echo(f"Text file saved at {text}")
