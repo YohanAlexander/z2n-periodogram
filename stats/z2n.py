@@ -82,11 +82,8 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
         #derivative = np.gradient(frequencies)
         #derivative2 = np.gradient(derivative)
         values = np.zeros(shape=(arrival_times.size, frequencies.size))
-        delta = np.zeros_like(arrival_times)
 
-        delta = arrival_times - arrival_times[0]
-
-        for time in tqdm(delta, desc='Calculating phase values'):
+        for time in tqdm(arrival_times, desc='Calculating phase values'):
             termo1 = time * frequencies
             #termo2 = (time ** 2) * derivative / 2
             #termo3 = (time ** 3) * derivative2 / 6
@@ -101,30 +98,30 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     except Exception as error:
         click.echo(error)
 
-def periodogram(phase_values: np.array, frequencies: np.array) -> np.array:
+def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
     Applies the Z2n statistics to phase values and normalize.
 
     Parameters
     ----------
-    phase_values : numpy.array
-        Numpy array that represents the phase values for each photon.
+    arrival_times : numpy.array
+        Numpy array that represents the photon arrival times.
     frequencies : numpy.array
         Numpy array that represents the frequency spectrum.
 
     Returns
     -------
-    values : numpy.array
+    potency : numpy.array
         Numpy array that represents the power spectrum of each frequency on the spectrum.
     """
 
     try:
 
         harmonics = 1
+        
+        phase_values = phases(arrival_times, frequencies)
 
-        values = np.zeros_like(frequencies)
-
-        pi = np.zeros_like(phase_values)
+        potency = np.zeros_like(frequencies)
 
         pi = 2 * np.pi * phase_values
     
@@ -132,11 +129,11 @@ def periodogram(phase_values: np.array, frequencies: np.array) -> np.array:
             cos = np.sum(np.cos(harmonics * pi[:,freq])) ** 2
             sin = np.sum(np.sin(harmonics * pi[:,freq])) ** 2
             fft = cos + sin
-            values[freq] = fft
+            potency[freq] = fft
         
-        values = (2/phase_values.size) * values
+        potency = (2/arrival_times.size) * potency
 
-        return values
+        return potency
 
     except Exception as error:
         click.echo(error)
@@ -160,9 +157,9 @@ def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
 
     try:
 
-        index, = np.where(periodogram == np.max(periodogram))
+        index = np.argmax(periodogram)
 
-        peak = frequencies[index[0]]
+        peak = frequencies[index]
 
         return peak
 

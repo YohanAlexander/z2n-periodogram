@@ -32,7 +32,6 @@ import numpy as np
 
 # Global Variables
 
-path = ""
 peak = 0
 fmin = 0
 fmax = 0
@@ -40,6 +39,6 @@ delta = 0
 period = 0
 frequency = 0
 time = np.array([])
-phase = np.array([])
 periodogram = np.array([])
 frequencies = np.array([])
+

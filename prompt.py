@@ -74,8 +74,8 @@ def auto(run: str) -> None:
 
     if(click.confirm("Do you wish to auto run with the default values?")):
        
-        if(run is None and globals.path == ""):
-           globals.path = input("Path to fits file: ")
+        if(run is None):
+           run = input("Path to fits file: ")
         
         try:
             oversample = float(input("Frequency steps (delta): "))
@@ -85,7 +85,7 @@ def auto(run: str) -> None:
        
         try:
             
-            globals.time = fits.load_fits(globals.path)
+            globals.time = fits.load_fits(run)
             click.echo(f"Photon arrival times: {globals.time}")
             
             globals.period = z2n.period(globals.time)
@@ -103,9 +103,7 @@ def auto(run: str) -> None:
             
             globals.frequencies = np.arange(globals.fmin, globals.fmax, globals.delta)
 
-            globals.phase = z2n.phases(globals.time, globals.frequencies)
-
-            globals.periodogram = z2n.periodogram(globals.phase, globals.frequencies)
+            globals.periodogram = z2n.periodogram(globals.time, globals.frequencies)
 
             globals.peak = z2n.peak(globals.frequencies, globals.periodogram)
             click.echo(f"Peak value of the spectrum: {globals.peak} Hz")
@@ -173,10 +171,10 @@ def data(path: str) -> None:
     Open fits and stores photon arrival times (type data).
     """
 
-    if(path is None and globals.path == ""):
-        globals.path = input("Path to fits file: ")
+    if(path is None):
+        path = input("Path to fits file: ")
 
-    globals.time = fits.load_fits(globals.path)
+    globals.time = fits.load_fits(path)
 
     try:
         
@@ -237,10 +235,8 @@ def stats() -> None:
         click.echo(f"Minimum frequency used on the spectrum: {globals.fmin} Hz")
         click.echo(f"Maximum frequency used on the spectrum: {globals.fmax} Hz")
         click.echo(f"Frequency steps used on the spectrum: {globals.delta} Hz")
-        
-        globals.phase = z2n.phases(globals.time, globals.frequencies)
 
-        globals.periodogram = z2n.periodogram(globals.phase, globals.frequencies)
+        globals.periodogram = z2n.periodogram(globals.time, globals.frequencies)
 
         globals.peak = z2n.peak(globals.frequencies, globals.periodogram)
         click.echo(f"Peak value of the spectrum: {globals.peak} Hz")
