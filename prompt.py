@@ -15,9 +15,10 @@ from figure import fig
 
 plt.rc('font', family='serif')
 plt.rc('text', usetex=True)
-plt.rc('xtick', labelsize=8)
-plt.rc('ytick', labelsize=8)
-plt.rc('axes', labelsize=8)
+plt.rc('xtick', labelsize=16)
+plt.rc('ytick', labelsize=16)
+plt.rc('axes', labelsize=16)
+plt.style.use('ggplot')
 
 # Other Libraries
 
@@ -61,7 +62,7 @@ def plot() -> None:
 
         name = input("Name of the image file: ")
 
-        fig.save_fig(globals.frequencies, globals.periodogram, name)
+        fig.save_fig(globals.frequencies, globals.periodogram, globals.peak, name)
 
         globals.plot.Plot().cmdloop()
 
@@ -94,7 +95,7 @@ def auto(run: str) -> None:
             globals.frequency = z2n.frequency(globals.time)
             click.echo(f"Sampling Frequency of the signal: {globals.frequency} Hz")
 
-            globals.fmin = globals.frequency
+            globals.fmin = globals.frequency * 2
             globals.fmax = globals.frequency * 100
             globals.delta = oversample
             click.echo(f"Minimum frequency used on the spectrum: {globals.fmin} Hz")
@@ -108,7 +109,7 @@ def auto(run: str) -> None:
             globals.peak = z2n.peak(globals.frequencies, globals.periodogram)
             click.echo(f"Peak value of the spectrum: {globals.peak} Hz")
 
-            fig.save_fig(globals.frequencies, globals.periodogram, "z2n")
+            fig.save_fig(globals.frequencies, globals.periodogram, globals.peak, "z2n")
 
             text.save_ascii(globals.frequencies, globals.periodogram, "z2n")
 

@@ -138,6 +138,34 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
     except Exception as error:
         click.echo(error)
 
+def lightcurve(arrival_times: np.array, frequencies: np.array) -> np.array:
+    """
+    Calculates the lightcurve of the photons with the phase values.
+
+    Parameters
+    ----------
+    arrival_times : numpy.array
+        Numpy array that represents the photon arrival times.
+    frequencies : numpy.array
+        Numpy array that represents the frequency spectrum.
+
+    Returns
+    -------
+    curve : numpy.array
+        Numpy array that represents the lightcurve of the photons.
+    """
+
+    try:
+
+        values = phases(arrival_times, frequencies)
+
+        curve = values.mean(axis=0)
+
+        return curve
+
+    except Exception as error:
+        click.echo(error)
+
 def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
     """
     Gets the value of the natural frequency on the periodogram.
