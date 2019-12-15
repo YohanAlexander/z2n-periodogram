@@ -83,7 +83,9 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
         #derivative2 = np.gradient(derivative)
         values = np.zeros(shape=(arrival_times.size, frequencies.size))
 
-        for time in tqdm(arrival_times, desc='Calculating phase values'):
+        delta = arrival_times - arrival_times[0]
+
+        for time in tqdm(delta, desc='Calculating phase values'):
             termo1 = time * frequencies
             #termo2 = (time ** 2) * derivative / 2
             #termo3 = (time ** 3) * derivative2 / 6
