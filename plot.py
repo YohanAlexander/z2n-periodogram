@@ -36,6 +36,9 @@ class Plot(cmd.Cmd):
     intro = """
             Interactive plotting window of the Z2n Software.
             Type "help" for more information.
+
+            If you want to recalute the spectrum with different axis,
+            change the axis on the plotting window and type "axes".
             """
 
     def do_axes(self, args: None) -> None:

@@ -1,4 +1,6 @@
+import numpy
 import setuptools
+from Cython.Build import cythonize
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -7,6 +9,7 @@ with open("README.md", "r") as fh:
     version='0.5.0',
     py_modules=['z2n'],
     install_requires=[
+        'Cython',
         'Click',
         'Click-shell',
         'matplotlib',
@@ -30,4 +33,8 @@ with open("README.md", "r") as fh:
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    ext_modules=[
+        cythonize("stats/z2n.pyx"),
+    ],
+    include_dirs=[numpy.get_include()],
 )
