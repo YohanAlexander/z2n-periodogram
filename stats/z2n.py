@@ -61,7 +61,7 @@ def frequency(arrival_times: np.array) -> float:
 
 def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
-    Calculates phase values from photon arrival times.RX J0146.9+6121
+    Calculates phase values from photon arrival times.
 
     Parameters
     ----------
@@ -171,7 +171,7 @@ def lightcurve(arrival_times: np.array, frequencies: np.array) -> np.array:
 def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
     """
     Gets the value of the natural frequency on the periodogram.
-RX J0146.9+6121
+
     Parameters
     ----------
     frequencies : numpy.ndarray
