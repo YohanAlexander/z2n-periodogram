@@ -17,10 +17,10 @@
 <br />
 <p align="center">
   <a href="https://github.com/yohanalexander/z2n-periodogram">
-    <img src="z2n.png" alt="Logo" width="160" height="160">
+    <img src="assets/z2n.png" alt="Logo" width="100%" height="100%">
   </a>
 
-  <h3 align="center">Z2n Periodogram</h3>
+  <h1 align="center">Z2n Periodogram</h1>
 
   <p align="center">
     A package for periodograms from FITS datasets !
@@ -138,4 +138,7 @@ Contributions are what make the open source community such an amazing place to b
 ## License
 
 All content © 2020 Yohan Alexander. Distributed under the MIT License. See `LICENSE` for more information.
+
+![https://github.com/YohanAlexander/z2n-periodogram/assets/opensource.png](https://opensource.org/licenses)
+![https://github.com/YohanAlexander/z2n-periodogram/assets/mit.png](https://github.com/YohanAlexander/z2n-periodogram/blob/master/LICENSE)
 
