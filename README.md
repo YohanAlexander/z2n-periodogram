@@ -7,10 +7,11 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/yohanalexander/z2n-periodogram/master)
-![GitHub Pipenv locked Python version](https://img.shields.io/github/pipenv/locked/python-version/yohanalexander/z2n-periodogram)
+![PyPI](https://img.shields.io/pypi/v/z2n-periodogram)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/z2n-peridogram)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/z2n-periodogram)
 ![GitHub issues](https://img.shields.io/github/issues/yohanalexander/z2n-periodogram)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/yohanalexander/z2n-periodogram)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/yohanalexander/z2n-periodogram)
 ![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)
 
 <!-- PROJECT LOGO -->
@@ -23,7 +24,7 @@
   <h1 align="center">Z2n Periodogram</h1>
 
   <p align="center">
-    A package for periodograms from FITS datasets !
+    A package for periodograms from FITS datasets!
     <br />
     <a href="https://z2n-periodogram.readthedocs.io/"><strong>Explore the docs »</strong></a>
     <br />
