@@ -1,0 +1,29 @@
+site_name: Z2n Periodogram
+
+nav:
+  - Home:
+    - index.md
+  - Installation:
+    - install.md
+  - Usage:
+    - usage.md
+  - Plotting:
+    - plotting.md
+  - Contributing:
+    - contribute.md
+  - License: copyright.md
+
+theme:
+    name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - yaml
+        - rust
+
+extra_css:
+  - css/custom.css
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - mkautodoc

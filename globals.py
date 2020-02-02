@@ -22,7 +22,11 @@ __intro__ = f"""
 
 # Generic/Built-in
 
-import time, sys, os, functools, webbrowser
+import time
+import sys
+import os
+import functools
+import webbrowser
 
 # Other Libraries
 
@@ -41,4 +45,3 @@ frequency = 0
 time = np.array([])
 periodogram = np.array([])
 frequencies = np.array([])
-

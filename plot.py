@@ -12,6 +12,7 @@ from typing import List
 
 # Global Objects
 
+
 class Plot(cmd.Cmd):
     """
     A class used to create the plotting cli.
@@ -27,11 +28,11 @@ class Plot(cmd.Cmd):
 
     Methods
     -------
-    
+
     ...
 
     """
-    
+
     prompt = '(plt) >>>'
     intro = """
             Interactive plotting window of the Z2n Software.
@@ -56,11 +57,12 @@ class Plot(cmd.Cmd):
             globals.fmax = axes[1]
 
             globals.delta = float(input("Frequency steps on the spectrum: "))
-            
-            globals.frequencies = np.arange(globals.fmin, globals.fmax, globals.delta)
+
+            globals.frequencies = np.arange(
+                globals.fmin, globals.fmax, globals.delta)
 
             click.echo("Try run stats command for Z2n Statistics.")
-            
+
             raise SystemExit
 
     def do_grid(self, args: bool) -> None:
@@ -118,7 +120,7 @@ class Plot(cmd.Cmd):
         """
 
         plt.ylim(list(args.split(',')))
-    
+
     def do_savefig(self, args: str) -> None:
         """
         Save the plot into a file (type savefig <string>).

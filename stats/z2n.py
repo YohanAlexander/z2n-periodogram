@@ -5,6 +5,7 @@ import click
 import numpy as np
 from tqdm import trange, tqdm
 
+
 def period(arrival_times: np.array) -> float:
     """
     Calculates the period of observation on the given time series.
@@ -33,6 +34,7 @@ def period(arrival_times: np.array) -> float:
     except Exception as error:
         click.echo(error)
 
+
 def frequency(arrival_times: np.array) -> float:
     """
     Calculates sampling rate of the given time series.
@@ -47,7 +49,7 @@ def frequency(arrival_times: np.array) -> float:
     freq : float
         Float number that represents the the nyquist frequency.
     """
-    
+
     try:
 
         interval = period(arrival_times)
@@ -55,9 +57,10 @@ def frequency(arrival_times: np.array) -> float:
         freq = (1 / interval)
 
         return freq
-    
+
     except Exception as error:
         click.echo(error)
+
 
 def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
@@ -100,6 +103,7 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     except Exception as error:
         click.echo(error)
 
+
 def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
     Applies the Z2n statistics to phase values and normalize.
@@ -120,25 +124,26 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
     try:
 
         harmonics = 1
-        
+
         phase_values = phases(arrival_times, frequencies)
 
         potency = np.zeros_like(frequencies)
 
         pi = 2 * np.pi * phase_values
-    
+
         for freq in trange(frequencies.size, desc='Calculating Z2n Statistics'):
-            cos = np.sum(np.cos(harmonics * pi[:,freq])) ** 2
-            sin = np.sum(np.sin(harmonics * pi[:,freq])) ** 2
+            cos = np.sum(np.cos(harmonics * pi[:, freq])) ** 2
+            sin = np.sum(np.sin(harmonics * pi[:, freq])) ** 2
             fft = cos + sin
             potency[freq] = fft
-        
+
         potency = (2/arrival_times.size) * potency
 
         return potency
 
     except Exception as error:
         click.echo(error)
+
 
 def lightcurve(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
@@ -167,6 +172,7 @@ def lightcurve(arrival_times: np.array, frequencies: np.array) -> np.array:
 
     except Exception as error:
         click.echo(error)
+
 
 def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
     """

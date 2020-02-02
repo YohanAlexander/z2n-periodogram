@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
-import time, sys, os, functools
+import time
+import sys
+import os
+import functools
 
 # Other Libraries
 import globals
+
 
 def main() -> int:
     """
@@ -15,6 +19,7 @@ def main() -> int:
     globals.prompt.cli()
 
     return 0
+
 
 if __name__ == "__main__":
     main()
