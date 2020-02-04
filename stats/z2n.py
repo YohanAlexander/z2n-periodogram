@@ -3,6 +3,7 @@
 
 import click
 import numpy as np
+from scipy import signal
 from tqdm import trange, tqdm
 
 
@@ -198,6 +199,86 @@ def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
         peak = frequencies[index]
 
         return peak
+
+    except Exception as error:
+        click.echo(error)
+
+
+def forest(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
+    """
+    Gets the value of the natural frequency on the periodogram.
+
+    Parameters
+    ----------
+    frequencies : numpy.ndarray
+        Numpy array that represents the frequency spectrum.
+    periodogram : numpy.ndarray
+        Numpy array that represents the the power spectrum of each frequency on the spectrum.
+
+    Returns
+    -------
+    uncertainty : float
+        Float number that represents the uncertainty of the system.
+    """
+
+    try:
+
+        index = np.argmax(periodogram)
+
+        pot1 = periodogram[index]
+
+        index2 = int(index - (0.2 * index))
+
+        pot2 = periodogram[index2]
+
+        index3 = int(index + (0.2 * index))
+
+        pot3 = periodogram[index3]
+
+        uncertainty = np.mean([pot2, pot3])
+
+        return uncertainty
+
+    except Exception as error:
+        click.echo(error)
+
+
+def bandwidth(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
+    """
+    Gets the value of the natural frequency on the periodogram.
+
+    Parameters
+    ----------
+    frequencies : numpy.ndarray
+        Numpy array that represents the frequency spectrum.
+    periodogram : numpy.ndarray
+        Numpy array that represents the the power spectrum of each frequency on the spectrum.
+
+    Returns
+    -------
+    band : float
+        Float number that represents the bandwidth of the pulse.
+    """
+
+    try:
+
+        index = np.argmax(periodogram)
+
+        pot1 = periodogram[index]
+
+        index2 = int(index - (0.2 * index))
+
+        pot2 = periodogram[index2]
+
+        index3 = int(index + (0.2 * index))
+
+        pot3 = periodogram[index3]
+
+        uncertainty = np.mean([pot2, pot3])
+
+        band = pot1 - uncertainty
+
+        return band
 
     except Exception as error:
         click.echo(error)

@@ -4,7 +4,7 @@
 # Wrapping Header
 
 __author__ = 'Yohan Alexander'
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 __copyright__ = 'Copyright (C) 2019, Z2n Software, by Yohan Alexander.'
 __credits__ = ['''The Z2n Software was developed by Yohan Alexander as part of an undergradute research project, funded by the CNPq Institution, and it is supported by the Open Source community.''']
 __license__ = 'MIT LICENSE'
@@ -36,10 +36,12 @@ import numpy as np
 
 # Global Variables
 
+band = 0
 peak = 0
 fmin = 0
 fmax = 0
 delta = 0
+forest = 0
 period = 0
 frequency = 0
 time = np.array([])
