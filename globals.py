@@ -43,6 +43,7 @@ fmax = 0
 delta = 0
 forest = 0
 period = 0
+pulsed = 0
 frequency = 0
 time = np.array([])
 periodogram = np.array([])

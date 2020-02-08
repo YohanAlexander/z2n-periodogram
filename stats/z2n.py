@@ -282,3 +282,33 @@ def bandwidth(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
 
     except Exception as error:
         click.echo(error)
+
+def pfraction(arrival_times: np.array, periodogram: np.ndarray) -> float:
+    """
+    Gets the value of the natural frequency on the periodogram.
+
+    Parameters
+    ----------
+    arrival_times : numpy.array
+        Numpy array that represents the photon arrival times.
+    periodogram : numpy.ndarray
+        Numpy array that represents the the power spectrum of each frequency on the spectrum.
+
+    Returns
+    -------
+    pulsed : float
+        Float number that represents the pulsed fraction of the peak.
+    """
+
+    try:
+
+        peak = np.argmax(periodogram)
+        
+        pfrac = (2 * peak) / arrival_times.size
+        
+        pulsed = pfrac ** 0.5
+
+        return pulsed
+
+    except Exception as error:
+        click.echo(error)

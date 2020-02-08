@@ -127,6 +127,9 @@ def auto(run: str) -> None:
             globals.band = z2n.bandwidth(globals.frequencies, globals.periodogram)
             click.echo(f"Bandwidth of the peak value: {globals.band} Hz")
 
+            globals.pulsed = z2n.pfraction(globals.time, globals.periodogram)
+            click.echo(f"Pulsed fraction of the peak value: {globals.pulsed} Hz")
+
             fig.save_fig(globals.frequencies,
                          globals.periodogram, globals.peak, "z2n")
 
@@ -280,6 +283,9 @@ def stats() -> None:
 
         globals.band = z2n.bandwidth(globals.frequencies, globals.periodogram)
         click.echo(f"Bandwidth of the peak value: {globals.band} Hz")
+
+        globals.pulsed = z2n.pfraction(globals.time, globals.periodogram)
+        click.echo(f"Pulsed fraction of the peak value: {globals.pulsed} Hz")
 
         click.echo("Try run plot command for an interactive plotting.")
 

@@ -18,6 +18,11 @@ with open("README.md", "r") as fh:
             'numpy',
             'tqdm',
         ],
+        extras_require={
+            "dev":[
+                "pytest",
+        ],
+        },
         entry_points='''
         [console_scripts]
         z2n=z2n:main
@@ -31,11 +36,13 @@ with open("README.md", "r") as fh:
         packages=setuptools.find_packages(),
         classifiers=[
             "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
         ],
         ext_modules=[
-            cythonize("stats/z2n.pyx"),
+            #cythonize("stats/z2n.pyx"),
         ],
         include_dirs=[numpy.get_include()],
     )
