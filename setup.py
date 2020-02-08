@@ -18,10 +18,11 @@ with open("README.md", "r") as fh:
             'numpy',
             'tqdm',
         ],
+        tests_require=['pytest'],
         extras_require={
             "dev":[
                 "pytest",
-        ],
+            ],
         },
         entry_points='''
         [console_scripts]

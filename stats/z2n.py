@@ -225,17 +225,11 @@ def forest(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
 
         index = np.argmax(periodogram)
 
-        pot1 = periodogram[index]
+        pot = periodogram[index]
 
         index2 = int(index - (0.2 * index))
 
-        pot2 = periodogram[index2]
-
-        index3 = int(index + (0.2 * index))
-
-        pot3 = periodogram[index3]
-
-        uncertainty = np.mean([pot2, pot3])
+        uncertainty = periodogram[index2]
 
         return uncertainty
 
@@ -264,24 +258,17 @@ def bandwidth(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
 
         index = np.argmax(periodogram)
 
-        pot1 = periodogram[index]
+        pot = periodogram[index]
 
-        index2 = int(index - (0.2 * index))
+        uncertainty = forest(frequencies, periodogram)
 
-        pot2 = periodogram[index2]
-
-        index3 = int(index + (0.2 * index))
-
-        pot3 = periodogram[index3]
-
-        uncertainty = np.mean([pot2, pot3])
-
-        band = pot1 - uncertainty
+        band = pot - uncertainty
 
         return band
 
     except Exception as error:
         click.echo(error)
+
 
 def pfraction(arrival_times: np.array, periodogram: np.ndarray) -> float:
     """
@@ -303,9 +290,9 @@ def pfraction(arrival_times: np.array, periodogram: np.ndarray) -> float:
     try:
 
         peak = np.argmax(periodogram)
-        
+
         pfrac = (2 * peak) / arrival_times.size
-        
+
         pulsed = pfrac ** 0.5
 
         return pulsed
