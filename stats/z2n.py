@@ -3,6 +3,7 @@
 
 import click
 import numpy as np
+import numexpr as ne
 from scipy import signal
 from tqdm import trange, tqdm
 
@@ -87,17 +88,21 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
         #derivative2 = np.gradient(derivative)
         values = np.zeros(shape=(arrival_times.size, frequencies.size))
 
-        delta = arrival_times - arrival_times[0]
+        start = np.min(arrival_times)
+
+        delta = ne.evaluate('arrival_times - start')
 
         for time in tqdm(delta, desc='Calculating phase values'):
-            termo1 = time * frequencies
+            termo1 = ne.evaluate('time * frequencies')
             #termo2 = (time ** 2) * derivative / 2
             #termo3 = (time ** 3) * derivative2 / 6
             #termo = termo1 + termo2 + termo3
             values[photon] = termo1
             photon += 1
 
-        values = values - np.floor(values)
+        frac = np.floor(values)
+
+        values = ne.evaluate('values - frac')
 
         return values
 
@@ -130,15 +135,19 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
 
         potency = np.zeros_like(frequencies)
 
-        pi = 2 * np.pi * phase_values
+        pie = np.pi
+
+        pulse = ne.evaluate('2 * pie * phase_values')
 
         for freq in trange(frequencies.size, desc='Calculating Z2n Statistics'):
-            cos = np.sum(np.cos(harmonics * pi[:, freq])) ** 2
-            sin = np.sum(np.sin(harmonics * pi[:, freq])) ** 2
-            fft = cos + sin
+            cosseno = np.sum(np.cos(harmonics * pulse[:, freq])) ** 2
+            seno = np.sum(np.sin(harmonics * pulse[:, freq])) ** 2
+            fft = ne.evaluate('cosseno + seno')
             potency[freq] = fft
 
-        potency = (2/arrival_times.size) * potency
+        norm = (2 / arrival_times.size)
+
+        potency = ne.evaluate('norm * potency')
 
         return potency
 

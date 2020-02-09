@@ -16,7 +16,8 @@ with open("README.md", "r") as fh:
             'astropy',
             'scipy',
             'numpy',
-            'tqdm',
+            'numexpr',
+            'tqdm'
         ],
         tests_require=['pytest'],
         extras_require={
