@@ -1,9 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import text
 import click
 import numpy as np
-from astropy.io import fits
+from astropy.io import fits, ascii
 
 
 def load_fits(path: str) -> np.array:
@@ -29,6 +30,34 @@ def load_fits(path: str) -> np.array:
         data.close()
 
         return time_series
+
+    except Exception as error:
+        click.echo(error)
+
+def save_fits(frequencies: np.array, periodogram: np.array, text: str) -> None:
+    """
+    Saves the frequency spectrum into an formatted ascii file.
+
+    Parameters
+    ----------
+    frequencies : numpy.array
+        Numpy array that represents the frequency spectrum.
+    periodogram : numpy.array
+        Numpy array that represents the power spectrum of each frequency on the spectrum.
+    text : str
+        A formatted String that represents the name of the output file.
+
+    Returns
+    -------
+    None
+    """
+
+    try:
+
+        text.save_ascii(text)
+
+        file = ascii.read(text)
+        file.write(f"{text}.fits")
 
     except Exception as error:
         click.echo(error)

@@ -38,7 +38,7 @@ class Plot(cmd.Cmd):
             Interactive plotting window of the Z2n Software.
             Type "help" for more information.
 
-            If you want to recalute the spectrum with different axis,
+            If you want to recalculate the spectrum with different axis,
             change the axis on the plotting window and type "axes".
             """
 
@@ -58,19 +58,11 @@ class Plot(cmd.Cmd):
 
             globals.delta = float(input("Frequency steps on the spectrum: "))
 
-            globals.frequencies = np.arange(
-                globals.fmin, globals.fmax, globals.delta)
+            globals.frequencies = np.arange(globals.fmin, globals.fmax, globals.delta)
 
             click.echo("Try run stats command for Z2n Statistics.")
 
             raise SystemExit
-
-    def do_grid(self, args: bool) -> None:
-        """
-        Plots grid on the figure (type grid <bool>).
-        """
-
-        plt.grid(args)
 
     def do_title(self, args: str) -> None:
         """
@@ -131,6 +123,15 @@ class Plot(cmd.Cmd):
         click.echo(f"Image file saved at {args}.png")
 
     def do_quit(self, args: None) -> None:
+        """
+        Quits the interactive plotting window (type quit).
+        """
+
+        if(click.confirm("Are you sure you want to leave the plotting window?")):
+
+            raise SystemExit
+
+    def do_exit(self, args: None) -> None:
         """
         Quits the interactive plotting window (type quit).
         """

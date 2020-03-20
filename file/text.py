@@ -25,8 +25,11 @@ def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
 
     try:
 
-        with open(f'{text}', 'w') as file:
+        header = ["Frequency, Z2n-Potency"]
 
+        with open(f'{text}', 'w') as file:
+            if file.tell() == 0:
+                file.write(header)
             for freq, spec in zip(frequencies, periodogram):
                 file.write(str(freq) + " " + str(spec) + "\n")
 

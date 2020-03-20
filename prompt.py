@@ -31,24 +31,50 @@ def cli():
     """
     A python package for optimized Z2n periodograms from fits datasets.
 
-    This program allows the user to calculate periodograms using the Z2n statistics
-    a la Buccheri et al. 1983.
+    This program allows the user to calculate periodograms using the Z2n
+    statistics a la Buccheri et al. 1983.
 
-    The standard Z2n statistics calculates the phase of each photon and the
-    sinusoidal functions above for each photon. Be advised that this is very
-    computationally expensive if the number of photons is high.
+    The standard Z2n statistics calculates the phase of each photon and
+    the sinusoidal functions above for each photon. Be advised that this
+    is very computationally expensive if the number of photons is high.
 
-    This program accepts fits files (.fits) and it is assumed that contains
-    a header with the event or time series data.
-
-    This program requires that `requirements.txt` be installed within the Python
-    environment you are running this program in.
-
-    This program can also be imported as a module and contains the functions
-    described in the documentation available at:
+    The program accepts fits files (.fits) and it is assumed that contains
+    a header with the event or time series data. It can also be imported as
+    a module as described in the documentation available at:
 
     https://z2n-periodogram.readthedocs.io
     """
+
+
+def prompt() -> None:
+    """
+    Wrapper of the values that are displayed to the user.
+    """
+    globals.period = z2n.period(globals.time)
+    click.echo(f"Period of observation on the signal: {globals.period} s")
+
+    globals.frequency = z2n.frequency(globals.time)
+    click.echo(f"Sampling frequency of the signal: {globals.frequency} Hz")
+
+    click.echo(f"Minimum frequency used on the spectrum: {globals.fmin} Hz")
+    click.echo(f"Maximum frequency used on the spectrum: {globals.fmax} Hz")
+    click.echo(f"Frequency steps used on the spectrum: {globals.delta} Hz")
+
+    globals.frequencies = np.arange(globals.fmin, globals.fmax, globals.delta)
+
+    globals.periodogram = z2n.periodogram(globals.time, globals.frequencies)
+
+    globals.peak = z2n.peak(globals.frequencies, globals.periodogram)
+    click.echo(f"Peak value of the spectrum: {globals.peak} Hz")
+
+    globals.forest = z2n.forest(globals.frequencies, globals.periodogram)
+    click.echo(f"Uncertainty of the system: {globals.forest} Hz")
+
+    globals.band = z2n.bandwidth(globals.frequencies, globals.periodogram)
+    click.echo(f"Bandwidth of the peak value: {globals.band} Hz")
+
+    globals.pulsed = z2n.pfraction(globals.time, globals.periodogram)
+    click.echo(f"Pulsed fraction of the peak value: {globals.pulsed*100} %")
 
 
 @cli.command()
@@ -65,8 +91,7 @@ def plot() -> None:
 
         name = input("Name of the image file: ")
 
-        fig.save_fig(globals.frequencies,
-                     globals.periodogram, globals.peak, name)
+        fig.save_fig(globals.frequencies, globals.periodogram, globals.peak, name)
 
         globals.plot.Plot().cmdloop()
 
@@ -78,7 +103,7 @@ def auto(run: str) -> None:
     Run Z2n statistics with the default values (type auto).
     """
 
-    if(click.confirm("Do you wish to auto run with the default values?")):
+    if(click.confirm("Do you wish to run with the default spectrum values?")):
 
         if(run is None):
             run = input("Path to fits file: ")
@@ -94,46 +119,18 @@ def auto(run: str) -> None:
             globals.time = fits.load_fits(run)
             click.echo(f"Photon arrival times: {globals.time}")
 
-            globals.period = z2n.period(globals.time)
-            click.echo(
-                f"Period of observation on the signal: {globals.period} s")
-
             globals.frequency = z2n.frequency(globals.time)
-            click.echo(
-                f"Sampling Frequency of the signal: {globals.frequency} Hz")
-
             globals.fmin = globals.frequency * 2
             globals.fmax = globals.frequency * 100
             globals.delta = oversample
-            click.echo(
-                f"Minimum frequency used on the spectrum: {globals.fmin} Hz")
-            click.echo(
-                f"Maximum frequency used on the spectrum: {globals.fmax} Hz")
-            click.echo(
-                f"Frequency steps used on the spectrum: {globals.delta} Hz")
 
-            globals.frequencies = np.arange(
-                globals.fmin, globals.fmax, globals.delta)
+            prompt()
 
-            globals.periodogram = z2n.periodogram(
-                globals.time, globals.frequencies)
-
-            globals.peak = z2n.peak(globals.frequencies, globals.periodogram)
-            click.echo(f"Peak value of the spectrum: {globals.peak} Hz")
-
-            globals.forest = z2n.forest(globals.frequencies, globals.periodogram)
-            click.echo(f"Uncertainty of the system: {globals.forest} Hz")
-
-            globals.band = z2n.bandwidth(globals.frequencies, globals.periodogram)
-            click.echo(f"Bandwidth of the peak value: {globals.band} Hz")
-
-            globals.pulsed = z2n.pfraction(globals.time, globals.periodogram)
-            click.echo(f"Pulsed fraction of the peak value: {globals.pulsed} Hz")
-
-            fig.save_fig(globals.frequencies,
-                         globals.periodogram, globals.peak, "z2n")
+            fig.save_fig(globals.frequencies, globals.periodogram, globals.peak, "z2n")
 
             text.save_ascii(globals.frequencies, globals.periodogram, "z2n")
+
+            fits.save_fits("z2n")
 
             globals.plot.Plot().cmdloop()
 
@@ -188,7 +185,7 @@ def license() -> None:
     """
 
     with open("LICENSE", "r") as file:
-        license = file.readlines()
+        license = [x for x in file.read().splitlines() if x]
 
     for line in license:
         click.echo(line)
@@ -260,32 +257,7 @@ def stats() -> None:
 
     else:
 
-        globals.period = z2n.period(globals.time)
-        click.echo(f"Period of observation on the signal: {globals.period} s")
-
-        globals.frequency = z2n.frequency(globals.time)
-        click.echo(f"Sampling Frequency of the signal: {globals.frequency} Hz")
-
-        click.echo(
-            f"Minimum frequency used on the spectrum: {globals.fmin} Hz")
-        click.echo(
-            f"Maximum frequency used on the spectrum: {globals.fmax} Hz")
-        click.echo(f"Frequency steps used on the spectrum: {globals.delta} Hz")
-
-        globals.periodogram = z2n.periodogram(
-            globals.time, globals.frequencies)
-
-        globals.peak = z2n.peak(globals.frequencies, globals.periodogram)
-        click.echo(f"Peak value of the spectrum: {globals.peak} Hz")
-
-        globals.forest = z2n.forest(globals.frequencies, globals.periodogram)
-        click.echo(f"Uncertainty of the system: {globals.forest} Hz")
-
-        globals.band = z2n.bandwidth(globals.frequencies, globals.periodogram)
-        click.echo(f"Bandwidth of the peak value: {globals.band} Hz")
-
-        globals.pulsed = z2n.pfraction(globals.time, globals.periodogram)
-        click.echo(f"Pulsed fraction of the peak value: {globals.pulsed} Hz")
+        prompt()
 
         click.echo("Try run plot command for an interactive plotting.")
 
@@ -307,6 +279,25 @@ def ascii(txt: str) -> None:
             txt = input("Name of the output file: ")
 
         text.save_ascii(globals.frequencies, globals.periodogram, txt)
+
+
+@cli.command()
+@click.option('--txt', '-t', type=str, help='Name of the output file.')
+def fits(txt: str) -> None:
+    """
+    Saves the frequency spectrum into an fits file (type fits).
+    """
+
+    if globals.periodogram.size == 0:
+        click.echo(
+            "The frequency spectrum was not calculated yet. Try run stats command.")
+
+    else:
+
+        if(txt is None):
+            txt = input("Name of the output file: ")
+
+        fits.save_fits(txt)
 
 
 @cli.command()
