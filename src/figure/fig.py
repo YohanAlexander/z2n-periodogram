@@ -1,10 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import globals
 import click
 import numpy as np
 import matplotlib.pyplot as plt
+from src.cli import globals
 
 plt.rc('font', family='serif')
 plt.rc('text', usetex=True)

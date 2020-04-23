@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import text
 import click
 import numpy as np
+from src.file import text
 from astropy.io import fits, ascii
 
 

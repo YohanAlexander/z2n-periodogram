@@ -30,8 +30,8 @@ import webbrowser
 
 # Other Libraries
 
-import plot
-import prompt
+from src.cli import plot
+from src.cli import prompt
 import numpy as np
 
 # Global Variables

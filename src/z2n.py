@@ -8,7 +8,7 @@ import os
 import functools
 
 # Other Libraries
-import globals
+from src.cli import globals
 
 
 def main() -> int:

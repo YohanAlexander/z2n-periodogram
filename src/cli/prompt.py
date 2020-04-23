@@ -3,13 +3,13 @@
 
 # Generic/Built-in
 
-import globals
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
-from file import fits, text
-from stats import z2n
-from figure import fig
+from src.cli import globals
+from src.file import fits, text
+from src.stats import z2n
+from src.figure import fig
 
 # Other Libraries
 

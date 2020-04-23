@@ -5,9 +5,9 @@
 
 import cmd
 import click
-import globals
 import numpy as np
 import matplotlib.pyplot as plt
+from src.cli import globals
 from typing import List
 
 # Global Objects

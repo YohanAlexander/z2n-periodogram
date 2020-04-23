@@ -4,7 +4,6 @@
 import click
 import numpy as np
 import numexpr as ne
-from scipy import signal
 from tqdm import trange, tqdm
 
 
