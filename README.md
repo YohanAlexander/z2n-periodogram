@@ -1,11 +1,4 @@
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
+
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/yohanalexander/z2n-periodogram/master)
 ![PyPI](https://img.shields.io/pypi/v/z2n-periodogram)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/z2n-peridogram)
@@ -14,8 +7,7 @@
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/yohanalexander/z2n-periodogram)
 ![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)
 
-<!-- PROJECT LOGO -->
-<br />
+
 <p align="center">
   <a href="https://github.com/yohanalexander/z2n-periodogram">
     <img src="assets/z2n.png" alt="Logo" width="50%" height="50%">
@@ -35,9 +27,8 @@
     ·
     <a href="https://github.com/yohanalexander/z2n-periodogram/issues">Request Feature</a>
   </p>
-</p>
 
-<!-- TABLE OF CONTENTS -->
+
 ## Table of Contents
 
 * [About the Project](#about-the-project)
@@ -50,14 +41,14 @@
 * [Contributing](#contributing)
 * [License](#license)
 
-<!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 The Z2n Software is a python package for optimized periodograms from fits datasets. It program allows the user to calculate periodograms using the Z2n statistics a la Buccheri et al. 1983.
 
-<p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/master/svgs/b978f5d179d91490c920c7e96494ab53.svg?invert_in_darkmode" align=middle width=299.8248pt height=37.583864999999996pt/></p>
+<p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/None/svgs/b978f5d179d91490c920c7e96494ab53.svg?invert_in_darkmode" align=middle width=299.8248pt height=37.583864999999996pt/></p>
 
-<p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/master/svgs/0205cc14fa865169e21fc457d3de3c48.svg?invert_in_darkmode" align=middle width=342.51194999999996pt height=50.04351pt/></p>
+<p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/None/svgs/0205cc14fa865169e21fc457d3de3c48.svg?invert_in_darkmode" align=middle width=342.51194999999996pt height=50.04351pt/></p>
 
 The standard Z2n statistics calculates the phase of each photon and the
 sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high.
@@ -67,7 +58,6 @@ The Z2n Software was built using the open source language `Python`.
 * [Python](https://python.org)
 
 
-<!-- GETTING STARTED -->
 ## Getting Started
 
 ### Prerequisites
@@ -77,11 +67,6 @@ The version of the `Python` interpreter used during the development was the`3.7`
 * Python>=3.7
 * PIP
 
-To run the software properly you will need a lot of dependencies that can be managed by the Python package manager `PIP`, use the terminal command:
-```sh
-pip install -r requirements.txt
-```
-
 ### Installation
 
 The software is currently hosted at the Python central repository `PyPI`,  to install the software properly use the terminal command:
@@ -89,7 +74,6 @@ The software is currently hosted at the Python central repository `PyPI`,  to in
 pip install z2n-periodogram
 ```
 
-<!-- USAGE EXAMPLES -->
 ## Usage
 
 To start the software just type `z2n` on the terminal (check if you're under the virtual environment that it is installed).
@@ -98,8 +82,8 @@ z2n
 ```
 The `CLI` of the software is very interactive, for more information on the usage type `help`.
 ```sh
-	Z2n Software (0.5.0), a package for interactive periodograms.
-	Copyright (C) 2019, and MIT License, by Yohan Alexander [UFS].
+	Z2n Software (1.0.0), a package for interactive periodograms.
+	Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
 	Type "help" for more information or "docs" for documentation.
 
 	If you wish to run the software with the default values type "auto".
@@ -117,16 +101,15 @@ exit  help  quit
 
 (z2n) >>>
 ```
+
 _For more examples, please refer to the [Documentation](https://z2n-periodogram.readthedocs.io/)_
 
-<!-- ROADMAP -->
+
 ## Roadmap
 
 See the [open issues](https://github.com/yohanalexander/z2n-periodogram/issues) for a list of proposed features (and known issues).
 
 
-
-<!-- CONTRIBUTING -->
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -138,13 +121,11 @@ Contributions are what make the open source community such an amazing place to b
 5. Open a Pull Request
 
 
-
-<!-- LICENSE -->
 ## License
 
 All content © 2020 Yohan Alexander. Distributed under the MIT License. See `LICENSE` for more information.
 
-<a href="https://opensource.org/licenses">
+  <a href="https://opensource.org/licenses">
     <img src="assets/opensource.png" alt="OpenSource" width="25%" height="25%">
   </a>
   <a href="https://github.com/YohanAlexander/z2n-periodogram/blob/master/LICENSE">

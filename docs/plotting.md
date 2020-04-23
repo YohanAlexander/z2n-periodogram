@@ -1,15 +1,11 @@
 # Interactive Plotting window
 
-::: prompt.plot
+::: src.cli.prompt.plot
     :docstring:
 
 ## Changing the plot axes
 
 Get the current axes (type axes).
-
-## Plot with a grid
-
-Plots grid on the figure (type grid <bool>).
 
 ## Change the plot title
 

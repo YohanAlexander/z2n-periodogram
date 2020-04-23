@@ -4,7 +4,7 @@ To start the software just type `z2n` on the terminal (check if you're under the
 
 The `CLI` of the software is very interactive, for more information on the usage type `help`.
 
-    	Z2n Software (0.5.0), a package for interactive periodograms.
+    	Z2n Software (1.0.0), a package for interactive periodograms.
     	Copyright (C) 2019, and MIT License, by Yohan Alexander [UFS].
     	Type "help" for more information or "docs" for documentation.
 
@@ -25,55 +25,51 @@ The `CLI` of the software is very interactive, for more information on the usage
 
 ## Help
 
-::: prompt.docs
+::: src.cli.prompt.docs
     :docstring:
 
-::: prompt.copyright
+::: src.cli.prompt.copyright
     :docstring:
 
-::: prompt.version
+::: src.cli.prompt.version
     :docstring:
 
-::: prompt.credits
+::: src.cli.prompt.credits
     :docstring:
 
-::: prompt.license
+::: src.cli.prompt.license
     :docstring:
 
 ## Auto Running
 
 To auto run the software with the default values.
 
-::: prompt.auto
+::: src.cli.prompt.auto
     :docstring:
 
 ## Loading FITS data
 
 This program accepts fits files (.fits) and it is assumed that contains a header with the event or time series data.
 
-::: prompt.data
+::: src.cli.prompt.data
     :docstring:
 
 ## Changing the output spectrum
 
-::: prompt.rate
+::: src.cli.prompt.rate
     :docstring:
 
 ## Calculating the Z2n potency
 
-::: prompt.stats
+::: src.cli.prompt.stats
     :docstring:
 
 ## Saving the spectrum on file
 
-::: prompt.ascii
+::: src.cli.prompt.ascii
     :docstring:
 
 ## Shell commands inside the cli
 
-::: prompt.shell
+::: src.cli.prompt.shell
     :docstring:
-
-## Importing the software as a library
-
-This program can also be imported as a module and contains the functions described in the documentation available at:

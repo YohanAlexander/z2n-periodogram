@@ -19,6 +19,7 @@ theme:
     hljs_languages:
         - yaml
         - rust
+        - python
 
 extra_css:
   - css/custom.css
