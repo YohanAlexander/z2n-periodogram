@@ -7,23 +7,14 @@ import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 from src.cli import globals
-from src.file import fits, text
-from src.stats import z2n
+from src.file import text
+from src.stats import stat
 from src.figure import fig
 
 # Other Libraries
 
 from click_shell import shell
 import click
-
-# Plotting Style
-
-plt.rc('font', family='serif')
-plt.rc('text', usetex=True)
-plt.rc('xtick', labelsize=16)
-plt.rc('ytick', labelsize=16)
-plt.rc('axes', labelsize=16)
-plt.style.use('ggplot')
 
 
 @shell(prompt='(z2n) >>> ', intro=globals.__intro__)
@@ -39,8 +30,7 @@ def cli():
     is very computationally expensive if the number of photons is high.
 
     The program accepts fits files (.fits) and it is assumed that contains
-    a header with the event or time series data. It can also be imported as
-    a module as described in the documentation available at:
+    a header with the event or time series data.
 
     https://z2n-periodogram.readthedocs.io
     """
@@ -50,10 +40,11 @@ def prompt() -> None:
     """
     Wrapper of the values that are displayed to the user.
     """
-    globals.period = z2n.period(globals.time)
+
+    globals.period = stat.period(globals.time)
     click.echo(f"Period of observation on the signal: {globals.period} s")
 
-    globals.frequency = z2n.frequency(globals.time)
+    globals.frequency = stat.frequency(globals.time)
     click.echo(f"Sampling frequency of the signal: {globals.frequency} Hz")
 
     click.echo(f"Minimum frequency used on the spectrum: {globals.fmin} Hz")
@@ -62,18 +53,12 @@ def prompt() -> None:
 
     globals.frequencies = np.arange(globals.fmin, globals.fmax, globals.delta)
 
-    globals.periodogram = z2n.periodogram(globals.time, globals.frequencies)
+    globals.periodogram = stat.periodogram(globals.time, globals.frequencies)
 
-    globals.peak = z2n.peak(globals.frequencies, globals.periodogram)
+    globals.peak = stat.peak(globals.frequencies, globals.periodogram)
     click.echo(f"Peak value of the spectrum: {globals.peak} Hz")
 
-    globals.forest = z2n.forest(globals.frequencies, globals.periodogram)
-    click.echo(f"Uncertainty of the system: {globals.forest} Hz")
-
-    globals.band = z2n.bandwidth(globals.frequencies, globals.periodogram)
-    click.echo(f"Bandwidth of the peak value: {globals.band} Hz")
-
-    globals.pulsed = z2n.pfraction(globals.time, globals.periodogram)
+    globals.pulsed = stat.pfraction(globals.time, globals.periodogram)
     click.echo(f"Pulsed fraction of the peak value: {globals.pulsed*100} %")
 
 
@@ -89,9 +74,7 @@ def plot() -> None:
 
     else:
 
-        name = input("Name of the image file: ")
-
-        fig.save_fig(globals.frequencies, globals.periodogram, globals.peak, name)
+        fig.save_fig(globals.frequencies, globals.periodogram, "z2n")
 
         globals.plot.Plot().cmdloop()
 
@@ -109,28 +92,24 @@ def auto(run: str) -> None:
             run = input("Path to fits file: ")
 
         try:
+
             oversample = float(input("Frequency steps (delta): "))
 
-        except Exception as error:
-            click.echo(error)
-
-        try:
-
-            globals.time = fits.load_fits(run)
+            globals.time = text.load_fits(run)
             click.echo(f"Photon arrival times: {globals.time}")
 
-            globals.frequency = z2n.frequency(globals.time)
+            globals.frequency = stat.frequency(globals.time)
             globals.fmin = globals.frequency * 2
             globals.fmax = globals.frequency * 100
             globals.delta = oversample
 
             prompt()
 
-            fig.save_fig(globals.frequencies, globals.periodogram, globals.peak, "z2n")
+            fig.save_fig(globals.frequencies, globals.periodogram, "z2n")
 
             text.save_ascii(globals.frequencies, globals.periodogram, "z2n")
 
-            fits.save_fits("z2n")
+            #text.save_fits(globals.frequencies, globals.periodogram, "z2n")
 
             globals.plot.Plot().cmdloop()
 
@@ -201,7 +180,7 @@ def data(path: str) -> None:
     if(path is None):
         path = input("Path to fits file: ")
 
-    globals.time = fits.load_fits(path)
+    globals.time = text.load_fits(path)
 
     try:
 
@@ -297,7 +276,7 @@ def fits(txt: str) -> None:
         if(txt is None):
             txt = input("Name of the output file: ")
 
-        fits.save_fits(txt)
+        text.save_fits(txt)
 
 
 @cli.command()

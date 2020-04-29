@@ -154,35 +154,6 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
         click.echo(error)
 
 
-def lightcurve(arrival_times: np.array, frequencies: np.array) -> np.array:
-    """
-    Calculates the lightcurve of the photons with the phase values.
-
-    Parameters
-    ----------
-    arrival_times : numpy.array
-        Numpy array that represents the photon arrival times.
-    frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
-
-    Returns
-    -------
-    curve : numpy.array
-        Numpy array that represents the lightcurve of the photons.
-    """
-
-    try:
-
-        values = phases(arrival_times, frequencies)
-
-        curve = values.mean(axis=0)
-
-        return curve
-
-    except Exception as error:
-        click.echo(error)
-
-
 def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
     """
     Gets the value of the natural frequency on the periodogram.
@@ -207,72 +178,6 @@ def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
         peak = frequencies[index]
 
         return peak
-
-    except Exception as error:
-        click.echo(error)
-
-
-def forest(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
-    """
-    Gets the value of the natural frequency on the periodogram.
-
-    Parameters
-    ----------
-    frequencies : numpy.ndarray
-        Numpy array that represents the frequency spectrum.
-    periodogram : numpy.ndarray
-        Numpy array that represents the the power spectrum of each frequency on the spectrum.
-
-    Returns
-    -------
-    uncertainty : float
-        Float number that represents the uncertainty of the system.
-    """
-
-    try:
-
-        index = np.argmax(periodogram)
-
-        pot = periodogram[index]
-
-        index2 = int(index - (0.2 * index))
-
-        uncertainty = periodogram[index2]
-
-        return uncertainty
-
-    except Exception as error:
-        click.echo(error)
-
-
-def bandwidth(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
-    """
-    Gets the value of the natural frequency on the periodogram.
-
-    Parameters
-    ----------
-    frequencies : numpy.ndarray
-        Numpy array that represents the frequency spectrum.
-    periodogram : numpy.ndarray
-        Numpy array that represents the the power spectrum of each frequency on the spectrum.
-
-    Returns
-    -------
-    band : float
-        Float number that represents the bandwidth of the pulse.
-    """
-
-    try:
-
-        index = np.argmax(periodogram)
-
-        pot = periodogram[index]
-
-        uncertainty = forest(frequencies, periodogram)
-
-        band = pot - uncertainty
-
-        return band
 
     except Exception as error:
         click.echo(error)

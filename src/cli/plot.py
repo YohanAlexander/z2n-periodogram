@@ -8,9 +8,10 @@ import click
 import numpy as np
 import matplotlib.pyplot as plt
 from src.cli import globals
+from src.file import text
 from typing import List
 
-# Global Objects
+# globalsal Objects
 
 
 class Plot(cmd.Cmd):
@@ -37,9 +38,6 @@ class Plot(cmd.Cmd):
     intro = """
             Interactive plotting window of the Z2n Software.
             Type "help" for more information.
-
-            If you want to recalculate the spectrum with different axis,
-            change the axis on the plotting window and type "axes".
             """
 
     def do_axes(self, args: None) -> None:
@@ -58,11 +56,91 @@ class Plot(cmd.Cmd):
 
             globals.delta = float(input("Frequency steps on the spectrum: "))
 
-            globals.frequencies = np.arange(globals.fmin, globals.fmax, globals.delta)
+            globals.frequencies = np.arange(
+                globals.fmin, globals.fmax, globals.delta)
 
             click.echo("Try run stats command for Z2n Statistics.")
 
             raise SystemExit
+
+    def do_normal(self, args: None) -> None:
+        """
+        Adjust guassian distribution to peak value (type normal).
+        """
+
+        axes = plt.gca().get_xlim()
+
+        click.echo(axes)
+
+    def do_error(self, args: None) -> None:
+        """
+        Select the uncertainty forest (type error).
+        """
+
+        regions = int(input("How many regions of uncertainty? "))
+
+        for k in range(regions):
+
+            means = np.zeros(regions)
+
+            if(click.confirm(f"Did you select the region {k+1}?")):
+
+                axes = plt.gca().get_xlim()
+
+                i = np.argwhere(np.isclose(globals.frequencies, axes[0], 0.1))
+
+                j = np.argwhere(np.isclose(globals.frequencies, axes[1], 0.1))
+
+                means[k] = np.mean(globals.periodogram[i[0][0] : j[0][0]])
+
+        mean = np.mean(means)
+
+        peak = np.max(globals.periodogram)
+
+        globals.forest = mean
+        click.echo(f"Uncertainty of the system: {globals.forest} Hz")
+
+        globals.band = peak - mean
+        click.echo(f"Bandwidth of the system: {globals.band} Hz")
+
+    def do_back(self, args: str) -> None:
+        """
+        Adds subplot of the background (type back <string>).
+        """
+
+        if(args is None):
+            args = input("Path to background file: ")
+
+        globals.background = text.load_fits(args)
+
+        plt.close()
+
+        fig, ax = plt.subplots(2)
+
+        ax[1].plot(globals.background, color='tab:blue')
+
+        ax[0].plot(globals.frequencies, globals.periodogram, color='tab:blue',
+                label=f"Z2n Statistics\nxmin: {globals.fmin:.4e}\n xmax: {globals.fmax:.4e}\n delta: {globals.delta:.4e}")
+
+    def do_peak(self, args: None) -> None:
+        """
+        Adds vertical line to the peak value (type peak).
+        """
+        plt.axvline(globals.peak, color='tab:red',
+                    label=f"peak: {globals.peak:.4e}")
+
+    def do_band(self, args: None) -> None:
+        """
+        Adds horizontal line to the bandwidth value (type band).
+        """
+        plt.axhline(globals.band, color='tab:gray',
+                    label=f"band: {globals.band:.4e}")
+
+    def do_legend(self, args: None) -> None:
+        """
+        Adds legend to the figure (type legend).
+        """
+        plt.legend(loc='best')
 
     def do_title(self, args: str) -> None:
         """

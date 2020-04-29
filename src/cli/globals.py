@@ -16,8 +16,6 @@ __intro__ = f"""
         Z2n Software ({__version__}), a package for interactive periodograms.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.
-
-        If you wish to run the software with the default values type "auto".
         """
 
 # Generic/Built-in
@@ -48,3 +46,4 @@ frequency = 0
 time = np.array([])
 periodogram = np.array([])
 frequencies = np.array([])
+background = np.array([])

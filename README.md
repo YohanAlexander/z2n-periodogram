@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/yohanalexander/z2n-periodogram">
-    <img src="assets/z2n.png" alt="Logo" width="50%" height="50%">
+    <img src="https://user-images.githubusercontent.com/39287022/80550543-cb789b00-8996-11ea-90af-fe2936fb703e.png" alt="Logo" width="50%" height="50%">
   </a>
 
   <h1 align="center">Z2n Periodogram</h1>
@@ -54,7 +54,7 @@ The standard Z2n statistics calculates the phase of each photon and the
 sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high.
 
 ### Built With
-The Z2n Software was built using the open source language `Python`.
+The Z2n Software was built using the `Python` open source language.
 * [Python](https://python.org)
 
 
@@ -123,12 +123,4 @@ Contributions are what make the open source community such an amazing place to b
 
 ## License
 
-All content © 2020 Yohan Alexander. Distributed under the MIT License. See `LICENSE` for more information.
-
-  <a href="https://opensource.org/licenses">
-    <img src="assets/opensource.png" alt="OpenSource" width="25%" height="25%">
-  </a>
-  <a href="https://github.com/YohanAlexander/z2n-periodogram/blob/master/LICENSE">
-    <img src="assets/license.png" alt="MIT" width="25%" height="25%">
-  </a>
-
+All content © 2020 Yohan Alexander. Distributed under the MIT License. See <a href="https://github.com/YohanAlexander/z2n-periodogram/blob/master/LICENSE">LICENSE</a> for more information.
