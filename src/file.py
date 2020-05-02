@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Generic/Built-in
 import click
 import numpy as np
 from astropy.io import fits, ascii
@@ -31,7 +32,7 @@ def load_fits(path: str) -> np.array:
         return time_series
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
 
 
 def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
@@ -45,7 +46,7 @@ def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
     periodogram : numpy.array
         Numpy array that represents the power spectrum of each frequency on the spectrum.
     text : str
-        A formatted String that represents the name of the output file.
+        A formatted string that represents the name of the output file.
 
     Returns
     -------
@@ -62,10 +63,10 @@ def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
             for freq, spec in zip(frequencies, periodogram):
                 file.write(str(freq) + " " + str(spec) + "\n")
 
-        click.echo(f"Text file saved at {text}")
+        click.secho(f"Text file saved at {text}", fg='green')
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
 
 
 def save_fits(frequencies: np.array, periodogram: np.array, text: str) -> None:
@@ -79,7 +80,7 @@ def save_fits(frequencies: np.array, periodogram: np.array, text: str) -> None:
     periodogram : numpy.array
         Numpy array that represents the power spectrum of each frequency on the spectrum.
     text : str
-        A formatted String that represents the name of the output file.
+        A formatted string that represents the name of the output file.
 
     Returns
     -------
@@ -93,5 +94,7 @@ def save_fits(frequencies: np.array, periodogram: np.array, text: str) -> None:
         file = ascii.read(text)
         file.write(f"{text}.fits")
 
+        click.secho(f"Fits file saved at {text}.fits", fg='green')
+
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')

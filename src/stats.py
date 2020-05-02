@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Generic/Built-in
 import click
 import numpy as np
 import numexpr as ne
@@ -33,12 +34,12 @@ def period(arrival_times: np.array) -> float:
         return period
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
 
 
 def frequency(arrival_times: np.array) -> float:
     """
-    Calculates sampling rate of the given time series.
+    Calculates the sampling rate of the given time series.
 
     Parameters
     ----------
@@ -60,12 +61,12 @@ def frequency(arrival_times: np.array) -> float:
         return freq
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
 
 
 def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
-    Calculates phase values from photon arrival times.
+    Calculates the phase values of the photon arrival times.
 
     Parameters
     ----------
@@ -83,20 +84,15 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     try:
 
         photon = 0
-        #derivative = np.gradient(frequencies)
-        #derivative2 = np.gradient(derivative)
+
         values = np.zeros(shape=(arrival_times.size, frequencies.size))
 
         start = np.min(arrival_times)
 
         delta = ne.evaluate('arrival_times - start')
 
-        for time in tqdm(delta, desc='Calculating phase values'):
-            termo1 = ne.evaluate('time * frequencies')
-            #termo2 = (time ** 2) * derivative / 2
-            #termo3 = (time ** 3) * derivative2 / 6
-            #termo = termo1 + termo2 + termo3
-            values[photon] = termo1
+        for time in tqdm(delta, desc=click.style(f'Calculating phase values', fg='green')):
+            values[photon] = ne.evaluate('time * frequencies')
             photon += 1
 
         frac = np.floor(values)
@@ -106,12 +102,12 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
         return values
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
 
 
 def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
-    Applies the Z2n statistics to phase values and normalize.
+    Applies the Z2n statistics to the phase values and normalize.
 
     Parameters
     ----------
@@ -138,7 +134,7 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
 
         pulse = ne.evaluate('2 * pie * phase_values')
 
-        for freq in trange(frequencies.size, desc='Calculating Z2n Statistics'):
+        for freq in trange(frequencies.size, desc=click.style(f'Calculating Z2n Statistics', fg='green')):
             cosseno = np.sum(np.cos(harmonics * pulse[:, freq])) ** 2
             seno = np.sum(np.sin(harmonics * pulse[:, freq])) ** 2
             fft = ne.evaluate('cosseno + seno')
@@ -151,18 +147,18 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
         return potency
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
 
 
-def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
+def peak(frequencies: np.array, periodogram: np.array) -> float:
     """
     Gets the value of the natural frequency on the periodogram.
 
     Parameters
     ----------
-    frequencies : numpy.ndarray
+    frequencies : numpy.array
         Numpy array that represents the frequency spectrum.
-    periodogram : numpy.ndarray
+    periodogram : numpy.array
         Numpy array that represents the the power spectrum of each frequency on the spectrum.
 
     Returns
@@ -180,18 +176,18 @@ def peak(frequencies: np.ndarray, periodogram: np.ndarray) -> float:
         return peak
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
 
 
-def pfraction(arrival_times: np.array, periodogram: np.ndarray) -> float:
+def pfraction(arrival_times: np.array, periodogram: np.array) -> float:
     """
-    Gets the value of the natural frequency on the periodogram.
+    Gets the pulsed fraction of the natural frequency on the periodogram.
 
     Parameters
     ----------
     arrival_times : numpy.array
         Numpy array that represents the photon arrival times.
-    periodogram : numpy.ndarray
+    periodogram : numpy.array
         Numpy array that represents the the power spectrum of each frequency on the spectrum.
 
     Returns
@@ -211,4 +207,22 @@ def pfraction(arrival_times: np.array, periodogram: np.ndarray) -> float:
         return pulsed
 
     except Exception as error:
-        click.echo(error)
+        click.secho(f'{error}', fg='red')
+
+
+#TODO
+def gaussiana(frequencies: np.array, periodogram: np.array) -> None:
+    """
+    Gets the value of the natural frequency on the periodogram.
+
+    Parameters
+    ----------
+    frequencies : numpy.array
+        Numpy array that represents the frequency spectrum.
+    periodogram : numpy.array
+        Numpy array that represents the the power spectrum of each frequency on the spectrum.
+
+    Returns
+    -------
+    None
+    """

@@ -2,21 +2,23 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
-import time
-import sys
-import os
-import functools
+import click
 
 # Other Libraries
-from src.cli import globals
+from src import prompt
 
 
 def main() -> int:
     """
-    Entry point to Z2n Software.
+    Entry point to the Z2n Software.
     """
 
-    globals.prompt.cli()
+    try:
+
+        prompt.cli()
+
+    except Exception as error:
+        click.secho(f'{error}', fg='red')
 
     return 0
 

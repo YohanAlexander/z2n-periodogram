@@ -1,17 +1,24 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Generic/Built-in
 import setuptools
+
+# Other Libraries
+from src import var
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
-        name='z2n-periodogram',
-        version='1.0.0',
+        name=var.__name__,
+        version=var.__version__,
         py_modules=['z2n'],
-        package_dir={'': 'src'},
         install_requires=[
-            'Click',
-            'Click-shell',
+            'click',
+            'click-shell',
             'matplotlib',
             'astropy',
+            'scipy',
             'numpy',
             'numexpr',
             'tqdm'
@@ -20,13 +27,14 @@ with open("README.md", "r") as fh:
             [console_scripts]
             z2n=z2n:main
         ''',
-        author="Yohan Alexander",
-        author_email="yohanfranca@gmail.com",
-        description="A fitting package for Z2n Periodograms from FITS files.",
+        author=var.__author__,
+        author_email=var.__email__,
+        description=var.__description__,
         long_description=long_description,
         long_description_content_type="text/markdown",
-        url="https://github.com/yohanalexander/z2n-periodogram",
+        url=var.__url__,
         packages=setuptools.find_packages(),
+        include_package_data=True,
         classifiers=[
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: MIT License",
