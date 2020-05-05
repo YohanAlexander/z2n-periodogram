@@ -1,7 +1,6 @@
-
-![PyPI](https://img.shields.io/pypi/v/z2n-periodogram)
-![GitHub issues](https://img.shields.io/github/issues/yohanalexander/z2n-periodogram)
-![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)
+[![PyPI](https://img.shields.io/pypi/v/z2n-periodogram)](https://pypi.org/project/z2n-periodogram/)
+[![GitHub issues](https://img.shields.io/github/issues/yohanalexander/z2n-periodogram)](https://github.com/yohanalexander/z2n-periodogram/issues)
+[![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)](https://github.com/YohanAlexander/z2n-periodogram/blob/master/LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/z2n-periodogram/badge/?version=latest)](https://z2n-periodogram.readthedocs.io/en/latest/?badge=latest)
 
 

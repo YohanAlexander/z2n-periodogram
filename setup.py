@@ -12,7 +12,6 @@ with open("README.md", "r") as fh:
     setuptools.setup(
         name='z2n-periodogram',
         version=glob.__version__,
-        package_dir={"": "z2n"},
         install_requires=[
             'click',
             'click-shell',
@@ -46,5 +45,5 @@ with open("README.md", "r") as fh:
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
         ],
-        packages=setuptools.find_namespace_packages(where="z2n"),
+        packages=setuptools.find_namespace_packages(),
     )

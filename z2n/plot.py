@@ -8,6 +8,7 @@ from click_shell import shell
 
 # Other Libraries
 import z2n.globals as glob
+import z2n.main as main
 
 
 @shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=glob.__plot__)
@@ -27,7 +28,7 @@ def style() -> None:
 
         plt.style.use(st)
 
-        glob.plot()
+        main.plot()
 
         click.secho(f"Style changed to {st}.", fg='green')
 

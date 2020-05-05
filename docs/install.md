@@ -11,4 +11,6 @@ The version of the `Python` interpreter used during the development was the `3.7
 
 The software is currently hosted at the Python central repository `PyPI`,  to install the software properly use the terminal command:
 
-    pip install z2n-periodogram
+```sh
+pip install z2n-periodogram
+```
