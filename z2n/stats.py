@@ -10,7 +10,7 @@ from tqdm import trange, tqdm
 
 def period(arrival_times: np.array) -> float:
     """
-    Calculates the period of observation on the given time series.
+    Calculate the period of observation on the given time series.
 
     Parameters
     ----------
@@ -39,7 +39,7 @@ def period(arrival_times: np.array) -> float:
 
 def frequency(arrival_times: np.array) -> float:
     """
-    Calculates the sampling rate of the given time series.
+    Calculate the sampling rate of the given time series.
 
     Parameters
     ----------
@@ -66,7 +66,7 @@ def frequency(arrival_times: np.array) -> float:
 
 def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
-    Calculates the phase values of the photon arrival times.
+    Calculate the phase values of the photon arrival times.
 
     Parameters
     ----------
@@ -91,7 +91,7 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
 
         delta = ne.evaluate('arrival_times - start')
 
-        for time in tqdm(delta, desc=click.style(f'Calculating phase values', fg='green')):
+        for time in tqdm(delta, desc=click.style(f'Calculating phase values', fg='yellow')):
             values[photon] = ne.evaluate('time * frequencies')
             photon += 1
 
@@ -107,7 +107,7 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
 
 def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
     """
-    Applies the Z2n statistics to the phase values and normalize.
+    Apply the Z2n statistics to the phase values and normalize.
 
     Parameters
     ----------
@@ -134,7 +134,7 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
 
         pulse = ne.evaluate('2 * pie * phase_values')
 
-        for freq in trange(frequencies.size, desc=click.style(f'Calculating Z2n Statistics', fg='green')):
+        for freq in trange(frequencies.size, desc=click.style(f'Calculating Z2n Statistics', fg='yellow')):
             cosseno = np.sum(np.cos(harmonics * pulse[:, freq])) ** 2
             seno = np.sum(np.sin(harmonics * pulse[:, freq])) ** 2
             fft = ne.evaluate('cosseno + seno')
@@ -152,7 +152,7 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
 
 def peak(frequencies: np.array, periodogram: np.array) -> float:
     """
-    Gets the value of the natural frequency on the periodogram.
+    Get the value of the natural frequency on the periodogram.
 
     Parameters
     ----------
@@ -181,7 +181,7 @@ def peak(frequencies: np.array, periodogram: np.array) -> float:
 
 def pfraction(arrival_times: np.array, periodogram: np.array) -> float:
     """
-    Gets the pulsed fraction of the natural frequency on the periodogram.
+    Get the pulsed fraction of the natural frequency on the periodogram.
 
     Parameters
     ----------
@@ -208,21 +208,3 @@ def pfraction(arrival_times: np.array, periodogram: np.array) -> float:
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
-
-
-#TODO
-def gaussiana(frequencies: np.array, periodogram: np.array) -> None:
-    """
-    Gets the value of the natural frequency on the periodogram.
-
-    Parameters
-    ----------
-    frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
-    periodogram : numpy.array
-        Numpy array that represents the the power spectrum of each frequency on the spectrum.
-
-    Returns
-    -------
-    None
-    """

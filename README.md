@@ -16,7 +16,7 @@
   <h1 align="center">Z2n Periodogram</h1>
 
   <p align="center">
-    A package for periodograms from FITS datasets!
+    A program for interative periodograms analysis!
     <br />
     <a href="https://z2n-periodogram.readthedocs.io/"><strong>Explore the docs »</strong></a>
     <br />
@@ -80,20 +80,18 @@ To start the software just type `z2n` on the terminal (check if you're under the
 ```sh
 z2n
 ```
-The `CLI` of the software is very interactive, for more information on the usage type `help`.
-```sh
-	Z2n Software (1.0.0), a package for interactive periodograms.
-	Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
-	Type "help" for more information or "docs" for documentation.
 
-	If you wish to run the software with the default values type "auto".
+The `CLI` of the software is very interactive and it works by triggering the commands available, for more information on the usage type `help`.
+```sh
+        Z2n Software (1.0.0), a program for interactive periodograms.
+        Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
+        Type "help" for more information or "docs" for documentation.
 
 (z2n) >>> help
 
 Documented commands (type help <topic>):
 ========================================
-ascii  copyright  data  license  rate   stats
-auto   credits    docs  plot     shell  version
+axis  back  docs  plot  run  save
 
 Undocumented commands:
 ======================

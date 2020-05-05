@@ -8,46 +8,33 @@
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/yohanalexander/z2n-periodogram)
 ![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)
 
-<br />
+<br>
 <p align="center">
   <a href="https://github.com/yohanalexander/z2n-periodogram">
-    <img src="../assets/z2n.png" alt="Logo" width="50%" height="50%">
+    <img src="https://user-images.githubusercontent.com/39287022/80550543-cb789b00-8996-11ea-90af-fe2936fb703e.png" alt="Logo" width="50%" height="50%">
   </a>
 
   <h1 align="center">Z2n Periodogram</h1>
 
   <p align="center">
-    A package for periodograms from FITS datasets!
+    A program for interative periodograms analysis!
 
 ## Table of Contents
 
 * [About the Project](#about-the-project)
-    * [Built With](#built-with)
 * [Getting Started](/install/#getting-started)
-    * [Prerequisites](/install/#prerequisites)
-    * [Installation](/install/#installation)
 * [Usage](/usage)
-    *  [Loading FITS file](/usage/#loading-fits-data)
-    *  [Run with default values](/usage/#auto-running)
-    *  [Change the output spectrum](/usage/#changing-the-output-spectrum)
-    *  [Calculating the Z2n Potency](/usage/#calculating-the-z2n-potency)
-    *  [Saving an ascii file](/usage/#saving-the-spectrum-on-file)
-    *  [Shell commands](/usage/#shell-commands-inside-the-cli)
-    *  [Import as a library](/usage/#importing-the-software-as-a-library)
 * [Plotting](/plotting)
-    * [Change Plot Axes](/plotting/#changing-the-plot-axes)
-    * [Plot with a grid](/plotting/#plot-with-a-grid)
-    * [Change the Plot Title](/plotting/#change-the-plot-title)
-    * [Change the x label](/plotting/#change-the-x-label)
-    * [Change the y label](/plotting/#change-the-y-label)
-    * [Save image file](/plotting/#save-plot-figure)
 * [Contributing](/contribute)
 * [Roadmap](/contribute#roadmap)
 * [License](/copyright)
 
 ## About The Project
 
-The Z2n Software is a python package for optimized periodograms from fits datasets. The program allows the user to calculate periodograms using the Z2n statistics a la Buccheri et al. 1983, which is defined as follows.
+The Z2n Software was developed by Yohan Alexander as a research project,
+funded by the CNPq Institution, and it is a Open Source initiative.
+
+The program allows the user to calculate periodograms, from fits datasets, using the Z2n statistics a la Buccheri et al. 1983, which is defined as follows.
 
 <p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/master/svgs/b978f5d179d91490c920c7e96494ab53.svg?invert_in_darkmode" align=middle width=299.8248pt height=37.583864999999996pt/></p>
 
@@ -58,6 +45,6 @@ sinusoidal functions above for each photon. Be advised that this is very computa
 
 ## Built With
 
-The Z2n Software was built using the open source language `Python`.
+The Z2n Software was built using the `Python` open source language.
 
 * [Python](https://python.org)

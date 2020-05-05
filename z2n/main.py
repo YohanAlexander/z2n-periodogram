@@ -5,23 +5,21 @@
 import click
 
 # Other Libraries
-from src import prompt
+import z2n.prompt as prompt
 
 
-def main() -> int:
+def cli() -> None:
     """
     Entry point to the Z2n Software.
     """
 
     try:
 
-        prompt.cli()
+        prompt.z2n()
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
 
-    return 0
-
 
 if __name__ == "__main__":
-    main()
+    cli()

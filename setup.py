@@ -5,39 +5,46 @@
 import setuptools
 
 # Other Libraries
-from src import var
+import z2n.globals as globals
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
-        name=var.__name__,
-        version=var.__version__,
-        py_modules=['z2n'],
+        name=globals.__name__,
+        version=globals.__version__,
+        package_dir={"": "z2n"},
         install_requires=[
             'click',
             'click-shell',
             'matplotlib',
             'astropy',
             'scipy',
+            'dask',
             'numpy',
             'numexpr',
             'tqdm'
         ],
+        tests_require=['pytest'],
+        extras_require={
+            "dev": [
+                "pytest",
+            ],
+        },
         entry_points='''
             [console_scripts]
-            z2n=z2n:main
+            z2n=z2n.main:cli
         ''',
-        author=var.__author__,
-        author_email=var.__email__,
-        description=var.__description__,
+        author=globals.__author__,
+        author_email=globals.__email__,
+        description=globals.__description__,
         long_description=long_description,
         long_description_content_type="text/markdown",
-        url=var.__url__,
-        packages=setuptools.find_packages(),
+        url=globals.__url__,
         include_package_data=True,
         classifiers=[
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
         ],
+        packages=setuptools.find_namespace_packages(where="z2n"),
     )
