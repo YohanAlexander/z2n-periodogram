@@ -5,13 +5,13 @@
 import setuptools
 
 # Other Libraries
-import z2n.globals as globals
+import z2n.globals as glob
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
-        name=globals.__name__,
-        version=globals.__version__,
+        name='z2n-periodogram',
+        version=glob.__version__,
         package_dir={"": "z2n"},
         install_requires=[
             'click',
@@ -34,12 +34,12 @@ with open("README.md", "r") as fh:
             [console_scripts]
             z2n=z2n.main:cli
         ''',
-        author=globals.__author__,
-        author_email=globals.__email__,
-        description=globals.__description__,
+        author=glob.__author__,
+        author_email=glob.__email__,
+        description=glob.__description__,
         long_description=long_description,
         long_description_content_type="text/markdown",
-        url=globals.__url__,
+        url=glob.__url__,
         include_package_data=True,
         classifiers=[
             "Programming Language :: Python :: 3",

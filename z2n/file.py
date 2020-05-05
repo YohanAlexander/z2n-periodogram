@@ -5,7 +5,8 @@
 import csv
 import click
 import numpy as np
-from astropy.io import fits, ascii
+from astropy.io import fits
+import astropy.io.ascii as txt
 
 
 def load_fits(path: str) -> np.array:
@@ -127,7 +128,7 @@ def save_fits(frequencies: np.array, periodogram: np.array, text: str) -> None:
 
         save_ascii(frequencies, periodogram, text)
 
-        file = ascii.read(text)
+        file = txt.read(text)
         file.write(f"{text}.fits")
 
         click.secho(f"Fits file saved at {text}.fits", fg='green')

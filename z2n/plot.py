@@ -3,26 +3,21 @@
 
 # Generic/Built-in
 import click
-import numpy as np
 import matplotlib.pyplot as plt
 from click_shell import shell
 
 # Other Libraries
-import z2n.globals as globals
+import z2n.globals as glob
 
 
-@shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=globals.__plot__)
+@shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=glob.__plot__)
 def plot() -> None:
-    """
-    Open the interactive periodogram plotting window.
-    """
+    """Open the interactive periodogram plotting window."""
 
 
 @plot.command()
 def style() -> None:
-    """
-    Change the plotting style (type style).
-    """
+    """Change the plotting style (type style)."""
 
     try:
 
@@ -32,7 +27,7 @@ def style() -> None:
 
         plt.style.use(st)
 
-        globals.plot()
+        glob.plot()
 
         click.secho(f"Style changed to {st}.", fg='green')
 
@@ -42,23 +37,21 @@ def style() -> None:
 
 @plot.command()
 def peak() -> None:
-    """
-    Add vertical line to the peak value (type peak).
-    """
+    """Add vertical line to the peak value (type peak)."""
 
     try:
 
-        if(globals.axis == 0):
+        if glob.axis == 0:
 
-            globals.axes.axvline(globals.peak, color='tab:red',
-                                 label=f"Correct Frequency")
+            glob.axes.axvline(glob.peak, color='tab:red',
+                                 label="Correct Frequency")
 
         else:
 
-            globals.axes[0].axvline(globals.peak, color='tab:red',
-                                    label=f"Correct Frequency")
+            glob.axes[0].axvline(glob.peak, color='tab:red',
+                                    label="Correct Frequency")
 
-        click.secho(f"Peak line added.", fg='green')
+        click.secho("Peak line added.", fg='green')
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
@@ -66,23 +59,21 @@ def peak() -> None:
 
 @plot.command()
 def band() -> None:
-    """
-    Add horizontal line to the bandwidth value (type band).
-    """
+    """Add horizontal line to the bandwidth value (type band)."""
 
     try:
 
-        if(globals.axis == 0):
+        if glob.axis == 0:
 
-            globals.axes.axhline(globals.band, color='tab:gray',
-                                 label=f"Bandwidth")
+            glob.axes.axhline(glob.band, color='tab:gray',
+                                 label="Bandwidth")
 
         else:
 
-            globals.axes[0].axhline(globals.band, color='tab:gray',
-                                    label=f"Bandwidth")
+            glob.axes[0].axhline(glob.band, color='tab:gray',
+                                    label="Bandwidth")
 
-        click.secho(f"Bandwidth line added.", fg='green')
+        click.secho("Bandwidth line added.", fg='green')
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
@@ -90,29 +81,27 @@ def band() -> None:
 
 @plot.command()
 def legend() -> None:
-    """
-    Add legend to the figure (type legend).
-    """
+    """Add legend to the figure (type legend)."""
 
     try:
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
+            if opt in (1, 2):
 
-                globals.axes[opt - 1].legend(loc='best')
-                click.secho(f"Legend added.", fg='green')
+                glob.axes[opt - 1].legend(loc='best')
+                click.secho("Legend added.", fg='green')
 
             else:
 
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.legend(loc='best')
-            click.secho(f"Legend added.", fg='green')
+            glob.axes.legend(loc='best')
+            click.secho("Legend added.", fg='green')
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
@@ -120,28 +109,26 @@ def legend() -> None:
 
 @plot.command()
 def title() -> None:
-    """
-    Change the title on the figure (type title).
-    """
+    """Change the title on the figure (type title)."""
 
     try:
 
         t = click.prompt("Which title")
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
-                globals.axes[opt - 1].set_title(t)
+            if opt in (1, 2):
+                glob.axes[opt - 1].set_title(t)
                 click.secho(f"Title '{t}' added.", fg='green')
 
             else:
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.set_title(t)
+            glob.axes.set_title(t)
             click.secho(f"Title '{t}' added.", fg='green')
 
     except Exception as error:
@@ -150,28 +137,26 @@ def title() -> None:
 
 @plot.command()
 def xlabel() -> None:
-    """
-    Change the label on the x axis (type xlabel).
-    """
+    """Change the label on the x axis (type xlabel)."""
 
     try:
 
         lab = click.prompt("Which label")
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
-                globals.axes[opt - 1].set_xlabel(lab)
+            if opt in (1, 2):
+                glob.axes[opt - 1].set_xlabel(lab)
                 click.secho(f"X axis label '{lab}' added.", fg='green')
 
             else:
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.set_xlabel(lab)
+            glob.axes.set_xlabel(lab)
             click.secho(f"X axis label '{lab}' added.", fg='green')
 
     except Exception as error:
@@ -180,28 +165,26 @@ def xlabel() -> None:
 
 @plot.command()
 def xscale() -> None:
-    """
-    Change the scale on the x axis (type xscale).
-    """
+    """Change the scale on the x axis (type xscale)."""
 
     try:
 
         scale = click.prompt("Which scale [linear, log, symlog, logit]")
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
-                globals.axes[opt - 1].set_xscale(scale)
+            if opt in (1, 2):
+                glob.axes[opt - 1].set_xscale(scale)
                 click.secho(f"X axis scale changed to {scale}.", fg='green')
 
             else:
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.set_xscale(scale)
+            glob.axes.set_xscale(scale)
             click.secho(f"X axis scale changed to {scale}.", fg='green')
 
     except Exception as error:
@@ -210,9 +193,7 @@ def xscale() -> None:
 
 @plot.command()
 def xlim() -> None:
-    """
-    Change the limites on the x axis (type xlim).
-    """
+    """Change the limites on the x axis (type xlim)."""
 
     try:
 
@@ -220,20 +201,20 @@ def xlim() -> None:
 
         up = click.prompt("Which upper limit", type=float)
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
-                globals.axes[opt - 1].set_xlim([low, up])
+            if opt in (1, 2):
+                glob.axes[opt - 1].set_xlim([low, up])
                 click.secho(f"X axis limits changed to {low, up}.", fg='green')
 
             else:
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.set_xlim([low, up])
+            glob.axes.set_xlim([low, up])
             click.secho(f"X axis limits changed to {low, up}.", fg='green')
 
     except Exception as error:
@@ -242,28 +223,26 @@ def xlim() -> None:
 
 @plot.command()
 def ylabel() -> None:
-    """
-    Change the label on the y axis (type ylabel).
-    """
+    """Change the label on the y axis (type ylabel)."""
 
     try:
 
         lab = click.prompt("Which label")
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
-                globals.axes[opt - 1].set_ylabel(lab)
+            if opt in (1, 2):
+                glob.axes[opt - 1].set_ylabel(lab)
                 click.secho(f"Y axis label '{lab}' added.", fg='green')
 
             else:
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.set_ylabel(lab)
+            glob.axes.set_ylabel(lab)
             click.secho(f"Y axis label '{lab}' added.", fg='green')
 
     except Exception as error:
@@ -272,28 +251,26 @@ def ylabel() -> None:
 
 @plot.command()
 def yscale() -> None:
-    """
-    Change the scale on the y axis (type yscale).
-    """
+    """Change the scale on the y axis (type yscale)."""
 
     try:
 
         scale = click.prompt("Which scale [linear, log, symlog, logit]")
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
-                globals.axes[opt - 1].set_yscale(scale)
+            if opt in (1, 2):
+                glob.axes[opt - 1].set_yscale(scale)
                 click.secho(f"Y axis scale changed to {scale}.", fg='green')
 
             else:
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.set_yscale(scale)
+            glob.axes.set_yscale(scale)
             click.secho(f"Y axis scale changed to {scale}.", fg='green')
 
     except Exception as error:
@@ -302,9 +279,7 @@ def yscale() -> None:
 
 @plot.command()
 def ylim() -> None:
-    """
-    Change the limites on the y axis (type ylim).
-    """
+    """Change the limites on the y axis (type ylim)."""
 
     try:
 
@@ -312,20 +287,20 @@ def ylim() -> None:
 
         up = click.prompt("Which upper limit", type=float)
 
-        if(globals.axis != 0):
+        if glob.axis != 0:
 
             opt = click.prompt(
                 "Change the periodogram [1] or the background [2]", type=int)
 
-            if opt == 1 or opt == 2:
-                globals.axes[opt - 1].set_ylim([low, up])
+            if opt in (1, 2):
+                glob.axes[opt - 1].set_ylim([low, up])
                 click.secho(f"Y axis limits changed to {low, up}.", fg='green')
 
             else:
-                click.secho(f"Select '1' or '2'.", fg='red')
+                click.secho("Select '1' or '2'.", fg='red')
 
         else:
-            globals.axes.set_ylim([low, up])
+            glob.axes.set_ylim([low, up])
             click.secho(f"Y axis limits changed to {low, up}.", fg='green')
 
     except Exception as error:
@@ -334,9 +309,7 @@ def ylim() -> None:
 
 @plot.command()
 def save() -> None:
-    """
-    Save the plot into a file (type save).
-    """
+    """Save the plot into a file (type save)."""
 
     plt.tight_layout()
 

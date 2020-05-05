@@ -15,7 +15,7 @@ def period(arrival_times: np.array) -> float:
     Parameters
     ----------
     arrival_times : numpy.array
-        Numpy array that represents the photon arrival times.
+        Array that represents the photon arrival times.
 
     Returns
     -------
@@ -44,7 +44,7 @@ def frequency(arrival_times: np.array) -> float:
     Parameters
     ----------
     arrival_times : numpy.array
-        Numpy array that represents the photon arrival times.
+        Array that represents the photon arrival times.
 
     Returns
     -------
@@ -71,14 +71,14 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
     Parameters
     ----------
     arrival_times : numpy.array
-        Numpy array that represents the photon arrival times.
+        Array that represents the photon arrival times.
     frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
+        Array that represents the frequency spectrum.
 
     Returns
     -------
     values : numpy.array
-        Numpy array that represents the phase values for each photon.
+        Array that represents the phase values for each photon.
     """
 
     try:
@@ -91,7 +91,9 @@ def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
 
         delta = ne.evaluate('arrival_times - start')
 
-        for time in tqdm(delta, desc=click.style(f'Calculating phase values', fg='yellow')):
+        desc = click.style('Calculating phase values', fg='yellow')
+
+        for time in tqdm(delta, desc=desc):
             values[photon] = ne.evaluate('time * frequencies')
             photon += 1
 
@@ -112,14 +114,14 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
     Parameters
     ----------
     arrival_times : numpy.array
-        Numpy array that represents the photon arrival times.
+        Array that represents the photon arrival times.
     frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
+        Array that represents the frequency spectrum.
 
     Returns
     -------
     potency : numpy.array
-        Numpy array that represents the power spectrum of each frequency on the spectrum.
+        Array that represents the potency of each frequency on the spectrum.
     """
 
     try:
@@ -134,7 +136,9 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
 
         pulse = ne.evaluate('2 * pie * phase_values')
 
-        for freq in trange(frequencies.size, desc=click.style(f'Calculating Z2n Statistics', fg='yellow')):
+        desc = click.style('Calculating Z2n Statistics', fg='yellow')
+
+        for freq in trange(frequencies.size, desc=desc):
             cosseno = np.sum(np.cos(harmonics * pulse[:, freq])) ** 2
             seno = np.sum(np.sin(harmonics * pulse[:, freq])) ** 2
             fft = ne.evaluate('cosseno + seno')
@@ -157,9 +161,9 @@ def peak(frequencies: np.array, periodogram: np.array) -> float:
     Parameters
     ----------
     frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
+        Array that represents the frequency spectrum.
     periodogram : numpy.array
-        Numpy array that represents the the power spectrum of each frequency on the spectrum.
+        Array that represents the the potency of each frequency on the spectrum.
 
     Returns
     -------
@@ -186,9 +190,9 @@ def pfraction(arrival_times: np.array, periodogram: np.array) -> float:
     Parameters
     ----------
     arrival_times : numpy.array
-        Numpy array that represents the photon arrival times.
+        Array that represents the photon arrival times.
     periodogram : numpy.array
-        Numpy array that represents the the power spectrum of each frequency on the spectrum.
+        Array that represents the the potency of each frequency on the spectrum.
 
     Returns
     -------
