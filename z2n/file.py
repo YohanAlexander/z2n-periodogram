@@ -21,7 +21,7 @@ def load_fits(path: str) -> np.array:
     Returns
     -------
     time_series : numpy.array
-        Numpy array that represents the arrival times of each photon.
+        Array that represents the arrival times of each photon.
     """
 
     try:
@@ -44,9 +44,9 @@ def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
     Parameters
     ----------
     frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
+        Array that represents the frequency spectrum.
     periodogram : numpy.array
-        Numpy array that represents the power spectrum of each frequency on the spectrum.
+        Array that represents the potency of each frequency on the spectrum.
     text : str
         A formatted string that represents the name of the output file.
 
@@ -78,9 +78,9 @@ def save_csv(frequencies: np.array, periodogram: np.array, text: str) -> None:
     Parameters
     ----------
     frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
+        Array that represents the frequency spectrum.
     periodogram : numpy.array
-        Numpy array that represents the power spectrum of each frequency on the spectrum.
+        Array that represents the potency of each frequency on the spectrum.
     text : str
         A formatted string that represents the name of the output file.
 
@@ -113,9 +113,9 @@ def save_fits(frequencies: np.array, periodogram: np.array, text: str) -> None:
     Parameters
     ----------
     frequencies : numpy.array
-        Numpy array that represents the frequency spectrum.
+        Array that represents the frequency spectrum.
     periodogram : numpy.array
-        Numpy array that represents the power spectrum of each frequency on the spectrum.
+        Array that represents the potency of each frequency on the spectrum.
     text : str
         A formatted string that represents the name of the output file.
 

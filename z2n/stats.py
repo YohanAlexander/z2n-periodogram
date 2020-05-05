@@ -19,7 +19,7 @@ def period(arrival_times: np.array) -> float:
 
     Returns
     -------
-    period : float
+    periodo : float
         Float number that represents the observation period.
     """
 
@@ -29,9 +29,9 @@ def period(arrival_times: np.array) -> float:
 
         last = np.max(arrival_times)
 
-        period = last - first
+        periodo = last - first
 
-        return period
+        return periodo
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
@@ -154,7 +154,7 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
         click.secho(f'{error}', fg='red')
 
 
-def peak(frequencies: np.array, periodogram: np.array) -> float:
+def peak(frequencies: np.array, statistics: np.array) -> float:
     """
     Get the value of the natural frequency on the periodogram.
 
@@ -167,23 +167,23 @@ def peak(frequencies: np.array, periodogram: np.array) -> float:
 
     Returns
     -------
-    peak : float
+    peak_value : float
         Float number that represents the periodogram peak.
     """
 
     try:
 
-        index = np.argmax(periodogram)
+        index = np.argmax(statistics)
 
-        peak = frequencies[index]
+        peak_value = frequencies[index]
 
-        return peak
+        return peak_value
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
 
 
-def pfraction(arrival_times: np.array, periodogram: np.array) -> float:
+def pfraction(arrival_times: np.array, statistics: np.array) -> float:
     """
     Get the pulsed fraction of the natural frequency on the periodogram.
 
@@ -202,9 +202,9 @@ def pfraction(arrival_times: np.array, periodogram: np.array) -> float:
 
     try:
 
-        peak = np.argmax(periodogram)
+        peak_value = np.argmax(statistics)
 
-        pfrac = (2 * peak) / arrival_times.size
+        pfrac = (2 * peak_value) / arrival_times.size
 
         pulsed = pfrac ** 0.5
 

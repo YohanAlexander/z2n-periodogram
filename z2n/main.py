@@ -22,9 +22,7 @@ plt.rc('axes', labelsize=16)
 
 
 def cli() -> None:
-    """
-    Entry point to the Z2n Software.
-    """
+    """Entry point to the Z2n Software."""
 
     try:
 
@@ -42,19 +40,19 @@ def plot() -> None:
         plt.close()
         plt.ion()
 
-        if(glob.axis == 0):
+        if glob.axis == 0:
 
             glob.figure, glob.axes = plt.subplots(glob.axis + 1)
             glob.axes.plot(glob.frequencies, glob.periodogram, color='tab:blue',
-                           label="Z2n Potency")
+                            label="Z2n Potency")
 
         else:
 
             glob.figure, glob.axes = plt.subplots(glob.axis + 1, sharex=True)
             glob.axes[0].plot(glob.frequencies, glob.periodogram, color='tab:blue',
-                              label="Z2n Potency")
+                                label="Z2n Potency")
             glob.axes[1].plot(glob.background, color='tab:cyan',
-                              label="Background")
+                                label="Background")
 
         plt.tight_layout()
 
@@ -76,7 +74,7 @@ def uncertainty() -> None:
 
             means = np.zeros(regions)
 
-            if(click.confirm(f"Did you already select the region {region + 1}")):
+            if click.confirm(f"Did you already select the region {region + 1}"):
 
                 ax = plt.gca().get_xlim()
 
@@ -91,21 +89,22 @@ def uncertainty() -> None:
 
         glob.peak = stats.peak(glob.frequencies, glob.periodogram)
         click.echo(click.style("Peak value of the periodogram: ",
-                               fg='cyan') + f"{glob.peak} Hz")
+                                fg='cyan') + f"{glob.peak} Hz")
 
         glob.error = 0
         click.echo(click.style("Uncertainty of the system: ",
-                               fg='cyan') + f"{glob.error} +/-")
+                                fg='cyan') + f"{glob.error} +/-")
 
         glob.band = np.max(glob.periodogram) - glob.forest
         click.echo(click.style("Bandwidth of the system: ",
-                               fg='cyan') + f"{glob.band} Hz")
+                                fg='cyan') + f"{glob.band} Hz")
 
         glob.pulsed = stats.pfraction(glob.time, glob.periodogram)
         click.echo(click.style("Pulsed fraction of the peak: ",
                                fg='cyan') + f"{glob.pulsed * 100} %")
 
     except Exception as error:
+        click.secho(f'{error}', fg='red')
         click.secho("Failed to determine uncertainty.", fg='red')
 
 
@@ -120,26 +119,27 @@ def z2n() -> None:
 
         glob.frequency = stats.frequency(glob.time)
         click.echo(click.style("Sampling frequency on the signal: ",
-                               fg='cyan') + f"{glob.frequency} Hz")
+                                fg='cyan') + f"{glob.frequency} Hz")
 
         click.echo(click.style(
-            "Minimum frequency used on the periodogram: ", fg='cyan') + f"{glob.fmin} Hz")
+            "Minimum frequency used: ", fg='cyan') + f"{glob.fmin} Hz")
 
         click.echo(click.style(
-            "Maximum frequency used on the periodogram: ", fg='cyan') + f"{glob.fmax} Hz")
+            "Maximum frequency used: ", fg='cyan') + f"{glob.fmax} Hz")
 
         click.echo(click.style(
-            "Frequency steps used on the periodogram: ", fg='cyan') + f"{glob.delta} Hz")
+            "Frequency steps used: ", fg='cyan') + f"{glob.delta} Hz")
 
         glob.frequencies = np.arange(glob.fmin, glob.fmax, glob.delta)
 
         try:
             glob.periodogram = stats.periodogram(glob.time, glob.frequencies)
-            click.secho(f'Finished to calculate the periodogram.', fg='green')
+            click.secho('Finished to calculate the periodogram.', fg='green')
 
         except Exception as error:
-            click.secho(f'Failed to calculate the periodogram.', fg='red')
-            fits = 0
+            click.secho(f'{error}', fg='red')
+            click.secho('Failed to calculate the periodogram.', fg='red')
+            glob.fits = 0
 
         else:
             plot()
