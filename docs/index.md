@@ -1,8 +1,6 @@
 # Welcome to the Z2n Periodogram Documentation
 
 ![PyPI](https://img.shields.io/pypi/v/z2n-periodogram)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/z2n-peridogram)
-![PyPI - Status](https://img.shields.io/pypi/status/z2n-periodogram)
 ![GitHub issues](https://img.shields.io/github/issues/yohanalexander/z2n-periodogram)
 ![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)
 [![Documentation Status](https://readthedocs.org/projects/z2n-periodogram/badge/?version=latest)](https://z2n-periodogram.readthedocs.io/en/latest/?badge=latest)

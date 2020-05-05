@@ -1,1 +1,10 @@
 mkautodoc
+click
+click-shell
+matplotlib
+astropy
+scipy
+dask
+numpy
+numexpr
+tqdm

@@ -1,7 +1,5 @@
 
 ![PyPI](https://img.shields.io/pypi/v/z2n-periodogram)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/z2n-peridogram)
-![PyPI - Status](https://img.shields.io/pypi/status/z2n-periodogram)
 ![GitHub issues](https://img.shields.io/github/issues/yohanalexander/z2n-periodogram)
 ![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)
 [![Documentation Status](https://readthedocs.org/projects/z2n-periodogram/badge/?version=latest)](https://z2n-periodogram.readthedocs.io/en/latest/?badge=latest)
@@ -49,7 +47,7 @@ The Z2n Software was developed by Yohan Alexander as a research project, funded 
 
 <p align="center"><img src="svgs/0205cc14fa865169e21fc457d3de3c48.svg?invert_in_darkmode" align=middle width=342.51194999999996pt height=50.04351pt/></p>
 
-The standard Z2n statistics calculates the phase of each photon and the sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high, since the algorithm grows at a exponential rate <img src="svgs/2344ce37664ab7b326ad4c7a6397382a.svg?invert_in_darkmode" align=middle width=30.026865000000004pt height=26.76201000000001pt/>.
+The standard Z2n statistics calculates the phase of each photon and the sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high, since the algorithm grows at a exponential rate <img src="svgs/3987120c67ed5a9162aa9841b531c3a9.svg?invert_in_darkmode" align=middle width=43.022265pt height=26.76201000000001pt/>.
 
 ### Built With
 The Z2n Software was built using the `Python` open source language.
