@@ -1,12 +1,11 @@
 # Welcome to the Z2n Periodogram Documentation
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/yohanalexander/z2n-periodogram/master)
 ![PyPI](https://img.shields.io/pypi/v/z2n-periodogram)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/z2n-peridogram)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/z2n-periodogram)
+![PyPI - Status](https://img.shields.io/pypi/status/z2n-periodogram)
 ![GitHub issues](https://img.shields.io/github/issues/yohanalexander/z2n-periodogram)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/yohanalexander/z2n-periodogram)
 ![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)
+[![Documentation Status](https://readthedocs.org/projects/z2n-periodogram/badge/?version=latest)](https://z2n-periodogram.readthedocs.io/en/latest/?badge=latest)
 
 <br>
 <p align="center">
@@ -31,17 +30,13 @@
 
 ## About The Project
 
-The Z2n Software was developed by Yohan Alexander as a research project,
-funded by the CNPq Institution, and it is a Open Source initiative.
+The Z2n Software was developed by Yohan Alexander as a research project, funded by the CNPq Institution, and it is a Open Source initiative. The program allows the user to calculate periodograms, from fits datasets, using the Z2n statistics a la Buccheri et al. 1983, which is defined as follows.
 
-The program allows the user to calculate periodograms, from fits datasets, using the Z2n statistics a la Buccheri et al. 1983, which is defined as follows.
+<p align="center"><img src="svgs/b978f5d179d91490c920c7e96494ab53.svg?invert_in_darkmode" align=middle width=299.8248pt height=37.583864999999996pt/></p>
 
-<p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/master/svgs/b978f5d179d91490c920c7e96494ab53.svg?invert_in_darkmode" align=middle width=299.8248pt height=37.583864999999996pt/></p>
+<p align="center"><img src="svgs/0205cc14fa865169e21fc457d3de3c48.svg?invert_in_darkmode" align=middle width=342.51194999999996pt height=50.04351pt/></p>
 
-<p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/master/svgs/0205cc14fa865169e21fc457d3de3c48.svg?invert_in_darkmode" align=middle width=342.51194999999996pt height=50.04351pt/></p>
-
-The standard Z2n statistics calculates the phase of each photon and the
-sinusoidal functions above for each photon. Be advised that this is very computationally expensive, if the number of photons is high. Since the algorithm grows at a exponential rate. <p align="center"><img src="https://rawgit.com/in	git@github.com:YohanAlexander/z2n-periodogram/master/svgs/28de126d9302a6049e582fda13ec4441.svg?invert_in_darkmode" align=middle width=43.022265pt height=18.312359999999998pt/></p>
+The standard Z2n statistics calculates the phase of each photon and the sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high, since the algorithm grows at a exponential rate <img src="svgs/3987120c67ed5a9162aa9841b531c3a9.svg?invert_in_darkmode" align=middle width=43.022265pt height=26.76201000000001pt/>.
 
 ## Built With
 
