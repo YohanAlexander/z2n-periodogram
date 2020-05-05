@@ -247,15 +247,27 @@ def back() -> None:
 
                 path = click.prompt("Path to background file")
 
-                glob.background = file.load_fits(path)
+                glob.noise = file.load_fits(path)
 
                 try:
 
-                    if glob.background.size != 0:
+                    if glob.noise.size != 0:
+
                         click.secho(
                             "Background file loaded correctly.", fg='green')
+
                         glob.axis = 1
-                        main.plot()
+
+                        try:
+                            glob.background = stats.periodogram(glob.noise, glob.frequencies)
+                            click.secho('Finished to calculate the background.', fg='green')
+
+                        except Exception as error:
+                            click.secho(f'{error}', fg='red')
+                            click.secho('Failed to calculate the background.', fg='red')
+
+                        else:
+                            main.plot()
 
                 except Exception as error:
                     click.secho(f'{error}', fg='red')
@@ -273,15 +285,27 @@ def back() -> None:
 
             path = click.prompt("Path to background file")
 
-            glob.background = file.load_fits(path)
+            glob.noise = file.load_fits(path)
 
             try:
 
-                if glob.background.size != 0:
+                if glob.noise.size != 0:
+
                     click.secho(
-                        "Background file loaded correctly.", fg='green')
+                            "Background file loaded correctly.", fg='green')
+
                     glob.axis = 1
-                    main.plot()
+
+                    try:
+                        glob.background = stats.periodogram(glob.noise, glob.frequencies)
+                        click.secho('Finished to calculate the background.', fg='green')
+
+                    except Exception as error:
+                        click.secho(f'{error}', fg='red')
+                        click.secho('Failed to calculate the background.', fg='red')
+
+                    else:
+                        main.plot()
 
             except Exception as error:
                 click.secho(f'{error}', fg='red')

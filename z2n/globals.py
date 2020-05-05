@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Wrapping Header
-__version__ = '1.0.0'
+__version__ = '1.0.3'
 __author__ = 'Yohan Alexander'
 __license__ = 'MIT LICENSE'
 __copyright__ = 'Copyright (C) 2020, Z2n Software, by Yohan Alexander.'
@@ -44,6 +44,7 @@ period = 0
 pulsed = 0
 frequency = 0
 time = np.array([])
+noise = np.array([])
 periodogram = np.array([])
 frequencies = np.array([])
 background = np.array([])

@@ -48,10 +48,11 @@ def plot() -> None:
 
         else:
 
-            glob.figure, glob.axes = plt.subplots(glob.axis + 1, sharex=True)
+            glob.figure, glob.axes = plt.subplots(
+                glob.axis + 1, sharex=True, sharey=True)
             glob.axes[0].plot(glob.frequencies, glob.periodogram, color='tab:blue',
                               label="Z2n Potency")
-            glob.axes[1].plot(glob.background, color='tab:cyan',
+            glob.axes[1].plot(glob.frequencies, glob.background, color='tab:cyan',
                               label="Background")
 
         plt.tight_layout()

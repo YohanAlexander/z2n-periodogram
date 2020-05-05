@@ -44,6 +44,8 @@ with open("README.md", "r") as fh:
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
+            "Intended Audience :: Science/Research",
+            "Topic :: Scientific/Engineering :: Astronomy",
         ],
         packages=setuptools.find_namespace_packages(),
     )
