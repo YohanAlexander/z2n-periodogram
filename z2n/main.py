@@ -43,16 +43,16 @@ def plot() -> None:
         if glob.axis == 0:
 
             glob.figure, glob.axes = plt.subplots(glob.axis + 1)
-            glob.axes.plot(glob.frequencies, glob.periodogram, color='tab:blue',
-                            label="Z2n Potency")
+            glob.axes.plot(glob.frequencies, glob.periodogram,
+                           color='tab:blue', label="Z2n Potency")
 
         else:
 
             glob.figure, glob.axes = plt.subplots(glob.axis + 1, sharex=True)
             glob.axes[0].plot(glob.frequencies, glob.periodogram, color='tab:blue',
-                                label="Z2n Potency")
+                              label="Z2n Potency")
             glob.axes[1].plot(glob.background, color='tab:cyan',
-                                label="Background")
+                              label="Background")
 
         plt.tight_layout()
 
@@ -89,15 +89,15 @@ def uncertainty() -> None:
 
         glob.peak = stats.peak(glob.frequencies, glob.periodogram)
         click.echo(click.style("Peak value of the periodogram: ",
-                                fg='cyan') + f"{glob.peak} Hz")
+                               fg='cyan') + f"{glob.peak} Hz")
 
         glob.error = 0
         click.echo(click.style("Uncertainty of the system: ",
-                                fg='cyan') + f"{glob.error} +/-")
+                               fg='cyan') + f"{glob.error} +/-")
 
         glob.band = np.max(glob.periodogram) - glob.forest
         click.echo(click.style("Bandwidth of the system: ",
-                                fg='cyan') + f"{glob.band} Hz")
+                               fg='cyan') + f"{glob.band} Hz")
 
         glob.pulsed = stats.pfraction(glob.time, glob.periodogram)
         click.echo(click.style("Pulsed fraction of the peak: ",
@@ -119,7 +119,7 @@ def z2n() -> None:
 
         glob.frequency = stats.frequency(glob.time)
         click.echo(click.style("Sampling frequency on the signal: ",
-                                fg='cyan') + f"{glob.frequency} Hz")
+                               fg='cyan') + f"{glob.frequency} Hz")
 
         click.echo(click.style(
             "Minimum frequency used: ", fg='cyan') + f"{glob.fmin} Hz")

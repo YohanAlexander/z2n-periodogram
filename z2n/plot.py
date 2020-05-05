@@ -43,11 +43,13 @@ def peak() -> None:
 
         if glob.axis == 0:
 
-            glob.axes.axvline(glob.peak, color='tab:red', label="Correct Frequency")
+            glob.axes.axvline(glob.peak, color='tab:red',
+                              label="Correct Frequency")
 
         else:
 
-            glob.axes[0].axvline(glob.peak, color='tab:red', label="Correct Frequency")
+            glob.axes[0].axvline(glob.peak, color='tab:red',
+                                 label="Correct Frequency")
 
         click.secho("Peak line added.", fg='green')
 
@@ -67,7 +69,8 @@ def band() -> None:
 
         else:
 
-            glob.axes[0].axhline(glob.band, color='tab:gray', label="Bandwidth")
+            glob.axes[0].axhline(
+                glob.band, color='tab:gray', label="Bandwidth")
 
         click.secho("Bandwidth line added.", fg='green')
 
