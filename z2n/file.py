@@ -5,8 +5,61 @@
 import csv
 import click
 import numpy as np
+import pandas as pd
 from astropy.io import fits
 import astropy.io.ascii as txt
+
+
+def load_ascii(path: str) -> np.array:
+    """
+    Open ascii file and return time series as a numpy array.
+
+    Parameters
+    ----------
+    path : str
+        String that represents full or relative path to a fits file.
+
+    Returns
+    -------
+    time_series : numpy.array
+        Array that represents the arrival times of each photon.
+    """
+
+    try:
+
+        data = pd.read_csv(f'{path}', sep=' ', header=None)
+        time_series = data[0].values
+
+        return time_series
+
+    except Exception as error:
+        click.secho(f'{error}', fg='red')
+
+
+def load_csv(path: str) -> np.array:
+    """
+    Open csv file and return time series as a numpy array.
+
+    Parameters
+    ----------
+    path : str
+        String that represents full or relative path to a fits file.
+
+    Returns
+    -------
+    time_series : numpy.array
+        Array that represents the arrival times of each photon.
+    """
+
+    try:
+
+        data = pd.read_csv(f'{path}', sep=',', header=None)
+        time_series = data[0].values
+
+        return time_series
+
+    except Exception as error:
+        click.secho(f'{error}', fg='red')
 
 
 def load_fits(path: str) -> np.array:
@@ -26,9 +79,9 @@ def load_fits(path: str) -> np.array:
 
     try:
 
-        data = fits.open(f'{path}')  # open fits file
-        event = data['EVENTS'].data  # acesses event header
-        time_series = event['TIME']  # stores time series on numpy array
+        data = fits.open(f'{path}')
+        event = data['EVENTS'].data
+        time_series = event['TIME']
         data.close()
 
         return time_series
@@ -59,13 +112,13 @@ def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
 
         header = "Frequency Z2n-Potency\n"
 
-        with open(f'{text}', 'w') as file:
+        with open(f'{text}.txt', 'w') as file:
             if file.tell() == 0:
                 file.write(header)
             for freq, spec in zip(frequencies, periodogram):
                 file.write(f"{freq} {spec}\n")
 
-        click.secho(f"Text file saved at {text}", fg='green')
+        click.secho(f"Text file saved at {text}.txt", fg='green')
 
     except Exception as error:
         click.secho(f'{error}', fg='red')

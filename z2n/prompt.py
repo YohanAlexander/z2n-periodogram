@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
+import os
 import click
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +27,14 @@ def z2n():
     the sinusoidal functions above for each photon. Be advised that this
     is very computationally expensive if the number of photons is high.
     """
+
+
+@z2n.command()
+def shell() -> None:
+    """Run shell commands (type shell)."""
+    command = click.prompt("Type the command")
+    output = os.popen(command).read()
+    click.echo(output)
 
 
 @z2n.command()

@@ -4,8 +4,7 @@
 # Generic/Built-in
 import click
 import numpy as np
-import numexpr as ne
-from tqdm import trange, tqdm
+from tqdm import tqdm
 
 
 def period(arrival_times: np.array) -> float:
@@ -64,44 +63,32 @@ def frequency(arrival_times: np.array) -> float:
         click.secho(f'{error}', fg='red')
 
 
-def phases(arrival_times: np.array, frequencies: np.array) -> np.array:
+def phase(arrival_time: float, frequency: float) -> float:
     """
-    Calculate the phase values of the photon arrival times.
+    Calculate the phase value of the photon arrival time.
 
     Parameters
     ----------
-    arrival_times : numpy.array
-        Array that represents the photon arrival times.
-    frequencies : numpy.array
-        Array that represents the frequency spectrum.
+    arrival_time : float
+        Float that represents the photon arrival time.
+    frequency : float
+        Float that represents the frequency spectrum.
 
     Returns
     -------
-    values : numpy.array
-        Array that represents the phase values for each photon.
+    value : float
+        Float that represents the phase value of the photon.
     """
 
     try:
 
-        photon = 0
+        value = arrival_time * frequency
 
-        values = np.zeros(shape=(arrival_times.size, frequencies.size))
+        value = value - np.floor(value)
 
-        start = np.min(arrival_times)
+        value = 2 * np.pi * value
 
-        delta = ne.evaluate('arrival_times - start')
-
-        desc = click.style('Calculating phase values', fg='yellow')
-
-        for time in tqdm(delta, desc=desc):
-            values[photon] = ne.evaluate('time * frequencies')
-            photon += 1
-
-        frac = np.floor(values)
-
-        values = ne.evaluate('values - frac')
-
-        return values
+        return value
 
     except Exception as error:
         click.secho(f'{error}', fg='red')
@@ -126,27 +113,33 @@ def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
 
     try:
 
-        harmonics = 1
-
-        phase_values = phases(arrival_times, frequencies)
+        freq = 0
 
         potency = np.zeros_like(frequencies)
 
-        pie = np.pi
+        cossenos = np.zeros_like(arrival_times)
 
-        pulse = ne.evaluate('2 * pie * phase_values')
+        senos = np.zeros_like(arrival_times)
 
-        desc = click.style('Calculating Z2n Statistics', fg='yellow')
+        z2n = click.style('Calculating the periodogram', fg='yellow')
 
-        for freq in trange(frequencies.size, desc=desc):
-            cosseno = np.sum(np.cos(harmonics * pulse[:, freq])) ** 2
-            seno = np.sum(np.sin(harmonics * pulse[:, freq])) ** 2
-            fft = ne.evaluate('cosseno + seno')
-            potency[freq] = fft
+        for frequency in tqdm(frequencies, desc=z2n):
 
-        norm = (2 / arrival_times.size)
+            time = 0
 
-        potency = ne.evaluate('norm * potency')
+            for arrival_time in arrival_times:
+
+                value = phase(arrival_time, frequency)
+                senos[time] = np.sin(value)
+                cossenos[time] = np.cos(value)
+                time += 1
+
+            seno = senos.sum() ** 2
+            cosseno = cossenos.sum() ** 2
+            potency[freq] = seno + cosseno
+            freq += 1
+
+        potency = potency * (2 / arrival_times.size)
 
         return potency
 
