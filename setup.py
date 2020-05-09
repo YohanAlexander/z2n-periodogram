@@ -4,23 +4,21 @@
 # Generic/Built-in
 import setuptools
 
-# Other Libraries
-import z2n.globals as glob
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version=glob.__version__,
+        version='1.2.0',
         install_requires=[
             'click',
             'click-shell',
             'matplotlib',
             'astropy',
+            'pandas',
             'scipy',
             'dask',
             'numpy',
-            'numexpr',
+            'numba',
             'tqdm'
         ],
         tests_require=['pytest'],
@@ -33,12 +31,12 @@ with open("README.md", "r") as fh:
             [console_scripts]
             z2n=z2n.main:cli
         ''',
-        author=glob.__author__,
-        author_email=glob.__email__,
-        description=glob.__description__,
+        author='Yohan Alexander',
+        author_email='yohanfranca@gmail.com',
+        description='A program for interative periodograms analysis.',
         long_description=long_description,
         long_description_content_type="text/markdown",
-        url=glob.__url__,
+        url='https://github.com/yohanalexander/z2n-periodogram',
         include_package_data=True,
         classifiers=[
             "Programming Language :: Python :: 3",

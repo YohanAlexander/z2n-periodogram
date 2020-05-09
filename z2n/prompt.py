@@ -4,24 +4,144 @@
 # Generic/Built-in
 import os
 import click
-import numpy as np
-import matplotlib.pyplot as plt
 from click_shell import shell
 
 # Other Libraries
-import z2n.globals as glob
-import z2n.stats as stats
-import z2n.main as main
-import z2n.file as file
-import z2n.plot as cli
+from z2n import series
+from z2n import graph
+
+data = series.Series()
+noise = series.Series()
+figure = graph.Graph(data, noise)
+
+__z2n__ = '''
+        Z2n Software, a program for interactive periodograms analysis.
+        Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
+        Type "help" for more information or "docs" for documentation.
+        '''
+
+__plt__ = '''
+        Interactive plotting window of the Z2n Software.
+        Type "help" for more information.
+        '''
+
+# Keep this shell at the top
+@shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=__plt__)
+def plt() -> None:
+    """Open the interactive periodogram plotting window."""
 
 
-@click.version_option(prog_name="Z2n Software", version=glob.__version__)
-@shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=glob.__intro__)
+@plt.command()
+def peak() -> None:
+    """Add vertical line to the natural frequency."""
+    if figure.plots == 1:
+        figure.axes.axvline(data.peak, color='tab:red')
+    else:
+        figure.axes[0].axvline(data.peak, color='tab:red')
+    click.secho("Peak line added.", fg='green')
+
+
+@plt.command()
+def band() -> None:
+    """Add horizontal line to the bandwidth."""
+    if figure.plots == 1:
+        figure.axes.axhline(data.band, color='tab:gray')
+    else:
+        figure.axes[0].axhline(data.band, color='tab:gray')
+    click.secho("Bandwidth line added.", fg='green')
+
+
+@plt.command()
+def title() -> None:
+    """Change the title on the figure."""
+    if figure.plots != 1:
+        pass
+    else:
+        figure.axes.set_title(click.prompt("Which title"))
+        click.secho("Changed title.", fg='green')
+
+
+@plt.command()
+def xlabel() -> None:
+    """Change the label on the x axis."""
+    if figure.plots != 1:
+        pass
+    else:
+        figure.axes.set_xlabel(click.prompt("Which label"))
+        click.secho("Changed X axis label.", fg='green')
+
+
+@plt.command()
+def xscale() -> None:
+    """Change the scale on the x axis."""
+    if figure.plots != 1:
+        pass
+    else:
+        figure.axes.set_xscale(click.prompt(
+            "Which scale [linear, log, symlog, logit]"))
+        click.secho(f"Changed X axis scale.", fg='green')
+
+
+@plt.command()
+def xlim() -> None:
+    """Change the limites on the x axis."""
+    if figure.plots != 1:
+        pass
+    else:
+        low = click.prompt("Which lower limit", type=float)
+        up = click.prompt("Which upper limit", type=float)
+        figure.axes.set_xlim([low, up])
+        click.secho(f"Changed X axis limits.", fg='green')
+
+
+@plt.command()
+def ylabel() -> None:
+    """Change the label on the y axis."""
+    if figure.plots != 1:
+        pass
+    else:
+        figure.axes.set_ylabel(click.prompt("Which label"))
+        click.secho("Changed y axis label.", fg='green')
+
+
+@plt.command()
+def yscale() -> None:
+    """Change the scale on the y axis."""
+    if figure.plots != 1:
+        pass
+    else:
+        figure.axes.set_yscale(click.prompt(
+            "Which scale [linear, log, symlog, logit]"))
+        click.secho(f"Changed y axis scale.", fg='green')
+
+
+@plt.command()
+def ylim() -> None:
+    """Change the limites on the y axis."""
+    if figure.plots != 1:
+        pass
+    else:
+        low = click.prompt("Which lower limit", type=float)
+        up = click.prompt("Which upper limit", type=float)
+        figure.axes.set_ylim([low, up])
+        click.secho(f"Changed y axis limits.", fg='green')
+
+
+@plt.command()
+def save() -> None:
+    """Save the image to a file."""
+    if not figure.save_image():
+        click.secho(f"Saved at {figure.output}.{figure.format}", fg='green')
+    else:
+        click.secho(f"{figure.format} format not supported.", fg='red')
+
+
+@click.version_option(prog_name="Z2n Software", version='1.2.0')
+@shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
 def z2n():
     """
     This program allows the user to calculate periodograms using the Z2n
-    statistics a la Buccheri et al. 1983 from fits datasets.
+    statistics a la Buccheri et al. 1983.
 
     The standard Z2n statistics calculates the phase of each photon and
     the sinusoidal functions above for each photon. Be advised that this
@@ -31,7 +151,7 @@ def z2n():
 
 @z2n.command()
 def shell() -> None:
-    """Run shell commands (type shell)."""
+    """Run shell commands."""
     command = click.prompt("Type the command")
     output = os.popen(command).read()
     click.echo(output)
@@ -39,308 +159,90 @@ def shell() -> None:
 
 @z2n.command()
 def docs() -> None:
-    """Open the documentation on the software (type docs)."""
-
-    try:
-
-        click.launch(glob.__docs__)
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
-
-    click.echo(f"To read the documentation go to {glob.__docs__}")
+    """Open the documentation on the software."""
+    click.launch('https://z2n-periodogram.readthedocs.io')
+    click.echo(
+        "To read the documentation go to https://z2n-periodogram.readthedocs.io")
 
 
 @z2n.command()
 def plot() -> None:
-    """Open the interactive plotting window (type plot)."""
-
-    if glob.periodogram.size == 0:
+    """Open the interactive plotting window."""
+    if data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
-
+        if click.confirm("Do you want to plot from a file"):
+            if not data.get_z2n():
+                click.secho("File loaded.", fg='green')
+            else:
+                click.secho(f"{data.format} format not supported.", fg='red')
     else:
-
-        main.plot()
-
-        cli.plot()
+        if not figure.plot_figure():
+            plt()
+        else:
+            click.secho("Error ploting the figure.", fg='red')
 
 
 @z2n.command()
 def run() -> None:
-    """Calculate the Z2n periodogram (type run)."""
-
-    if glob.fits != 0:
-
+    """Calculate the periodogram."""
+    if data.input != "":
         if click.confirm("Do you want to use another file"):
-
-            path = click.prompt("Path to fits file")
-
-            glob.time = file.load_fits(path)
-
-            try:
-
-                if glob.time.size != 0:
-                    click.secho("Fits file loaded correctly.", fg='green')
-                    glob.fits = 1
-
-            except Exception as error:
-                click.secho(f'{error}', fg='red')
-
+            if not data.load_file():
+                click.secho("File loaded.", fg='green')
+                if not data.set_z2n():
+                    click.secho(
+                        "Select regions to estimate error.", fg='yellow')
+                    figure.change_forest()
+                    data.get_parameters()
             else:
-
-                try:
-
-                    if click.confirm("Do you want to run with the default values"):
-
-                        oversample = click.prompt(
-                            "Frequency steps", type=float)
-                        glob.frequency = stats.frequency(glob.time)
-                        glob.fmin = glob.frequency * 2
-                        glob.fmax = glob.frequency * 100
-                        glob.delta = oversample
-
-                    else:
-
-                        glob.fmin = click.prompt(
-                            "Minimum frequency", type=float)
-                        glob.fmax = click.prompt(
-                            "Maximum frequency", type=float)
-                        glob.delta = click.prompt(
-                            "Frequency steps", type=float)
-
-                    main.z2n()
-
-                except Exception as error:
-                    click.secho(
-                        "Failed to calculate the parameters.", fg='red')
-
+                click.secho(f"{data.format} format not supported.", fg='red')
         else:
-            click.secho("If you want to recalculate (type axis).", fg='yellow')
-
+            click.secho("This will recalculate the periodogram.", fg='yellow')
+            if click.confirm("Recalculate with different limits"):
+                figure.recalculate_figure()
     else:
-
-        path = click.prompt("Path to fits file")
-
-        glob.time = file.load_fits(path)
-
-        try:
-
-            if glob.time.size != 0:
-                click.secho("Fits file loaded correctly.", fg='green')
-                glob.fits = 1
-
-        except Exception as error:
-            click.secho(f'{error}', fg='red')
-
+        if not data.load_file():
+            click.secho("File loaded.", fg='green')
+            if not data.set_z2n():
+                click.secho("Select regions to estimate error.", fg='yellow')
+                figure.change_forest()
+                data.get_parameters()
         else:
-
-            try:
-
-                if click.confirm("Do you want to run with the default values"):
-
-                    oversample = click.prompt("Frequency steps", type=float)
-                    glob.frequency = stats.frequency(glob.time)
-                    glob.fmin = glob.frequency * 2
-                    glob.fmax = glob.frequency * 100
-                    glob.delta = oversample
-
-                else:
-
-                    glob.fmin = click.prompt(
-                        "Minimum frequency", type=float)
-                    glob.fmax = click.prompt(
-                        "Maximum frequency", type=float)
-                    glob.delta = click.prompt("Frequency steps", type=float)
-
-                main.z2n()
-
-            except Exception as error:
-                click.secho("Failed to calculate the parameters.", fg='red')
-                glob.fits = 0
-
-
-@z2n.command()
-def axis() -> None:
-    """Change the axis used on the periodogram (type axis)."""
-
-    if glob.periodogram.size == 0:
-        click.secho("The periodogram was not calculated yet.", fg='yellow')
-
-    else:
-
-        click.secho("This will recalculate the periodogram.", fg='yellow')
-
-        opt = click.prompt(
-            "Recalculate the whole region [1] or just the region selected [2]")
-
-        if opt == '1':
-
-            if click.confirm("Did you already select the new limits"):
-
-                ax = plt.gca().get_xlim()
-
-                glob.fmin = ax[0]
-                glob.fmax = ax[1]
-                glob.delta = click.prompt("Frequency steps", type=float)
-
-                glob.frequencies = np.arange(
-                    glob.fmin, glob.fmax, glob.delta)
-
-                main.z2n()
-
-        elif opt == '2':
-
-            if click.confirm("Did you already select the region"):
-
-                ax = plt.gca().get_xlim()
-
-                ax_x = np.where(np.isclose(glob.frequencies, ax[0], 0.1))
-                ax_y = np.where(np.isclose(glob.frequencies, ax[1], 0.1))
-                lower = np.rint(np.median(ax_x)).astype(int)
-                uppper = np.rint(np.median(ax_y)).astype(int)
-                size = uppper - lower
-
-                fmin = ax[0]
-                fmax = ax[1]
-                delta = click.prompt("Frequency steps", type=float)
-                freq = np.arange(fmin, fmax, delta)
-
-                try:
-
-                    period = stats.periodogram(glob.time, freq)
-                    click.secho(
-                        "Finished to calculate the periodogram.", fg='green')
-
-                except Exception as error:
-                    click.secho(
-                        "Failed to calculate the periodogram.", fg='red')
-
-                else:
-                    total = (glob.frequencies.size - size) + freq.size
-                    final = lower + freq.size
-
-                    tempx = np.zeros(total)
-                    tempy = np.zeros(total)
-
-                    tempx[:lower] = glob.frequencies[:lower]
-                    tempy[:lower] = glob.periodogram[:lower]
-                    tempx[lower:final] = freq
-                    tempy[lower:final] = period
-                    tempx[final:] = glob.frequencies[uppper:]
-                    tempy[final:] = glob.periodogram[uppper:]
-
-                    glob.frequencies = tempx
-                    glob.periodogram = tempy
-
-                    main.plot()
-
-        else:
-            click.secho("Select '1' or '2'.", fg='red')
+            click.secho(f"{data.format} format not supported.", fg='red')
 
 
 @z2n.command()
 def back() -> None:
-    """Create subplot of a background file (type back)."""
-
-    if glob.periodogram.size == 0:
+    """Create subplot of a background file."""
+    if data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
-
     else:
-
-        if glob.axis != 0:
-
-            opt = click.prompt(
-                "Do you want to change the background [1] or remove it [2]")
-
+        if figure.plots == 2:
+            opt = click.prompt("Change the background [1] or remove it [2]")
             if opt == '1':
-
-                path = click.prompt("Path to background file")
-
-                glob.noise = file.load_fits(path)
-
-                try:
-
-                    if glob.noise.size != 0:
-
-                        click.secho(
-                            "Background file loaded correctly.", fg='green')
-
-                        glob.axis = 1
-
-                        try:
-                            glob.background = stats.periodogram(glob.noise, glob.frequencies)
-                            click.secho('Finished to calculate the background.', fg='green')
-
-                        except Exception as error:
-                            click.secho(f'{error}', fg='red')
-                            click.secho('Failed to calculate the background.', fg='red')
-
-                        else:
-                            main.plot()
-
-                except Exception as error:
-                    click.secho(f'{error}', fg='red')
-
+                noise.load_file()
+                noise.bins = data.bins
+                noise.set_periodogram()
+                figure.add_background()
             elif opt == '2':
-                click.secho(
-                    "Background file removed.", fg='green')
-                glob.axis = 0
-                main.plot()
-
+                figure.rm_background()
+                click.secho("Background file removed.", fg='green')
             else:
                 click.secho("Select '1' or '2'.", fg='red')
-
         else:
-
-            path = click.prompt("Path to background file")
-
-            glob.noise = file.load_fits(path)
-
-            try:
-
-                if glob.noise.size != 0:
-
-                    click.secho(
-                            "Background file loaded correctly.", fg='green')
-
-                    glob.axis = 1
-
-                    try:
-                        glob.background = stats.periodogram(glob.noise, glob.frequencies)
-                        click.secho('Finished to calculate the background.', fg='green')
-
-                    except Exception as error:
-                        click.secho(f'{error}', fg='red')
-                        click.secho('Failed to calculate the background.', fg='red')
-
-                    else:
-                        main.plot()
-
-            except Exception as error:
-                click.secho(f'{error}', fg='red')
+            noise.load_file()
+            noise.bins = data.bins
+            noise.set_periodogram()
+            figure.add_background()
 
 
 @z2n.command()
 def save() -> None:
-    """Save the periodogram into a file (type save)."""
-
-    if glob.periodogram.size == 0:
+    """Save the periodogram to a file."""
+    if data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
-
     else:
-
-        txt = click.prompt("Name of the output file")
-
-        out = click.prompt("Which format [ascii, csv, fits]")
-
-        if out == 'ascii':
-            file.save_ascii(glob.frequencies, glob.periodogram, txt)
-
-        elif out == 'csv':
-            file.save_csv(glob.frequencies, glob.periodogram, txt)
-
-        elif out == 'fits':
-            file.save_fits(glob.frequencies, glob.periodogram, txt)
-
+        if not data.save_file():
+            click.secho(f"Saved at {data.output}.{data.format}", fg='green')
         else:
-            click.secho(f"{out} format not supported.", fg='red')
+            click.secho(f"{data.format} format not supported.", fg='red')

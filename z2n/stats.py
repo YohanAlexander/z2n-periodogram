@@ -2,206 +2,160 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
-import click
 import numpy as np
 from tqdm import tqdm
 
 
-def period(arrival_times: np.array) -> float:
+def period(series) -> None:
     """
-    Calculate the period of observation on the given time series.
-
+    Calculate the period of observation.
     Parameters
     ----------
-    arrival_times : numpy.array
-        Array that represents the photon arrival times.
-
+    series : Series
+        A time series object.
     Returns
     -------
-    periodo : float
-        Float number that represents the observation period.
+    None
     """
-
-    try:
-
-        first = np.min(arrival_times)
-
-        last = np.max(arrival_times)
-
-        periodo = last - first
-
-        return periodo
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+    last = np.max(series.time)
+    first = np.min(series.time)
+    series.period = last - first
 
 
-def frequency(arrival_times: np.array) -> float:
+def sampling(series) -> None:
     """
-    Calculate the sampling rate of the given time series.
-
+    Calculate the sampling rate.
     Parameters
     ----------
-    arrival_times : numpy.array
-        Array that represents the photon arrival times.
-
+    series : Series
+        A time series object.
     Returns
     -------
-    freq : float
-        Float number that represents the the nyquist frequency.
+    None
     """
-
-    try:
-
-        interval = period(arrival_times)
-
-        freq = (1 / interval)
-
-        return freq
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+    period(series)
+    series.freq = (1 / series.period)
 
 
-def phase(arrival_time: float, frequency: float) -> float:
+def periodogram(series) -> None:
     """
-    Calculate the phase value of the photon arrival time.
-
+    Calculate the Z2n statistics.
     Parameters
     ----------
-    arrival_time : float
-        Float that represents the photon arrival time.
-    frequency : float
-        Float that represents the frequency spectrum.
-
+    series : Series
+        A time series object.
     Returns
     -------
-    value : float
-        Float that represents the phase value of the photon.
+    None
     """
+    freq = 0
+    sin = np.zeros(series.time.size)
+    cos = np.zeros(series.time.size)
+    for frequency in tqdm(series.bins):
+        time = 0
+        for sample in series.time:
+            phase = sample * frequency
+            phase -= np.floor(phase)
+            phase *= 2 * np.pi
+            sin[time] = np.sin(phase)
+            cos[time] = np.cos(phase)
+            time += 1
+        series.z2n[freq] = (sin.sum() ** 2) + (cos.sum() ** 2)
+        freq += 1
+    series.z2n *= (2 / series.time.size)
 
-    try:
 
-        value = arrival_time * frequency
-
-        value = value - np.floor(value)
-
-        value = 2 * np.pi * value
-
-        return value
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
-
-
-def periodogram(arrival_times: np.array, frequencies: np.array) -> np.array:
+def potency(series) -> None:
     """
-    Apply the Z2n statistics to the phase values and normalize.
-
+    Calculate the natural potency.
     Parameters
     ----------
-    arrival_times : numpy.array
-        Array that represents the photon arrival times.
-    frequencies : numpy.array
-        Array that represents the frequency spectrum.
-
+    series : Series
+        A time series object.
     Returns
     -------
-    potency : numpy.array
-        Array that represents the potency of each frequency on the spectrum.
+    None
     """
-
-    try:
-
-        freq = 0
-
-        potency = np.zeros_like(frequencies)
-
-        cossenos = np.zeros_like(arrival_times)
-
-        senos = np.zeros_like(arrival_times)
-
-        z2n = click.style('Calculating the periodogram', fg='yellow')
-
-        for frequency in tqdm(frequencies, desc=z2n):
-
-            time = 0
-
-            for arrival_time in arrival_times:
-
-                value = phase(arrival_time, frequency)
-                senos[time] = np.sin(value)
-                cossenos[time] = np.cos(value)
-                time += 1
-
-            seno = senos.sum() ** 2
-            cosseno = cossenos.sum() ** 2
-            potency[freq] = seno + cosseno
-            freq += 1
-
-        potency = potency * (2 / arrival_times.size)
-
-        return potency
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+    series.pot = np.max(series.z2n)
 
 
-def peak(frequencies: np.array, statistics: np.array) -> float:
+def frequency(series) -> None:
     """
-    Get the value of the natural frequency on the periodogram.
-
+    Calculate the natural frequency.
     Parameters
     ----------
-    frequencies : numpy.array
-        Array that represents the frequency spectrum.
-    periodogram : numpy.array
-        Array that represents the the potency of each frequency on the spectrum.
-
+    series : Series
+        A time series object.
     Returns
     -------
-    peak_value : float
-        Float number that represents the periodogram peak.
+    None
     """
-
-    try:
-
-        index = np.argmax(statistics)
-
-        peak_value = frequencies[index]
-
-        return peak_value
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+    index = np.argmax(series.z2n)
+    series.peak = series.bins[index]
 
 
-def pfraction(arrival_times: np.array, statistics: np.array) -> float:
+def pfraction(series) -> None:
     """
-    Get the pulsed fraction of the natural frequency on the periodogram.
-
+    Calculate the pulsed fraction.
     Parameters
     ----------
-    arrival_times : numpy.array
-        Array that represents the photon arrival times.
-    periodogram : numpy.array
-        Array that represents the the potency of each frequency on the spectrum.
-
+    series : Series
+        A time series object.
     Returns
     -------
-    pulsed : float
-        Float number that represents the pulsed fraction of the peak.
+    None
     """
+    frequency(series)
+    pfrac = (2 * series.peak) / series.time.size
+    series.pulsed = pfrac ** 0.5
 
-    try:
 
-        peak_value = np.argmax(statistics)
+def forest(series) -> None:
+    """
+    Calculate the forest potency.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    potency(series)
+    index = np.argmax(series.z2n)
+    low = np.rint(index - (0.2 * index)).astype(int)
+    up = np.rint(index + (0.2 * index)).astype(int)
+    series.forest = np.mean([series.z2n[low], series.z2n[up]])
 
-        pfrac = (2 * peak_value) / arrival_times.size
 
-        pulsed = pfrac ** 0.5
+def bandwidth(series) -> None:
+    """
+    Calculate the bandwidth.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    forest(series)
+    series.band = series.pot - series.forest
 
-        return pulsed
 
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+def error(series) -> None:
+    """
+    Calculate the uncertainty.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    bandwidth(series)
+    intersections = np.where(np.isclose(series.z2n, series.band, 0.1))
+    low = series.peak - series.bins[intersections[0][0]]
+    #up = series.bins[intersections[-1][-1]] - series.peak
+    series.error = low  # np.mean([low, up])

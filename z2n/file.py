@@ -2,189 +2,153 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
-import csv
-import click
-import numpy as np
 import pandas as pd
 from astropy.io import fits
 import astropy.io.ascii as txt
 
 
-def load_ascii(path: str) -> np.array:
+def load_ascii(series) -> None:
     """
-    Open ascii file and return time series as a numpy array.
-
+    Open ascii file and store time series.
     Parameters
     ----------
-    path : str
-        String that represents full or relative path to a fits file.
-
-    Returns
-    -------
-    time_series : numpy.array
-        Array that represents the arrival times of each photon.
-    """
-
-    try:
-
-        data = pd.read_csv(f'{path}', sep=' ', header=None)
-        time_series = data[0].values
-
-        return time_series
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
-
-
-def load_csv(path: str) -> np.array:
-    """
-    Open csv file and return time series as a numpy array.
-
-    Parameters
-    ----------
-    path : str
-        String that represents full or relative path to a fits file.
-
-    Returns
-    -------
-    time_series : numpy.array
-        Array that represents the arrival times of each photon.
-    """
-
-    try:
-
-        data = pd.read_csv(f'{path}', sep=',', header=None)
-        time_series = data[0].values
-
-        return time_series
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
-
-
-def load_fits(path: str) -> np.array:
-    """
-    Open fits file and return time series as a numpy array.
-
-    Parameters
-    ----------
-    path : str
-        String that represents full or relative path to a fits file.
-
-    Returns
-    -------
-    time_series : numpy.array
-        Array that represents the arrival times of each photon.
-    """
-
-    try:
-
-        data = fits.open(f'{path}')
-        event = data['EVENTS'].data
-        time_series = event['TIME']
-        data.close()
-
-        return time_series
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
-
-
-def save_ascii(frequencies: np.array, periodogram: np.array, text: str) -> None:
-    """
-    Save the frequency spectrum into an formatted ascii file.
-
-    Parameters
-    ----------
-    frequencies : numpy.array
-        Array that represents the frequency spectrum.
-    periodogram : numpy.array
-        Array that represents the potency of each frequency on the spectrum.
-    text : str
-        A formatted string that represents the name of the output file.
-
+    series : Series
+        A time series object.
     Returns
     -------
     None
     """
-
-    try:
-
-        header = "Frequency Z2n-Potency\n"
-
-        with open(f'{text}.txt', 'w') as file:
-            if file.tell() == 0:
-                file.write(header)
-            for freq, spec in zip(frequencies, periodogram):
-                file.write(f"{freq} {spec}\n")
-
-        click.secho(f"Text file saved at {text}.txt", fg='green')
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+    data = pd.read_csv(series.input, sep=' ', skiprows=1, header=None)
+    series.time = data[0].values
 
 
-def save_csv(frequencies: np.array, periodogram: np.array, text: str) -> None:
+def load_csv(series) -> None:
     """
-    Save the frequency spectrum into an formatted csv file.
-
+    Open csv file and store time series.
     Parameters
     ----------
-    frequencies : numpy.array
-        Array that represents the frequency spectrum.
-    periodogram : numpy.array
-        Array that represents the potency of each frequency on the spectrum.
-    text : str
-        A formatted string that represents the name of the output file.
-
+    series : Series
+        A time series object.
     Returns
     -------
     None
     """
-
-    try:
-
-        header = ["Frequency", "Z2n-Potency"]
-
-        with open(f'{text}.csv', 'w') as file:
-            writer = csv.writer(file)
-            if file.tell() == 0:
-                writer.writerow(header)
-            for freq, spec in zip(frequencies, periodogram):
-                writer.writerow([f"{freq}", f"{spec}"])
-
-        click.secho(f"Csv file saved at {text}.csv", fg='green')
-
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+    data = pd.read_csv(series.input, sep=',', skiprows=1, header=None)
+    series.time = data[0].values
 
 
-def save_fits(frequencies: np.array, periodogram: np.array, text: str) -> None:
+def load_fits(series) -> None:
     """
-    Save the frequency spectrum into an formatted fits file.
-
+    Open fits file and store time series.
     Parameters
     ----------
-    frequencies : numpy.array
-        Array that represents the frequency spectrum.
-    periodogram : numpy.array
-        Array that represents the potency of each frequency on the spectrum.
-    text : str
-        A formatted string that represents the name of the output file.
-
+    series : Series
+        A time series object.
     Returns
     -------
     None
     """
+    data = fits.open(series.input)
+    event = data['EVENTS'].data
+    series.time = event['TIME']
+    data.close()
 
-    try:
 
-        save_ascii(frequencies, periodogram, text)
+def save_ascii(series) -> None:
+    """
+    Save the periodogram to ascii file.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    data = pd.DataFrame()
+    data['Frequency'] = series.bins
+    data['Potency'] = series.z2n
+    data.to_csv(f'{series.output}.txt', sep=' ', index=None)
 
-        file = txt.read(text)
-        file.write(f"{text}.fits")
 
-        click.secho(f"Fits file saved at {text}.fits", fg='green')
+def save_csv(series) -> None:
+    """
+    Save the periodogram to csv file.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    data = pd.DataFrame()
+    data['Frequency'] = series.bins
+    data['Potency'] = series.z2n
+    data.to_csv(f'{series.output}.csv', sep=',', index=None)
 
-    except Exception as error:
-        click.secho(f'{error}', fg='red')
+
+def save_fits(series) -> None:
+    """
+    Save the periodogram to fits file.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    save_ascii(series)
+    file = txt.read(f'{series.output}.txt')
+    file.write(f"{series.output}.fits")
+
+
+def plot_ascii(series) -> None:
+    """
+    Open ascii file and store periodogram.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    data = pd.read_csv(series.input, sep=' ', skiprows=1, header=None)
+    series.bins = data[0].values
+    series.z2n = data[1].values
+
+
+def plot_csv(series) -> None:
+    """
+    Open csv file and store periodogram.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    data = pd.read_csv(series.input, sep=',', skiprows=1, header=None)
+    series.bins = data[0].values
+    series.z2n = data[1].values
+
+
+def plot_fits(series) -> None:
+    """
+    Open fits file and store periodogram.
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    Returns
+    -------
+    None
+    """
+    data = fits.open(series.input)
+    event = data[1].data
+    series.bins = event['Frequency']
+    series.z2n = event['Potency']
+    data.close()
