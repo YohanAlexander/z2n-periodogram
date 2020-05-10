@@ -156,6 +156,9 @@ def error(series) -> None:
     """
     bandwidth(series)
     intersections = np.where(np.isclose(series.z2n, series.band, 0.1))
-    low = series.peak - series.bins[intersections[0][0]]
-    #up = series.bins[intersections[-1][-1]] - series.peak
-    series.error = low  # np.mean([low, up])
+    if intersections[0].size:
+        low = series.peak - series.bins[intersections[0][0]]
+        up = series.bins[intersections[0][-1]] - series.peak
+        series.error = np.mean([low, up])
+    else:
+        series.error = 0

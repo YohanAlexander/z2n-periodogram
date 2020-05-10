@@ -42,31 +42,30 @@ class Series:
         self.forest = 0
 
     def get_parameters(self) -> None:
+        self.get_time()
         self.get_period()
         self.get_sampling()
         self.get_fmin()
         self.get_fmax()
         self.get_delta()
+        self.get_bins()
+        self.get_periodogram()
         self.get_frequency()
+        self.get_error()
         self.get_pfraction()
         self.get_potency()
         self.get_forest()
         self.get_band()
-        self.get_error()
 
     def set_parameters(self) -> None:
         self.set_period()
         self.set_sampling()
-        if click.confirm("Do you want to use the Nyquist frequency"):
-            self.fmin = self.freq
-            self.fmax = self.freq * 100
-            self.set_delta()
-            self.set_bins()
-        else:
-            self.set_fmin()
-            self.set_fmax()
-            self.set_delta()
-            self.set_bins()
+        self.set_frequency()
+        self.set_error()
+        self.set_pfraction()
+        self.set_potency()
+        self.set_forest()
+        self.set_band()
 
     def get_input(self) -> str:
         click.secho(f"Path to the file: {self.input}", fg='cyan')
@@ -122,10 +121,19 @@ class Series:
         click.secho('Frequency steps set.', fg='green')
 
     def get_bins(self) -> np.array:
-        click.secho(f"{self.bins.size} Frequency bins", fg='cyan')
+        click.secho(f"{self.bins.size} frequency bins.", fg='cyan')
         return self.bins
 
     def set_bins(self) -> None:
+        self.set_sampling()
+        if click.confirm("Do you want to use the Nyquist frequency"):
+            self.fmin = self.freq * 2
+            self.fmax = self.freq * 100
+            self.set_delta()
+        else:
+            self.set_fmin()
+            self.set_fmax()
+            self.set_delta()
         self.bins = np.arange(self.fmin, self.fmax, self.delta)
         click.secho('Frequency bins set.', fg='green')
 
@@ -146,20 +154,20 @@ class Series:
         click.secho('Sampling frequency set.', fg='green')
 
     def get_potency(self) -> float:
-        click.secho(f"Natural potency: {self.pot}", fg='cyan')
+        click.secho(f"Peak potency: {self.pot}", fg='cyan')
         return self.pot
 
     def set_potency(self) -> None:
         stats.potency(self)
-        click.secho('Natural potency set.', fg='green')
+        click.secho('Peak potency set.', fg='green')
 
     def get_frequency(self) -> float:
-        click.secho(f"Natural frequency: {self.peak} Hz", fg='cyan')
+        click.secho(f"Peak frequency: {self.peak} Hz", fg='cyan')
         return self.peak
 
     def set_frequency(self) -> None:
         stats.frequency(self)
-        click.secho('Natural frequency set.', fg='green')
+        click.secho('Peak frequency set.', fg='green')
 
     def get_band(self) -> float:
         click.secho(f"Bandwidth: {self.band}", fg='cyan')
@@ -207,61 +215,64 @@ class Series:
         if self.format == 'ascii':
             self.set_input()
             file.load_ascii(self)
+            click.secho("File loaded.", fg='green')
             return 0
         elif self.format == 'csv':
             self.set_input()
             file.load_csv(self)
+            click.secho("File loaded.", fg='green')
             return 0
         elif self.format == 'fits':
             self.set_input()
             file.load_fits(self)
+            click.secho("File loaded.", fg='green')
             return 0
         else:
+            click.secho(f"{self.format} format not supported.", fg='red')
             return 1
 
-    def save_file(self) -> int:
+    def save_file(self) -> None:
         self.set_format()
         if self.format == 'ascii':
-            self.set_output()
             file.save_ascii(self)
-            return 0
+            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
         elif self.format == 'csv':
             self.set_output()
             file.save_csv(self)
-            return 0
+            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
         elif self.format == 'fits':
             self.set_output()
             file.save_fits(self)
-            return 0
+            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
         else:
-            return 1
+            click.secho(f"{self.format} format not supported.", fg='red')
 
     def get_z2n(self) -> int:
         self.set_format()
         if self.format == 'ascii':
             self.set_input()
             file.plot_ascii(self)
+            click.secho("File loaded.", fg='green')
             return 0
         elif self.format == 'csv':
             self.set_input()
             file.plot_csv(self)
+            click.secho("File loaded.", fg='green')
             return 0
         elif self.format == 'fits':
             self.set_input()
             file.plot_fits(self)
+            click.secho("File loaded.", fg='green')
             return 0
         else:
+            click.secho(f"{self.format} format not supported.", fg='red')
             return 1
 
     def set_z2n(self) -> int:
-        self.set_parameters()
+        self.set_bins()
         if not self.set_periodogram():
-            self.set_frequency()
-            self.set_pfraction()
-            self.set_potency()
-            self.set_forest()
-            self.set_band()
-            self.set_error()
+            self.set_parameters()
+            self.get_parameters()
             return 0
         else:
             return 1
