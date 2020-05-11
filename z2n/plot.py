@@ -237,29 +237,30 @@ class Plot(series.Series):
         if self.plots != 1:
             self.axes[0].set_xscale(click.prompt(
                 "Which scale [linear, log, symlog, logit]"))
-            click.secho(f"Changed X axis scale.", fg='green')
+            click.secho("Changed X axis scale.", fg='green')
         else:
             self.axes.set_xscale(click.prompt(
                 "Which scale [linear, log, symlog, logit]"))
-            click.secho(f"Changed X axis scale.", fg='green')
+            click.secho("Changed X axis scale.", fg='green')
 
     def change_xlim(self) -> None:
         if self.plots != 1:
             low = click.prompt("Which lower limit", type=float)
             up = click.prompt("Which upper limit", type=float)
             self.axes[0].set_xlim([low, up])
-            click.secho(f"Changed X axis limits.", fg='green')
+            click.secho("Changed X axis limits.", fg='green')
         else:
             low = click.prompt("Which lower limit", type=float)
             up = click.prompt("Which upper limit", type=float)
             self.axes.set_xlim([low, up])
-            click.secho(f"Changed X axis limits.", fg='green')
+            click.secho("Changed X axis limits.", fg='green')
 
     def change_ylabel(self) -> None:
         if self.plots != 1:
             ylabel = click.prompt("Which label")
             self.axes[0].set_ylabel(ylabel)
             self.axes[1].set_ylabel(ylabel)
+            click.secho("Changed y axis label.", fg='green')
         else:
             self.axes.set_ylabel(click.prompt("Which label"))
             click.secho("Changed y axis label.", fg='green')
@@ -268,23 +269,23 @@ class Plot(series.Series):
         if self.plots != 1:
             self.axes[0].set_yscale(click.prompt(
                 "Which scale [linear, log, symlog, logit]"))
-            click.secho(f"Changed y axis scale.", fg='green')
+            click.secho("Changed y axis scale.", fg='green')
         else:
             self.axes.set_yscale(click.prompt(
                 "Which scale [linear, log, symlog, logit]"))
-            click.secho(f"Changed y axis scale.", fg='green')
+            click.secho("Changed y axis scale.", fg='green')
 
     def change_ylim(self) -> None:
         if self.plots != 1:
             low = click.prompt("Which lower limit", type=float)
             up = click.prompt("Which upper limit", type=float)
             self.axes[0].set_ylim([low, up])
-            click.secho(f"Changed y axis limits.", fg='green')
+            click.secho("Changed y axis limits.", fg='green')
         else:
             low = click.prompt("Which lower limit", type=float)
             up = click.prompt("Which upper limit", type=float)
             self.axes.set_ylim([low, up])
-            click.secho(f"Changed y axis limits.", fg='green')
+            click.secho("Changed y axis limits.", fg='green')
 
     def fit_gauss(self) -> None:
         pass

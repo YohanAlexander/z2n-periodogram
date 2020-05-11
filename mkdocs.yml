@@ -1,16 +1,18 @@
 site_name: Z2n Periodogram
 
 nav:
-  - Home:
-    - index.md
-  - Installation:
-    - install.md
+  - Home: index.md
+  - About: about.md
+  - Getting Started: install.md
   - Usage:
+    - input.md
     - usage.md
-  - Plotting:
     - plotting.md
-  - Contributing:
-    - contribute.md
+    - package.md
+  - API:
+    - series.md
+    - plot.md
+  - Contributing: contribute.md
   - License: copyright.md
 
 theme:

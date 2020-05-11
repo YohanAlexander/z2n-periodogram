@@ -40,13 +40,14 @@
 
 ## About The Project
 
-The Z2n Software was developed by Yohan Alexander as a research project, funded by the CNPq Institution, and it is a Open Source initiative. The program allows the user to calculate periodograms using the Z2n statistics a la Buccheri et al. 1983.
+The Z2n Software was developed by Yohan Alexander as a research project, funded by the CNPq Institution, and it is a Open Source initiative. The program allows the user to calculate periodograms using the Z2n statistics a la Buccheri et al. 1983, which is defined as follows.
 
-<p align="center"><img src="svgs/b978f5d179d91490c920c7e96494ab53.svg?invert_in_darkmode" align=middle width=299.8248pt height=37.583864999999996pt/></p>
+![\Large \phi_j \[0,1\] = frac(v_i\Delta t_{ij} + \dot v_i \frac{\Delta t^2_{ij}}{2} + \dot v_i \frac{\Delta t^3_{ij}}{6})](https://render.githubusercontent.com/render/math?math=%5CLarge%20%5Cphi_j%20%5B0%2C1%5D%20%3D%20frac(v_i%5CDelta%20t_%7Bij%7D%20%2B%20%5Cdot%20v_i%20%5Cfrac%7B%5CDelta%20t%5E2_%7Bij%7D%7D%7B2%7D%20%2B%20%5Cdot%20v_i%20%5Cfrac%7B%5CDelta%20t%5E3_%7Bij%7D%7D%7B6%7D))
 
-<p align="center"><img src="svgs/0205cc14fa865169e21fc457d3de3c48.svg?invert_in_darkmode" align=middle width=342.51194999999996pt height=50.04351pt/></p>
+![\Large Z^2_n = \frac{2}{N} \cdot \sum_{k=1}^{n} \[(\sum_{j=1}^{N} cos(k\phi_j)) ^ 2 + (\sum_{j=1}^{N} sin(k\phi_j)) ^ 2\]](https://render.githubusercontent.com/render/math?math=%5CLarge%20Z%5E2_n%20%3D%20%5Cfrac%7B2%7D%7BN%7D%20%5Ccdot%20%5Csum_%7Bk%3D1%7D%5E%7Bn%7D%20%5B(%5Csum_%7Bj%3D1%7D%5E%7BN%7D%20cos(k%5Cphi_j))%20%5E%202%20%2B%20(%5Csum_%7Bj%3D1%7D%5E%7BN%7D%20sin(k%5Cphi_j))%20%5E%202%5D)
 
-The standard Z2n statistics calculates the phase of each photon and the sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high, since the algorithm grows at a exponential rate <img src="svgs/3987120c67ed5a9162aa9841b531c3a9.svg?invert_in_darkmode" align=middle width=43.022265pt height=26.76201000000001pt/>.
+The standard Z2n statistics calculates the phase of each photon and the sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high, since the algorithm grows at a exponential rate ![\large O(n^2)](https://render.githubusercontent.com/render/math?math=%5Clarge%20O(n%5E2)).
+
 
 ### Built With
 The Z2n Software was built using the `Python` open source language.
@@ -57,7 +58,7 @@ The Z2n Software was built using the `Python` open source language.
 
 ### Prerequisites
 
-The version of the `Python` interpreter used during the development was the`3.7`, which can be managed in virtual environments such as `Anaconda`. Therefore, try to use the same version or one above.
+The version of the `Python` interpreter used during the development was the`3.7`, which can be managed in virtual environments such as `Anaconda`. Therefore, try to use the same or above versions for the best compatibility.
 
 * Python>=3.7
 * PIP
@@ -77,8 +78,9 @@ z2n
 ```
 
 The `CLI` of the software is very interactive and it works by triggering the commands available, for more information on the usage type `help`.
+
 ```sh
-        Z2n Software (1.0.0), a program for interactive periodograms.
+        Z2n Software, a program for interactive periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.
 
@@ -86,7 +88,7 @@ The `CLI` of the software is very interactive and it works by triggering the com
 
 Documented commands (type help <topic>):
 ========================================
-axis  back  docs  plot  run  save
+back  docs  plot  run  save
 
 Undocumented commands:
 ======================

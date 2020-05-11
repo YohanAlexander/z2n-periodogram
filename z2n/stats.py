@@ -51,10 +51,10 @@ def periodogram(series) -> None:
     freq = 0
     sin = np.zeros(series.time.size)
     cos = np.zeros(series.time.size)
-    for frequency in tqdm(series.bins):
+    for bins in tqdm(series.bins):
         time = 0
         for sample in series.time:
-            phase = sample * frequency
+            phase = sample * bins
             phase -= np.floor(phase)
             phase *= 2 * np.pi
             sin[time] = np.sin(phase)

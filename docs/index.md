@@ -18,26 +18,19 @@
 
 ## Table of Contents
 
-* [About the Project](#about-the-project)
-* [Getting Started](/install/#getting-started)
+* [About the Project](/about)
+    * [Built with](/about/#built-with)
+* [Getting Started](/install)
+    * [Prerequesites](/install/#prerequesites)
+    * [Installation](/install/#installation)
 * [Usage](/usage)
-* [Plotting](/plotting)
+    * [Importing data to the program](/input)
+    * [Using from the command line](/usage)
+    * [Using as a package](/package)
+    * [Plotting a figure of the periodogram](/plotting)
+* [API](/api)
+    * [The Time Series Object](/series)
+    * [The Plot Figure Object](/plot)
 * [Contributing](/contribute)
-* [Roadmap](/contribute#roadmap)
+    * [Roadmap](/contribute#roadmap)
 * [License](/copyright)
-
-## About The Project
-
-The Z2n Software was developed by Yohan Alexander as a research project, funded by the CNPq Institution, and it is a Open Source initiative. The program allows the user to calculate periodograms, from fits datasets, using the Z2n statistics a la Buccheri et al. 1983, which is defined as follows.
-
-<p align="center"><img src="svgs/b978f5d179d91490c920c7e96494ab53.svg?invert_in_darkmode" align=middle width=299.8248pt height=37.583864999999996pt/></p>
-
-<p align="center"><img src="svgs/0205cc14fa865169e21fc457d3de3c48.svg?invert_in_darkmode" align=middle width=342.51194999999996pt height=50.04351pt/></p>
-
-The standard Z2n statistics calculates the phase of each photon and the sinusoidal functions above for each photon. Be advised that this is very computationally expensive if the number of photons is high, since the algorithm grows at a exponential rate <img src="svgs/3987120c67ed5a9162aa9841b531c3a9.svg?invert_in_darkmode" align=middle width=43.022265pt height=26.76201000000001pt/>.
-
-## Built With
-
-The Z2n Software was built using the `Python` open source language.
-
-* [Python](https://python.org)
