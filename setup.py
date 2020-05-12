@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version='1.2.0',
+        version='1.3.0',
         install_requires=[
             'click',
             'click-shell',
@@ -16,7 +16,6 @@ with open("README.md", "r") as fh:
             'astropy',
             'pandas',
             'scipy',
-            'dask',
             'numpy',
             'numba',
             'tqdm'

@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Other Libraries
+# Owned Libraries
 from z2n import prompt
 
 

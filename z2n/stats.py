@@ -1,9 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Generic/Built-in
+# Other libraries
 import numpy as np
 from tqdm import tqdm
+from numba import jit
+
 
 
 def period(series) -> None:
@@ -22,6 +24,7 @@ def period(series) -> None:
     series.period = last - first
 
 
+
 def sampling(series) -> None:
     """
     Calculate the sampling rate.
@@ -37,6 +40,133 @@ def sampling(series) -> None:
     series.freq = (1 / series.period)
 
 
+@jit(nopython=True, parallel=True)
+def phase(times: np.array, bins: float) -> np.array:
+    """
+    Calculate the phase values.
+    Parameters
+    ----------
+    times : np.array
+        An array that represents the times.
+    bins : float
+        A float that represents the frequency.
+    Returns
+    -------
+    values : np.array
+        An array that represents the phase values.
+    """
+    delta = times * bins
+    frac = delta - np.floor(delta)
+    values = frac * 2 * np.pi
+    return values
+
+
+@jit(nopython=True, parallel=True)
+def sine(phases: np.array) -> np.array:
+    """
+    Calculate the sine values.
+    Parameters
+    ----------
+    phases : np.array
+        An array that represents the phase values.
+    Returns
+    -------
+    values : np.array
+        An array that represents the sine values.
+    """
+    values = np.sin(phases)
+    return values
+
+
+@jit(nopython=True, parallel=True)
+def cosine(phases: np.array) -> np.array:
+    """
+    Calculate the cosine values.
+    Parameters
+    ----------
+    phases : np.array
+        An array that represents the phase values.
+    Returns
+    -------
+    values : np.array
+        An array that represents the cosine values.
+    """
+    values = np.cos(phases)
+    return values
+
+
+@jit(nopython=True, parallel=True)
+def summation(phases: np.array) -> float:
+    """
+    Calculate the summation value.
+    Parameters
+    ----------
+    phases : np.array
+        An array that represents the phase values.
+    Returns
+    -------
+    value : float
+        A float that represents the summation value.
+    """
+    value = np.sum(phases)
+    return value
+
+
+@jit(nopython=True)
+def square(value: float) -> float:
+    """
+    Calculate the square values.
+    Parameters
+    ----------
+    value : float
+        A float that represents the summation value.
+    Returns
+    -------
+    squared : float
+        A float that represents the square value.
+    """
+    squared = np.square(value)
+    return squared
+
+
+@jit(nopython=True)
+def z2n(sin: float, cos: float) -> float:
+    """
+    Calculate the z2n potency value.
+    Parameters
+    ----------
+    sin : float
+        A float that represents the sine value.
+    cos : float
+        A float that represents the cosine value.
+    Returns
+    -------
+    value : float
+        A float that represents the z2n potency.
+    """
+    value = sin + cos
+    return value
+
+
+@jit(nopython=True, parallel=True)
+def normalization(z2n: np.array, norm: float) -> np.array:
+    """
+    Calculate the normalization values.
+    Parameters
+    ----------
+    z2n : np.array
+        An array that represents the z2n values.
+    norm : float
+        A float that represents the normalization.
+    Returns
+    -------
+    values : np.array
+        An array that represents the normalized values.
+    """
+    values = z2n * norm
+    return values
+
+
 def periodogram(series) -> None:
     """
     Calculate the Z2n statistics.
@@ -49,20 +179,14 @@ def periodogram(series) -> None:
     None
     """
     freq = 0
-    sin = np.zeros(series.time.size)
-    cos = np.zeros(series.time.size)
     for bins in tqdm(series.bins):
-        time = 0
-        for sample in series.time:
-            phase = sample * bins
-            phase -= np.floor(phase)
-            phase *= 2 * np.pi
-            sin[time] = np.sin(phase)
-            cos[time] = np.cos(phase)
-            time += 1
-        series.z2n[freq] = (sin.sum() ** 2) + (cos.sum() ** 2)
-        freq += 1
-    series.z2n *= (2 / series.time.size)
+        phases = phase(series.time, bins)
+        sin = summation(sine(phases))
+        cos = summation(cosine(phases))
+        series.z2n[freq] = z2n(square(sin), square(cos))
+        freq = freq + 1
+    series.z2n = normalization(series.z2n, (2 / series.time.size))
+
 
 
 def potency(series) -> None:
@@ -77,6 +201,7 @@ def potency(series) -> None:
     None
     """
     series.pot = np.max(series.z2n)
+
 
 
 def frequency(series) -> None:
@@ -94,6 +219,7 @@ def frequency(series) -> None:
     series.peak = series.bins[index]
 
 
+
 def pfraction(series) -> None:
     """
     Calculate the pulsed fraction.
@@ -108,6 +234,7 @@ def pfraction(series) -> None:
     frequency(series)
     pfrac = (2 * series.peak) / series.time.size
     series.pulsed = pfrac ** 0.5
+
 
 
 def forest(series) -> None:
@@ -128,6 +255,7 @@ def forest(series) -> None:
     series.forest = np.mean([series.z2n[low], series.z2n[up]])
 
 
+
 def bandwidth(series) -> None:
     """
     Calculate the bandwidth.
@@ -141,6 +269,7 @@ def bandwidth(series) -> None:
     """
     forest(series)
     series.band = series.pot - series.forest
+
 
 
 def error(series) -> None:

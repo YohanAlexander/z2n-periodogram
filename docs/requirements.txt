@@ -3,8 +3,8 @@ click
 click-shell
 matplotlib
 astropy
+pandas
 scipy
-dask
 numpy
-numexpr
+numba
 tqdm

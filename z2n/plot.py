@@ -1,12 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Generic/Built-in
+# Other Libraries
 import click
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Other Libraries
+# Owned Libraries
 from z2n import series
 
 
@@ -189,7 +189,7 @@ class Plot(series.Series):
                     self.change_axis()
                     means[region] = np.mean(self.data.z2n[self.low:self.up])
             self.data.forest = np.mean(means)
-            self.set_band()
+            self.data.set_band()
         else:
             click.secho("No regions to estimate error.", fg='yellow')
 

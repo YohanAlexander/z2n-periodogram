@@ -1,11 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Generic/Built-in
+# Other Libraries
 import click
 import numpy as np
 
-# Other Libraries
+# Owned Libraries
 from z2n import file
 from z2n import stats
 
@@ -206,6 +206,7 @@ class Series:
         return self.z2n
 
     def set_periodogram(self) -> None:
+        self.time = self.time.astype('float64')
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')

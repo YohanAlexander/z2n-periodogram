@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Generic/Built-in
+# Other Libraries
 import pandas as pd
 from astropy.io import fits
 import astropy.io.ascii as txt
@@ -48,10 +48,9 @@ def load_fits(series) -> None:
     -------
     None
     """
-    data = fits.open(series.input)
-    event = data['EVENTS'].data
-    series.time = event['TIME']
-    data.close()
+    with fits.open(series.input) as data:
+        event = data['EVENTS'].data
+        series.time = event['TIME']
 
 
 def save_ascii(series) -> None:
@@ -147,8 +146,7 @@ def plot_fits(series) -> None:
     -------
     None
     """
-    data = fits.open(series.input)
-    event = data[1].data
-    series.bins = event['Frequency']
-    series.z2n = event['Potency']
-    data.close()
+    with fits.open(series.input) as data:
+        event = data[1].data
+        series.bins = event['Frequency']
+        series.z2n = event['Potency']
