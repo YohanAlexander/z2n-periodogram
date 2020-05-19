@@ -3,7 +3,7 @@
 [![GitHub](https://img.shields.io/github/license/yohanalexander/z2n-periodogram)](https://github.com/YohanAlexander/z2n-periodogram/blob/master/LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/z2n-periodogram/badge/?version=latest)](https://z2n-periodogram.readthedocs.io/en/latest/?badge=latest)
 
-
+<br>
 <p align="center">
   <a href="https://github.com/yohanalexander/z2n-periodogram">
     <img src="https://user-images.githubusercontent.com/39287022/80550543-cb789b00-8996-11ea-90af-fe2936fb703e.png" alt="Logo" width="50%" height="50%">

@@ -4,7 +4,7 @@ To start the software just type `z2n` on the terminal (check if you're under the
 
 The `CLI` of the software is very interactive and it works by triggering the commands available, for more information on the usage type `help`.
 
-```sh
+```python
         Z2n Software, a program for interactive periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.

@@ -8,17 +8,17 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version='1.3.0',
+        version='1.4.0',
         install_requires=[
             'click',
             'click-shell',
             'matplotlib',
             'astropy',
             'pandas',
-            'scipy',
             'numpy',
             'numba',
-            'tqdm'
+            'tqdm',
+            'dask',
         ],
         tests_require=['pytest'],
         extras_require={

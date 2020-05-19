@@ -3,8 +3,6 @@ from pkg_resources import get_distribution, DistributionNotFound
 # Wrapping Header
 __project__ = 'z2n-periodogram'
 __version__ = None
-__name__ = 'z2n'
-__prog__ = 'Z2n Periodogram'
 __author__ = 'Yohan Alexander'
 __license__ = 'MIT LICENSE'
 __copyright__ = 'Copyright (C) 2020, Z2n Software, by Yohan Alexander.'

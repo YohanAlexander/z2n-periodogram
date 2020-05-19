@@ -10,7 +10,6 @@ from z2n import series
 from z2n import plot
 from z2n import __z2n__
 from z2n import __plt__
-from z2n import __prog__
 from z2n import __version__
 
 data = series.Series()
@@ -18,7 +17,7 @@ noise = series.Series()
 figure = plot.Plot(data, noise)
 
 
-@click.version_option(prog_name=__prog__, version=__version__)
+@click.version_option(prog_name='Z2n Software', version=__version__)
 @shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
 def z2n():
     """
@@ -44,7 +43,6 @@ def plot() -> None:
     """Open the interactive plotting window."""
     if data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
-        figure.plot_periodogram()
     else:
         figure.plot_figure()
         plt()
@@ -53,7 +51,7 @@ def plot() -> None:
 @z2n.command()
 def run() -> None:
     """Calculate the Z2n Statistics."""
-    figure.plot_z2n()
+    figure.plot_periodogram()
 
 
 @z2n.command()
@@ -77,7 +75,13 @@ def save() -> None:
 @shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=__plt__)
 def plt() -> None:
     """Open the interactive periodogram plotting window."""
-    figure.add_lines()
+
+
+@plt.command()
+def lines() -> None:
+    """Add parameter lines on the figure."""
+    figure.add_peak()
+    figure.add_band()
 
 
 @plt.command()

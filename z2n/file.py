@@ -10,10 +10,12 @@ import astropy.io.ascii as txt
 def load_ascii(series) -> None:
     """
     Open ascii file and store time series.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -25,10 +27,12 @@ def load_ascii(series) -> None:
 def load_csv(series) -> None:
     """
     Open csv file and store time series.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -40,10 +44,12 @@ def load_csv(series) -> None:
 def load_fits(series) -> None:
     """
     Open fits file and store time series.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -56,10 +62,12 @@ def load_fits(series) -> None:
 def save_ascii(series) -> None:
     """
     Save the periodogram to ascii file.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -73,10 +81,12 @@ def save_ascii(series) -> None:
 def save_csv(series) -> None:
     """
     Save the periodogram to csv file.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -90,10 +100,12 @@ def save_csv(series) -> None:
 def save_fits(series) -> None:
     """
     Save the periodogram to fits file.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -106,10 +118,12 @@ def save_fits(series) -> None:
 def plot_ascii(series) -> None:
     """
     Open ascii file and store periodogram.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -122,10 +136,12 @@ def plot_ascii(series) -> None:
 def plot_csv(series) -> None:
     """
     Open csv file and store periodogram.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
@@ -138,10 +154,12 @@ def plot_csv(series) -> None:
 def plot_fits(series) -> None:
     """
     Open fits file and store periodogram.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None
