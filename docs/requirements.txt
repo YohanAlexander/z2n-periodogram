@@ -1,6 +1,7 @@
 mkautodoc
 click
 click-shell
+dask[array]
 matplotlib
 astropy
 numpy

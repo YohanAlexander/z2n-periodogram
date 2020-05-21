@@ -4,10 +4,12 @@
 # Other Libraries
 import click
 import numpy as np
+import dask.array as da
 
 # Owned Libraries
 from z2n import file
 from z2n import stats
+from z2n import mmap
 
 
 class Series:
@@ -146,12 +148,15 @@ class Series:
             self.get_fmin()
             self.get_fmax()
             self.get_delta()
-        block = (self.fmax - self.fmin) / np.array(self.delta)
-        nbytes = np.array(self.delta).dtype.itemsize * block
-        click.secho(f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
+        #block = (self.fmax - self.fmin) / np.array(self.delta)
+        #nbytes = np.array(self.delta).dtype.itemsize * block
+        self.bins = da.arange(self.fmin, self.fmax, self.delta)
+        click.secho(
+            f"Computation memory {self.bins.nbytes * 10e-6} MB", fg='yellow')
         if click.confirm("Run the program with these values"):
-            self.bins = np.arange(self.fmin, self.fmax, self.delta)
+            self.bins = mmap.map_array(self.bins, 'bins')
             click.secho('Frequency bins set.', fg='green')
+            self.get_bins()
             flag = 0
         return flag
 
@@ -386,7 +391,6 @@ class Series:
         self.get_fmin()
         self.get_fmax()
         self.get_delta()
-        self.get_bins()
         self.get_periodogram()
         self.get_potency()
         self.get_forest()

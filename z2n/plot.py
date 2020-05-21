@@ -100,6 +100,7 @@ class Plot(Series):
 
     def plot_background(self) -> None:
         """Create subplot of the background."""
+        plt.close()
         self.back.bins = self.data.bins
         if self.plots == 2:
             opt = click.prompt("Change the background [1] or remove it [2]")
@@ -121,28 +122,32 @@ class Plot(Series):
 
     def plot_periodogram(self) -> None:
         """Create plot of the periodogram."""
+        plt.close()
         if self.data.z2n.size:
             if click.confirm("Do you want to use another file"):
                 if not self.data.set_time():
                     if not self.data.save_periodogram():
                         if self.plots == 2:
-                            self.back.bins = self.data.bins
-                            self.back.set_periodogram()
+                            if click.confirm("Keep the background"):
+                                self.back.bins = self.data.bins
+                                self.back.set_periodogram()
+                            else:
+                                self.rm_background()
                         self.change_forest()
                         self.data.get_parameters()
             else:
                 if click.confirm("Recalculate with different limits"):
                     if click.confirm("Drop the other bins"):
-                        self.change_whole()
-                        if self.plots == 2:
-                            self.back.bins = self.data.bins
-                            self.back.set_periodogram()
-                        self.change_forest()
-                        self.data.get_parameters()
+                        if not self.change_whole():
+                            if self.plots == 2:
+                                self.back.bins = self.data.bins
+                                self.back.set_periodogram()
+                            self.change_forest()
+                            self.data.get_parameters()
                     else:
-                        self.change_region()
-                        self.change_forest()
-                        self.data.get_parameters()
+                        if not self.change_region():
+                            self.change_forest()
+                            self.data.get_parameters()
         else:
             if not self.data.set_time():
                 if not self.data.save_periodogram():
@@ -151,6 +156,7 @@ class Plot(Series):
 
     def change_whole(self) -> None:
         """Change limits on the whole periodogram."""
+        flag = 0
         click.secho("This will recalculate the periodogram.", fg='yellow')
         self.plot_figure()
         if click.confirm("Are the new limits selected"):
@@ -160,9 +166,13 @@ class Plot(Series):
             self.data.set_delta()
             self.data.bins = np.arange(self.fmin, self.fmax, self.delta)
             self.data.set_periodogram()
+        else:
+            flag = 1
+        return flag
 
-    def change_region(self) -> None:
+    def change_region(self) -> int:
         """Change limits on a periodogram region."""
+        flag = 0
         click.secho("This will recalculate the periodogram.", fg='yellow')
         self.plot_figure()
         if click.confirm("Is the region selected"):
@@ -189,6 +199,9 @@ class Plot(Series):
             tempy[middle:] = self.data.z2n[up:]
             self.data.bins = tempx
             self.data.z2n = tempy
+        else:
+            flag = 1
+        return flag
 
     def change_forest(self) -> None:
         """Select regions of uncertainty."""

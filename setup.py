@@ -12,6 +12,7 @@ with open("README.md", "r") as fh:
         install_requires=[
             'click',
             'click-shell',
+            'dask[array]',
             'matplotlib',
             'astropy',
             'numpy',
