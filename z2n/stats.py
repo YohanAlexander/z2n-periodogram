@@ -43,7 +43,7 @@ def sampling(series) -> None:
 
 
 @jit(nopython=True, parallel=True)
-def phase(times: np.array, bins: float) -> np.array:
+def phase(times: np.array, freq: float) -> np.array:
     """
     Calculate the phase values.
 
@@ -51,7 +51,7 @@ def phase(times: np.array, bins: float) -> np.array:
     ----------
     times : np.array
         An array that represents the times.
-    bins : float
+    freq : float
         A float that represents the frequency.
 
     Returns
@@ -59,7 +59,7 @@ def phase(times: np.array, bins: float) -> np.array:
     values : np.array
         An array that represents the phase values.
     """
-    delta = times * bins
+    delta = times * freq
     frac = delta - np.floor(delta)
     values = frac * 2 * np.pi
     return values
@@ -142,7 +142,7 @@ def square(value: float) -> float:
 
 
 @jit(nopython=True)
-def z2n(sin: float, cos: float) -> float:
+def pot(sin: float, cos: float) -> float:
     """
     Calculate the z2n potency value.
 
@@ -162,14 +162,34 @@ def z2n(sin: float, cos: float) -> float:
     return value
 
 
+@jit(nopython=True)
+def z2n(times: np.array, freq: float) -> float:
+    """
+    times : np.array
+        An array that represents the times.
+    freq : float
+        A float that represents the frequency.
+
+    Returns
+    -------
+    value : float
+        A float that represents the z2n potency.
+    """
+    phases = phase(times, freq)
+    sin = summation(sine(phases))
+    cos = summation(cosine(phases))
+    value = pot(square(sin), square(cos))
+    return value
+
+
 @jit(nopython=True, parallel=True)
-def normalization(z2n: np.array, norm: float) -> np.array:
+def normalization(spec: np.array, norm: float) -> np.array:
     """
     Calculate the normalization values.
 
     Parameters
     ----------
-    z2n : np.array
+    spec : np.array
         An array that represents the z2n values.
     norm : float
         A float that represents the normalization.
@@ -179,7 +199,7 @@ def normalization(z2n: np.array, norm: float) -> np.array:
     values : np.array
         An array that represents the normalized values.
     """
-    values = z2n * norm
+    values = spec * norm
     return values
 
 
@@ -196,13 +216,8 @@ def periodogram(series) -> None:
     -------
     None
     """
-    freq = 0
-    for bins in tqdm(series.bins):
-        phases = phase(series.time, bins)
-        sin = summation(sine(phases))
-        cos = summation(cosine(phases))
-        series.z2n[freq] = z2n(square(sin), square(cos))
-        freq = freq + 1
+    for index, freq in enumerate(tqdm(series.bins)):
+        series.z2n[index] = z2n(series.time, freq)
     series.z2n = normalization(series.z2n, (2 / series.time.size))
 
 
@@ -314,10 +329,12 @@ def bandwidth(series) -> None:
 def error(series) -> None:
     """
     Calculate the uncertainty of the frequency.
+
     Parameters
     ----------
     series : Series
         A time series object.
+
     Returns
     -------
     None

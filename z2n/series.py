@@ -28,8 +28,6 @@ class Series:
     > An arrray that represents the frequency bins.
     * `z2n : np.array`
     > An arrray that represents the periodogram.
-    * `harmonics : int`
-    > An integer that represents the number of harmonics.
     * `oversample : int`
     > An integer that represents the oversample factor.
     * `fmin : float`
@@ -68,7 +66,6 @@ class Series:
         self.time = np.array([])
         self.bins = np.array([])
         self.z2n = np.array([])
-        self.harmonics = 1
         self.fmin = 0
         self.fmax = 0
         self.delta = 0
@@ -119,6 +116,7 @@ class Series:
     def set_time(self) -> None:
         """Change the time series."""
         self.load_file()
+        self.time = self.time.astype(self.time.dtype.name)
 
     def get_bins(self) -> np.array:
         """Return the frequency bins."""
@@ -153,7 +151,6 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
-        self.time = self.time.astype('float64')
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
@@ -197,16 +194,6 @@ class Series:
         """Change the oversample factor."""
         self.oversample = click.prompt("Oversample factor", type=float)
         click.secho('Oversample factor set.', fg='green')
-
-    def get_harmonics(self) -> float:
-        """Return the number of harmonics."""
-        click.secho(f"Number of harmonics: {self.harmonics}", fg='cyan')
-        return self.harmonics
-
-    def set_harmonics(self) -> None:
-        """Change the number of harmonics."""
-        self.harmonics = click.prompt("Number of harmonics", type=float)
-        click.secho('Harmonics set.', fg='green')
 
     def get_observation(self) -> float:
         """Return the period of observation."""
@@ -300,25 +287,24 @@ class Series:
 
     def load_file(self) -> int:
         """Load a input file."""
+        flag = 0
         self.set_format()
         if self.format == 'ascii':
             self.set_input()
             file.load_ascii(self)
             click.secho("File loaded.", fg='green')
-            return 0
         elif self.format == 'csv':
             self.set_input()
             file.load_csv(self)
             click.secho("File loaded.", fg='green')
-            return 0
         elif self.format == 'fits':
             self.set_input()
             file.load_fits(self)
             click.secho("File loaded.", fg='green')
-            return 0
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
-            return 1
+            flag = 1
+        return flag
 
     def save_file(self) -> None:
         """Save a output file."""
@@ -340,37 +326,35 @@ class Series:
 
     def load_periodogram(self) -> int:
         """Plot the periodogram from a file."""
+        flag = 0
         self.set_format()
         if self.format == 'ascii':
             self.set_input()
             file.plot_ascii(self)
             click.secho("File loaded.", fg='green')
-            return 0
         elif self.format == 'csv':
             self.set_input()
             file.plot_csv(self)
             click.secho("File loaded.", fg='green')
-            return 0
         elif self.format == 'fits':
             self.set_input()
             file.plot_fits(self)
             click.secho("File loaded.", fg='green')
-            return 0
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
-            return 1
+            flag = 1
+        return flag
 
     def save_periodogram(self) -> int:
         """Calculate the Z2n statistic."""
+        flag = 0
         self.set_bins()
         if click.confirm("Run the program with these values"):
-            if not self.set_periodogram():
-                self.set_parameters()
-                return 0
-            else:
-                return 1
+            self.set_periodogram()
+            self.set_parameters()
         else:
-            return 1
+            flag = 1
+        return flag
 
     def get_parameters(self) -> None:
         """Return the parameters used on the statistic."""

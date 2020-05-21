@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Other Libraries
-import pandas as pd
-from astropy.io import fits
-import astropy.io.ascii as txt
+from astropy.table import Table
+import numpy as np
 
 
 def load_ascii(series) -> None:
@@ -20,8 +19,8 @@ def load_ascii(series) -> None:
     -------
     None
     """
-    data = pd.read_csv(series.input, sep=' ', skiprows=1, header=None)
-    series.time = data[0].values
+    table = Table.read(series.input, names=('TIME',), format='ascii')
+    series.time = table['TIME'].data
 
 
 def load_csv(series) -> None:
@@ -37,8 +36,8 @@ def load_csv(series) -> None:
     -------
     None
     """
-    data = pd.read_csv(series.input, sep=',', skiprows=1, header=None)
-    series.time = data[0].values
+    table = Table.read(series.input, names=('TIME',), format='csv')
+    series.time = table['TIME'].data
 
 
 def load_fits(series) -> None:
@@ -54,9 +53,8 @@ def load_fits(series) -> None:
     -------
     None
     """
-    with fits.open(series.input) as data:
-        event = data['EVENTS'].data
-        series.time = event['TIME']
+    events = Table.read(series.input, hdu='EVENTS', format='fits')
+    series.time = events['TIME'].data
 
 
 def save_ascii(series) -> None:
@@ -72,10 +70,9 @@ def save_ascii(series) -> None:
     -------
     None
     """
-    data = pd.DataFrame()
-    data['Frequency'] = series.bins
-    data['Potency'] = series.z2n
-    data.to_csv(f'{series.output}.txt', sep=' ', index=None)
+    array = np.column_stack((series.bins, series.z2n))
+    table = Table(array, names=('Frequency', 'Potency'))
+    table.write(f'{series.output}.txt', format='ascii')
 
 
 def save_csv(series) -> None:
@@ -91,10 +88,9 @@ def save_csv(series) -> None:
     -------
     None
     """
-    data = pd.DataFrame()
-    data['Frequency'] = series.bins
-    data['Potency'] = series.z2n
-    data.to_csv(f'{series.output}.csv', sep=',', index=None)
+    array = np.column_stack((series.bins, series.z2n))
+    table = Table(array, names=('Frequency', 'Potency'))
+    table.write(f'{series.output}.csv', format='csv')
 
 
 def save_fits(series) -> None:
@@ -110,9 +106,9 @@ def save_fits(series) -> None:
     -------
     None
     """
-    save_ascii(series)
-    file = txt.read(f'{series.output}.txt')
-    file.write(f"{series.output}.fits")
+    array = np.column_stack((series.bins, series.z2n))
+    table = Table(array, names=('Frequency', 'Potency'))
+    table.write(f'{series.output}.fits', format='fits')
 
 
 def plot_ascii(series) -> None:
@@ -128,9 +124,9 @@ def plot_ascii(series) -> None:
     -------
     None
     """
-    data = pd.read_csv(series.input, sep=' ', skiprows=1, header=None)
-    series.bins = data[0].values
-    series.z2n = data[1].values
+    table = Table.read(series.input, names=('Frequency', 'Potency'))
+    series.bins = table['Frequency'].data
+    series.z2n = table['Potency'].data
 
 
 def plot_csv(series) -> None:
@@ -146,9 +142,9 @@ def plot_csv(series) -> None:
     -------
     None
     """
-    data = pd.read_csv(series.input, sep=',', skiprows=1, header=None)
-    series.bins = data[0].values
-    series.z2n = data[1].values
+    table = Table.read(series.input, names=('Frequency', 'Potency'))
+    series.bins = table['Frequency'].data
+    series.z2n = table['Potency'].data
 
 
 def plot_fits(series) -> None:
@@ -164,7 +160,6 @@ def plot_fits(series) -> None:
     -------
     None
     """
-    with fits.open(series.input) as data:
-        event = data[1].data
-        series.bins = event['Frequency']
-        series.z2n = event['Potency']
+    table = Table.read(series.input, names=('Frequency', 'Potency'))
+    series.bins = table['Frequency'].data
+    series.z2n = table['Potency'].data

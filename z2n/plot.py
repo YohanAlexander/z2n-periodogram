@@ -7,10 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Owned Libraries
-from z2n import series
+from z2n.series import Series
 
 
-class Plot(series.Series):
+class Plot(Series):
     """
     A class to represent the plot of a time series.
 
@@ -104,7 +104,7 @@ class Plot(series.Series):
         if self.plots == 2:
             opt = click.prompt("Change the background [1] or remove it [2]")
             if opt == '1':
-                if not self.back.load_file():
+                if not self.back.set_time():
                     self.back.set_periodogram()
                     self.add_background()
                     self.plot_figure()
@@ -114,7 +114,7 @@ class Plot(series.Series):
             else:
                 click.secho("Select '1' or '2'.", fg='red')
         else:
-            if not self.back.load_file():
+            if not self.back.set_time():
                 self.back.set_periodogram()
                 self.add_background()
                 self.plot_figure()
@@ -123,7 +123,7 @@ class Plot(series.Series):
         """Create plot of the periodogram."""
         if self.data.z2n.size:
             if click.confirm("Do you want to use another file"):
-                if not self.data.load_file():
+                if not self.data.set_time():
                     if not self.data.save_periodogram():
                         if self.plots == 2:
                             self.back.bins = self.data.bins
@@ -144,7 +144,7 @@ class Plot(series.Series):
                         self.change_forest()
                         self.data.get_parameters()
         else:
-            if not self.data.load_file():
+            if not self.data.set_time():
                 if not self.data.save_periodogram():
                     self.change_forest()
                     self.data.get_parameters()

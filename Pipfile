@@ -13,11 +13,9 @@ click = "*"
 click-shell = "*"
 matplotlib = "*"
 astropy = "*"
-pandas = "*"
 numpy = "*"
 numba = "*"
 tqdm = "*"
-dask = "*"
 
 [requires]
 python_version = "3.7"

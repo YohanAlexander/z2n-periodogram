@@ -6,15 +6,15 @@ import click
 from click_shell import shell
 
 # Owned Libraries
-from z2n import series
-from z2n import plot
+from z2n.series import Series
+from z2n.plot import Plot
 from z2n import __z2n__
 from z2n import __plt__
 from z2n import __version__
 
-data = series.Series()
-noise = series.Series()
-figure = plot.Plot(data, noise)
+data = Series()
+noise = Series()
+figure = Plot(data, noise)
 
 
 @click.version_option(prog_name='Z2n Software', version=__version__)
