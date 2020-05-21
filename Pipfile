@@ -16,6 +16,7 @@ astropy = "*"
 numpy = "*"
 numba = "*"
 tqdm = "*"
+h5py = "*"
 
 [requires]
 python_version = "3.7"

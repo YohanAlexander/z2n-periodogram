@@ -5,8 +5,10 @@
 import numpy as np
 from tqdm import tqdm
 from numba import jit
+from numba import prange
 
 
+@jit(forceobj=True, parallel=True)
 def observation(series) -> None:
     """
     Calculate the period of observation.
@@ -25,6 +27,7 @@ def observation(series) -> None:
     series.observation = last - first
 
 
+@jit(forceobj=True, parallel=True)
 def sampling(series) -> None:
     """
     Calculate the sampling rate.
@@ -104,13 +107,13 @@ def cosine(phases: np.array) -> np.array:
 
 
 @jit(nopython=True, parallel=True)
-def summation(phases: np.array) -> float:
+def summation(values: np.array) -> float:
     """
     Calculate the summation value.
 
     Parameters
     ----------
-    phases : np.array
+    values : np.array
         An array that represents the phase values.
 
     Returns
@@ -118,11 +121,11 @@ def summation(phases: np.array) -> float:
     value : float
         A float that represents the summation value.
     """
-    value = np.sum(phases)
+    value = np.sum(values)
     return value
 
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=False)
 def square(value: float) -> float:
     """
     Calculate the square values.
@@ -141,10 +144,10 @@ def square(value: float) -> float:
     return squared
 
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=False)
 def pot(sin: float, cos: float) -> float:
     """
-    Calculate the z2n potency value.
+    Calculate the potency value.
 
     Parameters
     ----------
@@ -156,15 +159,17 @@ def pot(sin: float, cos: float) -> float:
     Returns
     -------
     value : float
-        A float that represents the z2n potency.
+        A float that represents the potency.
     """
     value = sin + cos
     return value
 
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=False)
 def z2n(times: np.array, freq: float) -> float:
     """
+    Calculate the Z2n potency.
+
     times : np.array
         An array that represents the times.
     freq : float
@@ -173,7 +178,7 @@ def z2n(times: np.array, freq: float) -> float:
     Returns
     -------
     value : float
-        A float that represents the z2n potency.
+        A float that represents the Z2n potency.
     """
     phases = phase(times, freq)
     sin = summation(sine(phases))
@@ -203,6 +208,7 @@ def normalization(spec: np.array, norm: float) -> np.array:
     return values
 
 
+@jit(forceobj=True, parallel=True)
 def periodogram(series) -> None:
     """
     Calculate the Z2n statistics.
@@ -216,11 +222,12 @@ def periodogram(series) -> None:
     -------
     None
     """
-    for index, freq in enumerate(tqdm(series.bins)):
-        series.z2n[index] = z2n(series.time, freq)
+    for freq in tqdm(prange(series.bins.size)):
+        series.z2n[freq] = z2n(series.time, series.bins[freq])
     series.z2n = normalization(series.z2n, (2 / series.time.size))
 
 
+@jit(forceobj=True, parallel=True)
 def potency(series) -> None:
     """
     Calculate the natural potency.
@@ -237,6 +244,7 @@ def potency(series) -> None:
     series.potency = np.max(series.z2n)
 
 
+@jit(forceobj=True, parallel=True)
 def frequency(series) -> None:
     """
     Calculate the natural frequency.
@@ -254,6 +262,7 @@ def frequency(series) -> None:
     series.frequency = series.bins[index]
 
 
+@jit(forceobj=True, parallel=True)
 def period(series) -> None:
     """
     Calculate the peak period.
@@ -271,6 +280,7 @@ def period(series) -> None:
     series.period = 1 / series.frequency
 
 
+@jit(forceobj=True, parallel=True)
 def pfraction(series) -> None:
     """
     Calculate the pulsed fraction.
@@ -289,6 +299,7 @@ def pfraction(series) -> None:
     series.pulsed = pfrac ** 0.5
 
 
+@jit(forceobj=True, parallel=True)
 def forest(series) -> None:
     """
     Calculate the forest potency.
@@ -309,6 +320,7 @@ def forest(series) -> None:
     series.forest = np.mean([series.z2n[low], series.z2n[up]])
 
 
+@jit(forceobj=True, parallel=True)
 def bandwidth(series) -> None:
     """
     Calculate the bandwidth.
@@ -326,6 +338,7 @@ def bandwidth(series) -> None:
     series.bandwidth = series.potency - series.forest
 
 
+@jit(forceobj=True, parallel=True)
 def error(series) -> None:
     """
     Calculate the uncertainty of the frequency.

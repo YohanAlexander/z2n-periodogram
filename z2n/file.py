@@ -57,6 +57,23 @@ def load_fits(series) -> None:
     series.time = events['TIME'].data
 
 
+def load_hdf5(series) -> None:
+    """
+    Open hdf5 file and store time series.
+
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+
+    Returns
+    -------
+    None
+    """
+    table = Table.read(series.input, path='EVENTS', format='hdf5')
+    series.time = table['TIME'].data
+
+
 def save_ascii(series) -> None:
     """
     Save the periodogram to ascii file.
@@ -111,6 +128,25 @@ def save_fits(series) -> None:
     table.write(f'{series.output}.fits', format='fits')
 
 
+def save_hdf5(series) -> None:
+    """
+    Save the periodogram to hdf5 file.
+
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+
+    Returns
+    -------
+    None
+    """
+    array = np.column_stack((series.bins, series.z2n))
+    table = Table(array, names=('Frequency', 'Potency'))
+    table.write(f'{series.output}.hdf5', path='EVENTS',
+                format='hdf5', compression=True)
+
+
 def plot_ascii(series) -> None:
     """
     Open ascii file and store periodogram.
@@ -161,5 +197,24 @@ def plot_fits(series) -> None:
     None
     """
     table = Table.read(series.input, names=('Frequency', 'Potency'))
+    series.bins = table['Frequency'].data
+    series.z2n = table['Potency'].data
+
+
+def plot_hdf5(series) -> None:
+    """
+    Open hdf5 file and store periodogram.
+
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+
+    Returns
+    -------
+    None
+    """
+    table = Table.read(series.input, names=(
+        'Frequency', 'Potency'), path='EVENTS')
     series.bins = table['Frequency'].data
     series.z2n = table['Potency'].data

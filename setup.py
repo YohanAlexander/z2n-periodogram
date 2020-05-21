@@ -16,6 +16,7 @@ with open("README.md", "r") as fh:
             'astropy',
             'numpy',
             'numba',
+            'h5py',
             'tqdm',
         ],
         tests_require=['pytest'],

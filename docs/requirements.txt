@@ -6,3 +6,4 @@ astropy
 numpy
 numba
 tqdm
+h5py

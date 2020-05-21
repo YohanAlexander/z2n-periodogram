@@ -106,25 +106,30 @@ class Series:
 
     def set_format(self) -> None:
         """Change the file format."""
-        self.format = click.prompt("Which format [ascii, csv, fits]")
+        self.format = click.prompt("Which format [ascii, csv, fits, hdf5]")
 
     def get_time(self) -> np.array:
         """Return the time series."""
         click.secho(f"{self.time.size} time values.", fg='cyan')
         return self.time
 
-    def set_time(self) -> None:
+    def set_time(self) -> int:
         """Change the time series."""
-        self.load_file()
-        self.time = self.time.astype(self.time.dtype.name)
+        flag = 0
+        if not self.load_file():
+            self.time = self.time.astype(self.time.dtype.name)
+        else:
+            flag = 1
+        return flag
 
     def get_bins(self) -> np.array:
         """Return the frequency bins."""
         click.secho(f"{self.bins.size} frequency bins.", fg='cyan')
         return self.bins
 
-    def set_bins(self) -> None:
+    def set_bins(self) -> int:
         """Change the frequency bins."""
+        flag = 1
         self.set_sampling()
         if click.confirm("Do you want to use the Nyquist frequency"):
             self.fmin = self.sampling * 2
@@ -141,8 +146,14 @@ class Series:
             self.get_fmin()
             self.get_fmax()
             self.get_delta()
-        self.bins = np.arange(self.fmin, self.fmax, self.delta)
-        click.secho('Frequency bins set.', fg='green')
+        block = (self.fmax - self.fmin) / np.array(self.delta)
+        nbytes = np.array(self.delta).dtype.itemsize * block
+        click.secho(f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
+        if click.confirm("Run the program with these values"):
+            self.bins = np.arange(self.fmin, self.fmax, self.delta)
+            click.secho('Frequency bins set.', fg='green')
+            flag = 0
+        return flag
 
     def get_periodogram(self) -> np.array:
         """Return the periodogram."""
@@ -301,6 +312,10 @@ class Series:
             self.set_input()
             file.load_fits(self)
             click.secho("File loaded.", fg='green')
+        elif self.format == 'hdf5':
+            self.set_input()
+            file.load_hdf5(self)
+            click.secho("File loaded.", fg='green')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
             flag = 1
@@ -321,6 +336,10 @@ class Series:
             self.set_output()
             file.save_fits(self)
             click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+        elif self.format == 'hdf5':
+            self.set_output()
+            file.save_hdf5(self)
+            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
 
@@ -340,6 +359,10 @@ class Series:
             self.set_input()
             file.plot_fits(self)
             click.secho("File loaded.", fg='green')
+        elif self.format == 'hdf5':
+            self.set_input()
+            file.plot_hdf5(self)
+            click.secho("File loaded.", fg='green')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
             flag = 1
@@ -348,8 +371,7 @@ class Series:
     def save_periodogram(self) -> int:
         """Calculate the Z2n statistic."""
         flag = 0
-        self.set_bins()
-        if click.confirm("Run the program with these values"):
+        if not self.set_bins():
             self.set_periodogram()
             self.set_parameters()
         else:
