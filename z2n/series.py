@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Other Libraries
+import h5py
 import click
 import numpy as np
 import dask.array as da
@@ -9,7 +10,6 @@ import dask.array as da
 # Owned Libraries
 from z2n import file
 from z2n import stats
-from z2n import mmap
 
 
 class Series:
@@ -148,13 +148,12 @@ class Series:
             self.get_fmin()
             self.get_fmax()
             self.get_delta()
-        #block = (self.fmax - self.fmin) / np.array(self.delta)
-        #nbytes = np.array(self.delta).dtype.itemsize * block
         self.bins = da.arange(self.fmin, self.fmax, self.delta)
         click.secho(
             f"Computation memory {self.bins.nbytes * 10e-6} MB", fg='yellow')
         if click.confirm("Run the program with these values"):
-            self.bins = mmap.map_array(self.bins, 'bins')
+            self.bins.to_hdf5('bins.hdf5', 'BINS', compression='lzf')
+            self.bins = h5py.File('bins.hdf5', mode='r+')['BINS']
             click.secho('Frequency bins set.', fg='green')
             self.get_bins()
             flag = 0
@@ -167,7 +166,9 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
-        self.z2n = np.zeros(self.bins.size)
+        self.z2n = da.zeros(self.bins.size)
+        self.z2n.to_hdf5('z2n.hdf5', 'Z2N', compression='lzf')
+        self.z2n = h5py.File('z2n.hdf5', mode='r+')['Z2N']
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
 

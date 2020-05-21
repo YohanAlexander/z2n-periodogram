@@ -5,9 +5,12 @@
 from z2n import prompt
 
 
-def cli() -> None:
+def cli() -> int:
     """Entry point to the Z2n Software."""
-    prompt.z2n()
+    try:
+        prompt.z2n()
+    except SystemExit:
+        return 0
 
 
 if __name__ == "__main__":
