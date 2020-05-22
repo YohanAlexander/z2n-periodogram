@@ -158,7 +158,7 @@ class Series:
             if os.path.exists('/tmp/bins.hdf5'):
                 os.remove('/tmp/bins.hdf5')
             self.bins.to_hdf5('/tmp/bins.hdf5', 'BINS', compression='lzf')
-            self.bins = h5py.File('/tmp/bins.hdf5', mode='r')['BINS']
+            self.bins = h5py.File('/tmp/bins.hdf5', mode='a')['BINS']
             click.secho('Frequency bins set.', fg='green')
             self.get_bins()
             flag = 0
@@ -171,7 +171,11 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
-        self.z2n = np.zeros(self.bins.size)
+        self.z2n = da.ones(self.bins.size)
+        if os.path.exists('/tmp/z2n.hdf5'):
+            os.remove('/tmp/z2n.hdf5')
+        self.z2n.to_hdf5('/tmp/z2n.hdf5', 'Z2N', compression='lzf')
+        self.z2n = h5py.File('/tmp/z2n.hdf5', mode='a')['Z2N']
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
 
@@ -382,7 +386,6 @@ class Series:
         flag = 0
         if not self.set_bins():
             self.set_periodogram()
-            self.set_parameters()
         else:
             flag = 1
         return flag

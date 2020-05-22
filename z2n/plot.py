@@ -106,6 +106,7 @@ class Plot(Series):
             opt = click.prompt("Change the background [1] or remove it [2]")
             if opt == '1':
                 if not self.back.set_time():
+                    plt.close()
                     self.back.set_periodogram()
                     self.add_background()
                     self.plot_figure()
@@ -116,6 +117,7 @@ class Plot(Series):
                 click.secho("Select '1' or '2'.", fg='red')
         else:
             if not self.back.set_time():
+                plt.close()
                 self.back.set_periodogram()
                 self.add_background()
                 self.plot_figure()
@@ -134,6 +136,7 @@ class Plot(Series):
                             else:
                                 self.rm_background()
                         self.change_forest()
+                        self.data.set_parameters()
                         self.data.get_parameters()
             else:
                 if click.confirm("Recalculate with different limits"):
@@ -143,15 +146,18 @@ class Plot(Series):
                                 self.back.bins = self.data.bins
                                 self.back.set_periodogram()
                             self.change_forest()
+                            self.data.set_parameters()
                             self.data.get_parameters()
                     else:
                         if not self.change_region():
                             self.change_forest()
+                            self.data.set_parameters()
                             self.data.get_parameters()
         else:
             if not self.data.set_time():
                 if not self.data.save_periodogram():
                     self.change_forest()
+                    self.data.set_parameters()
                     self.data.get_parameters()
 
     def change_whole(self) -> None:
@@ -165,6 +171,7 @@ class Plot(Series):
             self.data.fmax = self.axis[1]
             self.data.set_delta()
             self.data.bins = np.arange(self.fmin, self.fmax, self.delta)
+            plt.close()
             self.data.set_periodogram()
         else:
             flag = 1
@@ -186,6 +193,7 @@ class Plot(Series):
             self.set_delta()
             self.bins = np.arange(self.fmin, self.fmax, self.delta)
             self.time = self.data.time
+            plt.close()
             self.set_periodogram()
             size = (self.data.bins.size - (up - low)) + self.bins.size
             middle = low + self.bins.size
