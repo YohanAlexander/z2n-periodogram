@@ -1,6 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Generic/Built-in
+import os
+
 # Other Libraries
 import h5py
 import click
@@ -152,8 +155,10 @@ class Series:
         click.secho(
             f"Computation memory {self.bins.nbytes * 10e-6} MB", fg='yellow')
         if click.confirm("Run the program with these values"):
-            self.bins.to_hdf5('bins.hdf5', 'BINS', compression='lzf')
-            self.bins = h5py.File('bins.hdf5', mode='r+')['BINS']
+            if os.path.exists('/tmp/bins.hdf5'):
+                os.remove('/tmp/bins.hdf5')
+            self.bins.to_hdf5('/tmp/bins.hdf5', 'BINS', compression='lzf')
+            self.bins = h5py.File('/tmp/bins.hdf5', mode='r')['BINS']
             click.secho('Frequency bins set.', fg='green')
             self.get_bins()
             flag = 0
@@ -166,9 +171,7 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
-        self.z2n = da.zeros(self.bins.size)
-        self.z2n.to_hdf5('z2n.hdf5', 'Z2N', compression='lzf')
-        self.z2n = h5py.File('z2n.hdf5', mode='r+')['Z2N']
+        self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
 
