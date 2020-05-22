@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
-import os
+import tempfile
+import pathlib
 
 # Other Libraries
 import h5py
@@ -152,16 +153,18 @@ class Series:
             self.get_fmax()
             self.get_delta()
         self.bins = da.arange(self.fmin, self.fmax, self.delta)
+        self.z2n = da.zeros(self.bins.size)
         click.secho(
             f"Computation memory {self.bins.nbytes * 10e-6} MB", fg='yellow')
         if click.confirm("Run the program with these values"):
-            if os.path.exists('/tmp/bins.hdf5'):
-                os.remove('/tmp/bins.hdf5')
-            self.bins.to_hdf5('/tmp/bins.hdf5', 'BINS', compression='lzf')
-            self.bins = h5py.File('/tmp/bins.hdf5', mode='a')['BINS']
-            click.secho('Frequency bins set.', fg='green')
-            self.get_bins()
-            flag = 0
+            with tempfile.NamedTemporaryFile(suffix='.z2n', delete=False) as temp:
+                da.to_hdf5(
+                    temp.name, {'BINS': self.bins, 'Z2N': self.z2n}, compression='lzf')
+                self.bins = h5py.File(temp.name, mode='a')['BINS']
+                self.z2n = h5py.File(temp.name, mode='a')['Z2N']
+                click.secho('Frequency bins set.', fg='green')
+                self.get_bins()
+                flag = 0
         return flag
 
     def get_periodogram(self) -> np.array:
@@ -171,11 +174,6 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
-        self.z2n = da.ones(self.bins.size)
-        if os.path.exists('/tmp/z2n.hdf5'):
-            os.remove('/tmp/z2n.hdf5')
-        self.z2n.to_hdf5('/tmp/z2n.hdf5', 'Z2N', compression='lzf')
-        self.z2n = h5py.File('/tmp/z2n.hdf5', mode='a')['Z2N']
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
 
@@ -385,7 +383,19 @@ class Series:
         """Calculate the Z2n statistic."""
         flag = 0
         if not self.set_bins():
-            self.set_periodogram()
+            try:
+                self.set_periodogram()
+            except:
+                click.secho("Error calculating the periodogram.", fg='red')
+                bak = pathlib.Path("backup/")
+                bak.mkdir(parents=True, exist_ok=True)
+                temp = tempfile.mkstemp(suffix='.z2n', dir=bak)
+                bins = da.from_array(self.bins)
+                z2n = da.from_array(self.z2n)
+                da.to_hdf5(
+                    temp[1], {'BINS': bins, 'Z2N': z2n}, compression='lzf')
+                click.secho(f"Backup file saved at {temp[1]}", fg='yellow')
+                flag = 1
         else:
             flag = 1
         return flag

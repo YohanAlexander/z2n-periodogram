@@ -9,15 +9,15 @@ pytest = "*"
 [packages]
 z2n-periodogram = {editable = true,path = "."}
 dask = {extras = ["array"],version = "*"}
-mkautodoc = "*"
 click = "*"
 click-shell = "*"
 matplotlib = "*"
 astropy = "*"
 numpy = "*"
 numba = "*"
-tqdm = "*"
+icc-rt = "*"
 h5py = "*"
+tqdm = "*"
 
 [requires]
 python_version = "3.7"

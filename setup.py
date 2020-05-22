@@ -17,6 +17,7 @@ with open("README.md", "r") as fh:
             'astropy',
             'numpy',
             'numba',
+            'icc-rt',
             'h5py',
             'tqdm',
         ],
