@@ -8,7 +8,6 @@ pytest = "*"
 
 [packages]
 z2n-periodogram = {editable = true,path = "."}
-dask = {extras = ["array"],version = "*"}
 click = "*"
 click-shell = "*"
 matplotlib = "*"

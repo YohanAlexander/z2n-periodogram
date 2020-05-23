@@ -144,7 +144,7 @@ def square(value: float) -> float:
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
-def z2n(sin: float, cos: float) -> float:
+def spectrum(sin: float, cos: float) -> float:
     """
     Calculate the Z2n potency value.
 
@@ -165,30 +165,49 @@ def z2n(sin: float, cos: float) -> float:
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
-def normalization(times: np.array, freq: float, norm: float) -> float:
+def z2n(times: np.array, freq: float) -> float:
     """
-    Calculate the Z2n potency normalized.
+    Calculate the Z2n potency value.
 
     times : np.array
         An array that represents the times.
     freq : float
         A float that represents the frequency.
+
+    Returns
+    -------
+    value : float
+        A float that represents the Z2n potency.
+    """
+    phases = phase(times, freq)
+    sin = summation(sine(phases))
+    cos = summation(cosine(phases))
+    value = spectrum(square(sin), square(cos))
+    return value
+
+
+@jit(nopython=True, parallel=True, fastmath=True)
+def normalization(spec: np.array, norm: float) -> np.array:
+    """
+    Calculate the normalization values.
+
+    Parameters
+    ----------
+    spec : np.array
+        An array that represents the z2n values.
     norm : float
         A float that represents the normalization.
 
     Returns
     -------
-    value : float
-        A float that represents the normalized potency.
+    values : np.array
+        An array that represents the normalized values.
     """
-    phases = phase(times, freq)
-    sin = summation(sine(phases))
-    cos = summation(cosine(phases))
-    value = z2n(square(sin), square(cos))
-    return value * norm
+    values = spec * norm
+    return values
 
 
-@jit(forceobj=True, parallel=False, fastmath=True)
+@jit(forceobj=True, parallel=True, fastmath=True)
 def periodogram(series) -> None:
     """
     Calculate the Z2n statistics.
@@ -203,8 +222,8 @@ def periodogram(series) -> None:
     None
     """
     for freq in tqdm(range(series.bins.size)):
-        series.z2n[freq] = normalization(
-            series.time, series.bins[freq], (2 / series.time.size))
+        series.z2n[freq] = z2n(series.time, series.bins[freq])
+    series.z2n = normalization(series.z2n, (2 / series.time.size))
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
