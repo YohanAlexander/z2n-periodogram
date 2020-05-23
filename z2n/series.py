@@ -3,6 +3,7 @@
 
 # Other Libraries
 import click
+import psutil
 import numpy as np
 
 # Owned Libraries
@@ -151,10 +152,14 @@ class Series:
         click.secho(
             f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
         if click.confirm("Run the program with these values"):
-            self.bins = np.arange(self.fmin, self.fmax, self.delta)
-            click.secho('Frequency bins set.', fg='green')
-            self.get_bins()
-            flag = 0
+            if nbytes < psutil.virtual_memory()[1]:
+                self.bins = np.arange(self.fmin, self.fmax, self.delta)
+                click.secho('Frequency bins set.', fg='green')
+                self.get_bins()
+                flag = 0
+            else:
+                click.secho("Not enough memory available.", fg='red')
+                flag = 1
         return flag
 
     def get_periodogram(self) -> np.array:

@@ -1,1 +1,12 @@
 mkautodoc
+click
+click-shell
+matplotlib
+colorama
+astropy
+psutil
+numpy
+numba
+icc-rt
+h5py
+tqdm

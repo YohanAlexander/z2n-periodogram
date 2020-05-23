@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 # Other libraries
+import click
 import numpy as np
-from tqdm import tqdm
+from tqdm import trange
 from numba import jit
+
+desc = click.style('Calculating the periodogram', fg='yellow')
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
@@ -221,7 +224,7 @@ def periodogram(series) -> None:
     -------
     None
     """
-    for freq in tqdm(range(series.bins.size)):
+    for freq in trange(series.bins.size, desc=desc):
         series.z2n[freq] = z2n(series.time, series.bins[freq])
     series.z2n = normalization(series.z2n, (2 / series.time.size))
 
