@@ -1,5 +1,5 @@
 # Plot Figure Object
 
-::: z2n.Plot
+::: z2n.plot.Plot
     :docstring:
     :members:

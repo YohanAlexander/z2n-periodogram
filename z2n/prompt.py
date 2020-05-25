@@ -85,8 +85,8 @@ def plt() -> None:
 @plt.command()
 def lines() -> None:
     """Add parameter lines on the figure."""
-    figure.plot_peak()
-    figure.plot_band()
+    figure.plot_frequency()
+    figure.plot_bandwidth()
 
 
 @plt.command()

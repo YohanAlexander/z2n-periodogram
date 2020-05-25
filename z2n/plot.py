@@ -76,7 +76,7 @@ class Plot(Series):
         self.plots = 1
         click.secho("Background file removed.", fg='green')
 
-    def plot_peak(self) -> None:
+    def plot_frequency(self) -> None:
         """Add vertical line on the peak frequency."""
         self.data.set_frequency()
         if click.confirm("Add a vertical line to the peak frequency"):
@@ -88,7 +88,7 @@ class Plot(Series):
                     self.data.frequency, linestyle='dashed', color='tab:red')
             click.secho("Peak line added.", fg='green')
 
-    def plot_band(self) -> None:
+    def plot_bandwidth(self) -> None:
         """Add horizontal line on the bandwidth."""
         self.data.set_bandwidth()
         if click.confirm("Add a horizontal line to the bandwidth"):

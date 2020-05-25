@@ -1,5 +1,5 @@
 # Time Series Object
 
-::: z2n.Series
+::: z2n.series.Series
     :docstring:
     :members:
