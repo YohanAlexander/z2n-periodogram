@@ -88,7 +88,7 @@ def save_ascii(series) -> None:
     None
     """
     array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('Frequency', 'Potency'))
+    table = Table(array, names=('FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.txt', format='ascii')
 
 
@@ -106,7 +106,7 @@ def save_csv(series) -> None:
     None
     """
     array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('Frequency', 'Potency'))
+    table = Table(array, names=('FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.csv', format='csv')
 
 
@@ -124,7 +124,7 @@ def save_fits(series) -> None:
     None
     """
     array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('Frequency', 'Potency'))
+    table = Table(array, names=('FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.fits', format='fits')
 
 
@@ -142,8 +142,8 @@ def save_hdf5(series) -> None:
     None
     """
     array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('Frequency', 'Potency'))
-    table.write(f'{series.output}.hdf5', path='EVENTS',
+    table = Table(array, names=('FREQUENCY', 'POTENCY'))
+    table.write(f'{series.output}.hdf5', path='Z2N',
                 format='hdf5', compression=True)
 
 
@@ -160,9 +160,10 @@ def plot_ascii(series) -> None:
     -------
     None
     """
-    table = Table.read(series.input, names=('Frequency', 'Potency'))
-    series.bins = table['Frequency'].data
-    series.z2n = table['Potency'].data
+    table = Table.read(series.input, names=(
+        'FREQUENCY', 'POTENCY'), format='ascii')
+    series.bins = table['FREQUENCY'].data
+    series.z2n = table['POTENCY'].data
 
 
 def plot_csv(series) -> None:
@@ -178,9 +179,10 @@ def plot_csv(series) -> None:
     -------
     None
     """
-    table = Table.read(series.input, names=('Frequency', 'Potency'))
-    series.bins = table['Frequency'].data
-    series.z2n = table['Potency'].data
+    table = Table.read(series.input, names=(
+        'FREQUENCY', 'POTENCY'), format='csv')
+    series.bins = table['FREQUENCY'].data
+    series.z2n = table['POTENCY'].data
 
 
 def plot_fits(series) -> None:
@@ -196,9 +198,9 @@ def plot_fits(series) -> None:
     -------
     None
     """
-    table = Table.read(series.input, names=('Frequency', 'Potency'))
-    series.bins = table['Frequency'].data
-    series.z2n = table['Potency'].data
+    table = Table.read(series.input, format='fits')
+    series.bins = table['FREQUENCY'].data
+    series.z2n = table['POTENCY'].data
 
 
 def plot_hdf5(series) -> None:
@@ -214,7 +216,6 @@ def plot_hdf5(series) -> None:
     -------
     None
     """
-    table = Table.read(series.input, names=(
-        'Frequency', 'Potency'), path='EVENTS')
-    series.bins = table['Frequency'].data
-    series.z2n = table['Potency'].data
+    table = Table.read(series.input, path='Z2N', format='hdf5')
+    series.bins = table['FREQUENCY'].data
+    series.z2n = table['POTENCY'].data

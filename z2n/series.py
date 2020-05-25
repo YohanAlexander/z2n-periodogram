@@ -1,7 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Generic/Built-in
+import tempfile
+
 # Other Libraries
+import h5py
 import click
 import psutil
 import numpy as np
@@ -17,6 +21,8 @@ class Series:
 
     Attributes
     ----------
+    * `bak : str`
+    > A string that represents the backup file path.
     * `input : str`
     > A string that represents the input file path.
     * `output : str`
@@ -61,6 +67,7 @@ class Series:
     """
 
     def __init__(self) -> None:
+        self.bak = ""
         self.input = ""
         self.output = ""
         self.format = ""
@@ -81,15 +88,25 @@ class Series:
         self.period = 0
         self.pulsed = 0
 
+    def get_bak(self) -> str:
+        """Return the backup file path."""
+        click.secho(f"Path of the backup: {self.bak}", fg='cyan')
+        return self.bak
+
+    def set_bak(self) -> None:
+        """Change the backup file path."""
+        self.bak = tempfile.NamedTemporaryFile(
+            suffix='.z2n', delete=False).name
+
     def get_input(self) -> str:
         """Return the input file path."""
-        click.secho(f"Path of the file: {self.input}", fg='cyan')
+        click.secho(f"Path of the time series: {self.input}", fg='cyan')
         return self.input
 
     def set_input(self) -> None:
         """Change the input file path."""
         self.input = click.prompt(
-            "Path of the file", type=click.Path(exists=True))
+            "Path of the time series", type=click.Path(exists=True))
 
     def get_output(self) -> str:
         """Return the output file name."""
@@ -171,6 +188,15 @@ class Series:
         """Change the periodogram."""
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
+        self.set_bak()
+        # self.get_bak()
+        self.bak = h5py.File(self.bak, 'a')
+        self.bak.create_dataset('FREQUENCY', data=self.bins, compression='lzf')
+        self.bak.create_dataset('POTENCY', data=self.z2n, compression='lzf')
+        del self.bins
+        del self.z2n
+        self.bins = self.bak['FREQUENCY']
+        self.z2n = self.bak['POTENCY']
         click.secho('Periodogram calculated.', fg='green')
 
     def get_fmin(self) -> float:
@@ -350,44 +376,6 @@ class Series:
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
 
-    def load_periodogram(self) -> int:
-        """Plot the periodogram from a file."""
-        flag = 0
-        self.set_format()
-        if self.format == 'ascii':
-            self.set_input()
-            file.plot_ascii(self)
-            click.secho("File loaded.", fg='green')
-        elif self.format == 'csv':
-            self.set_input()
-            file.plot_csv(self)
-            click.secho("File loaded.", fg='green')
-        elif self.format == 'fits':
-            self.set_input()
-            file.plot_fits(self)
-            click.secho("File loaded.", fg='green')
-        elif self.format == 'hdf5':
-            self.set_input()
-            file.plot_hdf5(self)
-            click.secho("File loaded.", fg='green')
-        else:
-            click.secho(f"{self.format} format not supported.", fg='red')
-            flag = 1
-        return flag
-
-    def save_periodogram(self) -> int:
-        """Calculate the Z2n statistic."""
-        flag = 0
-        if not self.set_bins():
-            try:
-                self.set_periodogram()
-            except:
-                click.secho("Error calculating the periodogram.", fg='red')
-                flag = 1
-        else:
-            flag = 1
-        return flag
-
     def get_parameters(self) -> None:
         """Return the parameters used on the statistic."""
         self.get_time()
@@ -396,6 +384,8 @@ class Series:
         self.get_fmin()
         self.get_fmax()
         self.get_delta()
+        # self.get_oversample()
+        # self.get_bins()
         self.get_periodogram()
         self.get_potency()
         self.get_forest()
@@ -407,12 +397,19 @@ class Series:
 
     def set_parameters(self) -> None:
         """Change the parameters used on the statistic."""
+        # self.set_time()
         self.set_observation()
         self.set_sampling()
-        self.set_frequency()
-        self.set_period()
-        self.set_error()
-        self.set_pfraction()
+        # self.set_fmin()
+        # self.set_fmax()
+        # self.set_delta()
+        # self.set_oversample()
+        # self.set_bins()
+        # self.set_periodogram()
         self.set_potency()
         self.set_forest()
         self.set_bandwidth()
+        self.set_frequency()
+        self.set_error()
+        self.set_period()
+        self.set_pfraction()

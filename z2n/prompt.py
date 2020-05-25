@@ -10,6 +10,7 @@ from z2n.plot import Plot
 from z2n.series import Series
 from z2n import __z2n__
 from z2n import __plt__
+from z2n import __docs__
 from z2n import __version__
 
 data = Series()
@@ -33,9 +34,8 @@ def z2n():
 @z2n.command()
 def docs() -> None:
     """Open the documentation on the software."""
-    url = "https://z2n-periodogram.readthedocs.io"
-    click.launch(url)
-    click.echo(f"To read the documentation go to {url}")
+    click.launch(__docs__)
+    click.echo(f"To read the documentation go to {__docs__}")
 
 
 @z2n.command()
@@ -43,6 +43,9 @@ def plot() -> None:
     """Open the interactive plotting window."""
     if data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
+        if click.confirm("Do you want to plot from a file"):
+            if not figure.plot_file():
+                plt()
     else:
         figure.plot_figure()
         plt()
@@ -51,7 +54,8 @@ def plot() -> None:
 @z2n.command()
 def run() -> None:
     """Calculate the Z2n Statistics."""
-    figure.plot_periodogram()
+    if not figure.plot_periodogram():
+        plt()
 
 
 @z2n.command()
@@ -60,7 +64,8 @@ def back() -> None:
     if data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
     else:
-        figure.plot_background()
+        if not figure.plot_background():
+            plt()
 
 
 @z2n.command()
@@ -80,8 +85,8 @@ def plt() -> None:
 @plt.command()
 def lines() -> None:
     """Add parameter lines on the figure."""
-    figure.add_peak()
-    figure.add_band()
+    figure.plot_peak()
+    figure.plot_band()
 
 
 @plt.command()

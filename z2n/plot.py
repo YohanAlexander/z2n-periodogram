@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 
 # Other Libraries
+import h5py
 import click
+import psutil
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Owned Libraries
+from z2n import file
 from z2n.series import Series
 
 
@@ -34,6 +37,16 @@ class Plot(Series):
         self.back = back
         self.figure, self.axes = plt.subplots()
         self.axis = plt.gca().get_xlim()
+
+    def get_input(self) -> str:
+        """Return the input image name."""
+        click.secho(f"Path of the periodogram: {self.input}", fg='cyan')
+        return self.input
+
+    def set_input(self) -> None:
+        """Change the input image name."""
+        self.input = click.prompt(
+            "Path of the periodogram", type=click.Path(exists=True))
 
     def get_output(self) -> str:
         """Return the output image name."""
@@ -63,8 +76,9 @@ class Plot(Series):
         self.plots = 1
         click.secho("Background file removed.", fg='green')
 
-    def add_peak(self) -> None:
+    def plot_peak(self) -> None:
         """Add vertical line on the peak frequency."""
+        self.data.set_frequency()
         if click.confirm("Add a vertical line to the peak frequency"):
             if self.plots == 1:
                 self.axes.axvline(
@@ -74,8 +88,9 @@ class Plot(Series):
                     self.data.frequency, linestyle='dashed', color='tab:red')
             click.secho("Peak line added.", fg='green')
 
-    def add_band(self) -> None:
+    def plot_band(self) -> None:
         """Add horizontal line on the bandwidth."""
+        self.data.set_bandwidth()
         if click.confirm("Add a horizontal line to the bandwidth"):
             if self.plots == 1:
                 self.axes.axhline(
@@ -98,83 +113,114 @@ class Plot(Series):
             self.axes[0].plot(self.data.bins, self.data.z2n, color='tab:blue')
             self.axes[1].plot(self.back.bins, self.back.z2n, color='tab:cyan')
 
-    def plot_background(self) -> None:
+    def plot_file(self) -> int:
+        """Plot the periodogram from a file."""
+        flag = 0
+        click.secho("The time series file is needed.", fg='yellow')
+        if not self.data.set_time():
+            click.secho("The periodogram file is needed.", fg='yellow')
+            self.data.set_format()
+            if self.data.format == 'ascii':
+                self.set_input()
+                self.data.input = self.input
+                file.plot_ascii(self.data)
+                click.secho("File loaded.", fg='green')
+                self.plot_figure()
+            elif self.data.format == 'csv':
+                self.set_input()
+                self.data.input = self.input
+                file.plot_csv(self.data)
+                click.secho("File loaded.", fg='green')
+                self.plot_figure()
+            elif self.data.format == 'fits':
+                self.set_input()
+                self.data.input = self.input
+                file.plot_fits(self.data)
+                click.secho("File loaded.", fg='green')
+                self.plot_figure()
+            elif self.data.format == 'hdf5':
+                self.set_input()
+                self.data.input = self.input
+                file.plot_hdf5(self.data)
+                click.secho("File loaded.", fg='green')
+                self.plot_figure()
+            else:
+                click.secho(
+                    f"{self.data.format} format not supported.", fg='red')
+                flag = 1
+        else:
+            flag = 1
+        return flag
+
+    def plot_background(self) -> int:
         """Create subplot of the background."""
-        plt.close()
-        self.back.bins = self.data.bins
+        flag = 0
         if self.plots == 2:
-            opt = click.prompt("Change the background [1] or remove it [2]")
-            if opt == '1':
-                if not self.back.set_time():
+            if click.confirm("Do you want to remove the background"):
+                self.rm_background()
+                del self.back.time
+                del self.back.bins
+                del self.back.z2n
+                self.plot_figure()
+            else:
+                flag = 1
+        else:
+            click.secho("The background file is needed.", fg='yellow')
+            if not self.back.set_time():
+                try:
+                    self.back.bins = np.array(self.data.bins)
                     plt.close()
                     self.back.set_periodogram()
                     self.add_background()
                     self.plot_figure()
-            elif opt == '2':
-                self.rm_background()
-                self.plot_figure()
+                except KeyboardInterrupt:
+                    click.secho(
+                        "Error calculating the periodogram.", fg='red')
+                    flag = 1
             else:
-                click.secho("Select '1' or '2'.", fg='red')
-        else:
-            if not self.back.set_time():
-                plt.close()
-                self.back.set_periodogram()
-                self.add_background()
-                self.plot_figure()
+                flag = 1
+        return flag
 
-    def plot_periodogram(self) -> None:
+    def plot_periodogram(self) -> int:
         """Create plot of the periodogram."""
-        plt.close()
+        flag = 0
         if self.data.z2n.size:
-            if click.confirm("Do you want to use another file"):
-                if not self.data.set_time():
-                    if not self.data.save_periodogram():
-                        if self.plots == 2:
-                            if click.confirm("Keep the background"):
-                                self.back.bins = self.data.bins
-                                self.back.set_periodogram()
-                            else:
-                                self.rm_background()
-                        self.change_forest()
-                        self.data.set_parameters()
-                        self.data.get_parameters()
-            else:
-                if click.confirm("Recalculate with different limits"):
-                    if click.confirm("Drop the other bins"):
-                        if not self.change_whole():
-                            if self.plots == 2:
-                                self.back.bins = self.data.bins
-                                self.back.set_periodogram()
-                            self.change_forest()
-                            self.data.set_parameters()
-                            self.data.get_parameters()
-                    else:
-                        if not self.change_region():
-                            self.change_forest()
-                            self.data.set_parameters()
-                            self.data.get_parameters()
-        else:
-            if not self.data.set_time():
-                if not self.data.save_periodogram():
+            if click.confirm("Recalculate on a selected region"):
+                if not self.change_region():
+                    if self.plots == 2:
+                        try:
+                            self.back.bins = np.array(self.data.bins)
+                            plt.close()
+                            self.back.set_periodogram()
+                        except KeyboardInterrupt:
+                            click.secho(
+                                "Error calculating the periodogram.", fg='red')
+                            flag = 1
                     self.change_forest()
                     self.data.set_parameters()
                     self.data.get_parameters()
-
-    def change_whole(self) -> None:
-        """Change limits on the whole periodogram."""
-        flag = 0
-        click.secho("This will recalculate the periodogram.", fg='yellow')
-        self.plot_figure()
-        if click.confirm("Are the new limits selected"):
-            self.axis = plt.gca().get_xlim()
-            self.data.fmin = self.axis[0]
-            self.data.fmax = self.axis[1]
-            self.data.set_delta()
-            self.data.bins = np.arange(self.fmin, self.fmax, self.delta)
-            plt.close()
-            self.data.set_periodogram()
+                else:
+                    flag = 1
+            else:
+                flag = 1
         else:
-            flag = 1
+            click.secho("The time series file is needed.", fg='yellow')
+            if not self.data.set_time():
+                if not self.data.set_bins():
+                    try:
+                        plt.close()
+                        self.data.set_periodogram()
+                        self.change_forest()
+                        self.data.set_parameters()
+                        self.data.get_parameters()
+                    except KeyboardInterrupt:
+                        click.secho(
+                            "Error calculating the periodogram.", fg='red')
+                        flag = 1
+                else:
+                    flag = 1
+            else:
+                flag = 1
         return flag
 
     def change_region(self) -> int:
@@ -184,29 +230,57 @@ class Plot(Series):
         self.plot_figure()
         if click.confirm("Is the region selected"):
             self.axis = plt.gca().get_xlim()
-            lower = np.where(np.isclose(self.data.bins, self.axis[0], 0.1))
-            upper = np.where(np.isclose(self.data.bins, self.axis[1], 0.1))
-            low = np.rint(np.median(lower)).astype(int)
-            up = np.rint(np.median(upper)).astype(int)
+            low = np.where(np.isclose(self.data.bins, self.axis[0], 0.1))
+            up = np.where(np.isclose(self.data.bins, self.axis[1], 0.1))
+            low = np.rint(np.median(low)).astype(int)
+            up = np.rint(np.median(up)).astype(int)
             self.fmin = self.axis[0]
             self.fmax = self.axis[1]
             self.set_delta()
-            self.bins = np.arange(self.fmin, self.fmax, self.delta)
-            self.time = self.data.time
-            plt.close()
-            self.set_periodogram()
-            size = (self.data.bins.size - (up - low)) + self.bins.size
-            middle = low + self.bins.size
-            tempx = np.zeros(size)
-            tempy = np.zeros(size)
-            tempx[:low] = self.data.bins[:low]
-            tempy[:low] = self.data.z2n[:low]
-            tempx[low:middle] = self.bins
-            tempy[low:middle] = self.z2n
-            tempx[middle:] = self.data.bins[up:]
-            tempy[middle:] = self.data.z2n[up:]
-            self.data.bins = tempx
-            self.data.z2n = tempy
+            block = (self.fmax - self.fmin) / np.array(self.delta)
+            nbytes = np.array(self.delta).dtype.itemsize * block
+            click.secho(
+                f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
+            if click.confirm("Run the program with these values"):
+                if nbytes < psutil.virtual_memory()[1]:
+                    self.bins = np.arange(self.fmin, self.fmax, self.delta)
+                    click.secho('Frequency bins set.', fg='green')
+                    self.get_bins()
+                    self.time = self.data.time
+                    plt.close()
+                    self.set_periodogram()
+                    size = (self.data.bins.size - (up - low)) + self.bins.size
+                    middle = low + self.bins.size
+                    tempx = np.zeros(size)
+                    tempy = np.zeros(size)
+                    tempx[:low] = self.data.bins[:low]
+                    tempy[:low] = self.data.z2n[:low]
+                    tempx[low:middle] = self.bins
+                    tempy[low:middle] = self.z2n
+                    tempx[middle:] = self.data.bins[up:]
+                    tempy[middle:] = self.data.z2n[up:]
+                    self.data.bins = tempx
+                    self.data.z2n = tempy
+                    self.data.set_bak()
+                    # self.data.get_bak()
+                    self.data.bak = h5py.File(self.data.bak, 'a')
+                    self.data.bak.create_dataset(
+                        'FREQUENCY', data=self.data.bins, compression='lzf')
+                    self.data.bak.create_dataset(
+                        'POTENCY', data=self.data.z2n, compression='lzf')
+                    self.data.bins = self.data.bak['FREQUENCY']
+                    self.data.z2n = self.data.bak['POTENCY']
+                    del self.time
+                    del self.bins
+                    del self.z2n
+                    del tempx
+                    del tempy
+                    flag = 0
+                else:
+                    click.secho("Not enough memory available.", fg='red')
+                    flag = 1
+            else:
+                flag = 1
         else:
             flag = 1
         return flag
