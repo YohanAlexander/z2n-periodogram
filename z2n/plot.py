@@ -78,8 +78,8 @@ class Plot(Series):
 
     def plot_frequency(self) -> None:
         """Add vertical line on the peak frequency."""
-        self.data.set_frequency()
         if click.confirm("Add a vertical line to the peak frequency"):
+            self.data.set_frequency()
             if self.plots == 1:
                 self.axes.axvline(
                     self.data.frequency, linestyle='dashed', color='tab:red')
@@ -90,8 +90,8 @@ class Plot(Series):
 
     def plot_bandwidth(self) -> None:
         """Add horizontal line on the bandwidth."""
-        self.data.set_bandwidth()
         if click.confirm("Add a horizontal line to the bandwidth"):
+            self.data.set_bandwidth()
             if self.plots == 1:
                 self.axes.axhline(
                     self.data.bandwidth, linestyle='dotted', color='tab:grey')
@@ -155,30 +155,21 @@ class Plot(Series):
     def plot_background(self) -> int:
         """Create subplot of the background."""
         flag = 0
-        if self.plots == 2:
-            if click.confirm("Do you want to remove the background"):
-                self.rm_background()
-                del self.back.time
-                del self.back.bins
-                del self.back.z2n
+        click.secho("The background file is needed.", fg='yellow')
+        if not self.back.set_time():
+            try:
+                self.back.bins = np.array(self.data.bins)
+                plt.close()
+                self.back.set_periodogram()
+                self.add_background()
                 self.plot_figure()
-            else:
+            except KeyboardInterrupt:
+                click.secho(
+                    "Error calculating the periodogram.", fg='red')
+                self.rm_background()
                 flag = 1
         else:
-            click.secho("The background file is needed.", fg='yellow')
-            if not self.back.set_time():
-                try:
-                    self.back.bins = np.array(self.data.bins)
-                    plt.close()
-                    self.back.set_periodogram()
-                    self.add_background()
-                    self.plot_figure()
-                except KeyboardInterrupt:
-                    click.secho(
-                        "Error calculating the periodogram.", fg='red')
-                    flag = 1
-            else:
-                flag = 1
+            flag = 1
         return flag
 
     def plot_periodogram(self) -> int:
@@ -188,17 +179,26 @@ class Plot(Series):
             if click.confirm("Recalculate on a selected region"):
                 if not self.change_region():
                     if self.plots == 2:
-                        try:
-                            self.back.bins = np.array(self.data.bins)
-                            plt.close()
-                            self.back.set_periodogram()
-                        except KeyboardInterrupt:
-                            click.secho(
-                                "Error calculating the periodogram.", fg='red')
-                            flag = 1
-                    self.change_forest()
-                    self.data.set_parameters()
-                    self.data.get_parameters()
+                        if click.confirm("Do you want to keep the background"):
+                            try:
+                                self.back.bins = np.array(self.data.bins)
+                                plt.close()
+                                self.back.set_periodogram()
+                            except KeyboardInterrupt:
+                                click.secho(
+                                    "Error calculating the periodogram.", fg='red')
+                                flag = 1
+                        else:
+                            self.rm_background()
+                            del self.back.time
+                            del self.back.bins
+                            del self.back.z2n
+                    else:
+                        if click.confirm("Do you want to add a background file"):
+                            self.plot_background()
+                        self.change_forest()
+                        self.data.set_parameters()
+                        self.data.get_parameters()
                 else:
                     flag = 1
             else:
@@ -213,9 +213,12 @@ class Plot(Series):
                         self.change_forest()
                         self.data.set_parameters()
                         self.data.get_parameters()
+                        if click.confirm("Do you want to add a background file"):
+                            self.plot_background()
                     except KeyboardInterrupt:
                         click.secho(
                             "Error calculating the periodogram.", fg='red')
+                        self.data.z2n = np.array([])
                         flag = 1
                 else:
                     flag = 1
@@ -228,61 +231,65 @@ class Plot(Series):
         flag = 0
         click.secho("This will recalculate the periodogram.", fg='yellow')
         self.plot_figure()
-        if click.confirm("Is the region selected"):
-            self.axis = plt.gca().get_xlim()
-            low = np.where(np.isclose(self.data.bins, self.axis[0], 0.1))
-            up = np.where(np.isclose(self.data.bins, self.axis[1], 0.1))
-            low = np.rint(np.median(low)).astype(int)
-            up = np.rint(np.median(up)).astype(int)
-            self.fmin = self.axis[0]
-            self.fmax = self.axis[1]
-            self.set_delta()
-            block = (self.fmax - self.fmin) / np.array(self.delta)
-            nbytes = np.array(self.delta).dtype.itemsize * block
-            click.secho(
-                f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
-            if click.confirm("Run the program with these values"):
-                if nbytes < psutil.virtual_memory()[1]:
-                    self.bins = np.arange(self.fmin, self.fmax, self.delta)
-                    click.secho('Frequency bins set.', fg='green')
-                    self.get_bins()
-                    self.time = self.data.time
-                    plt.close()
-                    self.set_periodogram()
-                    size = (self.data.bins.size - (up - low)) + self.bins.size
-                    middle = low + self.bins.size
-                    tempx = np.zeros(size)
-                    tempy = np.zeros(size)
-                    tempx[:low] = self.data.bins[:low]
-                    tempy[:low] = self.data.z2n[:low]
-                    tempx[low:middle] = self.bins
-                    tempy[low:middle] = self.z2n
-                    tempx[middle:] = self.data.bins[up:]
-                    tempy[middle:] = self.data.z2n[up:]
-                    self.data.bins = tempx
-                    self.data.z2n = tempy
-                    self.data.set_bak()
-                    # self.data.get_bak()
-                    self.data.bak = h5py.File(self.data.bak, 'a')
-                    self.data.bak.create_dataset(
-                        'FREQUENCY', data=self.data.bins, compression='lzf')
-                    self.data.bak.create_dataset(
-                        'POTENCY', data=self.data.z2n, compression='lzf')
-                    self.data.bins = self.data.bak['FREQUENCY']
-                    self.data.z2n = self.data.bak['POTENCY']
-                    del self.time
-                    del self.bins
-                    del self.z2n
-                    del tempx
-                    del tempy
-                    flag = 0
+        opt = True
+        while opt:
+            if click.confirm("Is the region selected"):
+                self.axis = plt.gca().get_xlim()
+                low = np.where(np.isclose(self.data.bins, self.axis[0], 0.1))
+                up = np.where(np.isclose(self.data.bins, self.axis[1], 0.1))
+                low = np.rint(np.median(low)).astype(int)
+                up = np.rint(np.median(up)).astype(int)
+                self.fmin = self.axis[0]
+                self.fmax = self.axis[1]
+                self.set_delta()
+                block = (self.fmax - self.fmin) / np.array(self.delta)
+                nbytes = np.array(self.delta).dtype.itemsize * block
+                click.secho(
+                    f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
+                if click.confirm("Run the program with these values"):
+                    if nbytes < psutil.virtual_memory()[1]:
+                        self.bins = np.arange(self.fmin, self.fmax, self.delta)
+                        click.secho('Frequency bins set.', fg='green')
+                        self.get_bins()
+                        self.time = self.data.time
+                        plt.close()
+                        self.set_periodogram()
+                        size = (self.data.bins.size - (up - low)) + \
+                            self.bins.size
+                        middle = low + self.bins.size
+                        tempx = np.zeros(size)
+                        tempy = np.zeros(size)
+                        tempx[:low] = self.data.bins[:low]
+                        tempy[:low] = self.data.z2n[:low]
+                        tempx[low:middle] = self.bins
+                        tempy[low:middle] = self.z2n
+                        tempx[middle:] = self.data.bins[up:]
+                        tempy[middle:] = self.data.z2n[up:]
+                        self.data.bins = tempx
+                        self.data.z2n = tempy
+                        self.data.set_bak()
+                        # self.data.get_bak()
+                        self.data.bak = h5py.File(self.data.bak, 'a')
+                        self.data.bak.create_dataset(
+                            'FREQUENCY', data=self.data.bins, compression='lzf')
+                        self.data.bak.create_dataset(
+                            'POTENCY', data=self.data.z2n, compression='lzf')
+                        self.data.bins = self.data.bak['FREQUENCY']
+                        self.data.z2n = self.data.bak['POTENCY']
+                        del self.time
+                        del self.bins
+                        del self.z2n
+                        del tempx
+                        del tempy
+                        flag = 0
+                        opt = False
+                    else:
+                        click.secho("Not enough memory available.", fg='red')
+                        flag = 1
                 else:
-                    click.secho("Not enough memory available.", fg='red')
                     flag = 1
             else:
                 flag = 1
-        else:
-            flag = 1
         return flag
 
     def change_forest(self) -> None:
@@ -293,15 +300,18 @@ class Plot(Series):
         if regions > 0:
             means = np.zeros(regions)
             for region in range(regions):
-                if click.confirm(f"Is the the region {region + 1} selected"):
-                    self.axis = plt.gca().get_xlim()
-                    lower = np.where(np.isclose(
-                        self.data.bins, self.axis[0], 0.1))
-                    upper = np.where(np.isclose(
-                        self.data.bins, self.axis[1], 0.1))
-                    low = np.rint(np.median(lower)).astype(int)
-                    up = np.rint(np.median(upper)).astype(int)
-                    means[region] = np.mean(self.data.z2n[low:up])
+                opt = True
+                while opt:
+                    if click.confirm(f"Is the the region {region + 1} selected"):
+                        self.axis = plt.gca().get_xlim()
+                        lower = np.where(np.isclose(
+                            self.data.bins, self.axis[0], 0.1))
+                        upper = np.where(np.isclose(
+                            self.data.bins, self.axis[1], 0.1))
+                        low = np.rint(np.median(lower)).astype(int)
+                        up = np.rint(np.median(upper)).astype(int)
+                        means[region] = np.mean(self.data.z2n[low:up])
+                        opt = False
             self.data.forest = np.mean(means)
             self.data.set_bandwidth()
         else:

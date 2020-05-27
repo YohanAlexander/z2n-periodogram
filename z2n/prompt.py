@@ -25,9 +25,9 @@ def z2n():
     This program allows the user to calculate periodograms using the Z2n
     statistics a la Buccheri et al. 1983.
 
-    The standard Z2n statistics calculates the phase of each photon and
-    the sinusoidal functions above for each photon. Be advised that this
-    is very computationally expensive if the number of photons is high.
+    The standard Z2n statistics calculates the phase of each time and
+    the corresponding sinusoidal functions. Be advised that this is very
+    computationally expensive if the number of frequency bins is high.
     """
 
 
@@ -59,16 +59,6 @@ def run() -> None:
 
 
 @z2n.command()
-def back() -> None:
-    """Create subplot of a background file."""
-    if data.z2n.size == 0:
-        click.secho("The periodogram was not calculated yet.", fg='yellow')
-    else:
-        if not figure.plot_background():
-            plt()
-
-
-@z2n.command()
 def save() -> None:
     """Save the periodogram to a file."""
     if data.z2n.size == 0:
@@ -80,11 +70,6 @@ def save() -> None:
 @shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=__plt__)
 def plt() -> None:
     """Open the interactive periodogram plotting window."""
-
-
-@plt.command()
-def lines() -> None:
-    """Add parameter lines on the figure."""
     figure.plot_frequency()
     figure.plot_bandwidth()
 

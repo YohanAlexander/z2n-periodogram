@@ -35,6 +35,8 @@ class Series:
     > An arrray that represents the frequency bins.
     * `z2n : np.array`
     > An arrray that represents the periodogram.
+    * `harmonics : int`
+    > An integer that represents the number of harmonics.
     * `oversample : int`
     > An integer that represents the oversample factor.
     * `fmin : float`
@@ -77,6 +79,7 @@ class Series:
         self.fmin = 0
         self.fmax = 0
         self.delta = 0
+        self.harmonics = 0
         self.oversample = 0
         self.observation = 0
         self.sampling = 0
@@ -181,11 +184,12 @@ class Series:
 
     def get_periodogram(self) -> np.array:
         """Return the periodogram."""
-        click.secho(f"{self.z2n.size} potency values.", fg='cyan')
+        click.secho(f"{self.z2n.size} steps.", fg='cyan')
         return self.z2n
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
+        self.set_harmonics()
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         self.set_bak()
@@ -229,25 +233,35 @@ class Series:
         self.delta = click.prompt("Frequency steps", type=float)
         click.secho('Frequency steps set.', fg='green')
 
-    def get_oversample(self) -> float:
+    def get_oversample(self) -> int:
         """Return the oversample factor."""
         click.secho(f"Oversample factor: {self.oversample}", fg='cyan')
         return self.oversample
 
     def set_oversample(self) -> None:
         """Change the oversample factor."""
-        self.oversample = click.prompt("Oversample factor", type=float)
+        self.oversample = click.prompt("Oversample factor", type=int)
         click.secho('Oversample factor set.', fg='green')
+
+    def get_harmonics(self) -> int:
+        """Return the number of harmonics."""
+        click.secho(f"Number of harmonics: {self.harmonics}", fg='cyan')
+        return self.harmonics
+
+    def set_harmonics(self) -> None:
+        """Change the number of harmonics."""
+        self.harmonics = click.prompt("Number of harmonics", type=int)
+        click.secho('Harmonics set.', fg='green')
 
     def get_observation(self) -> float:
         """Return the period of observation."""
-        click.secho(f"Period of observation: {self.observation} s", fg='cyan')
+        click.secho(f"Exposure time: {self.observation} s", fg='cyan')
         return self.observation
 
     def set_observation(self) -> None:
         """Change the period of observation."""
         stats.observation(self)
-        click.secho('Period of observation set.', fg='green')
+        click.secho('Exposure time set.', fg='green')
 
     def get_sampling(self) -> float:
         """Return the sampling rate."""
@@ -407,7 +421,7 @@ class Series:
         # self.set_bins()
         # self.set_periodogram()
         self.set_potency()
-        self.set_forest()
+        #self.set_forest()
         self.set_bandwidth()
         self.set_frequency()
         self.set_error()

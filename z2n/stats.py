@@ -48,7 +48,7 @@ def sampling(series) -> None:
 
 
 @jit(nopython=True, parallel=True, fastmath=True)
-def phase(times: np.array, freq: float) -> np.array:
+def phase(times: np.array, freq: float, harm: int) -> np.array:
     """
     Calculate the phase values.
 
@@ -58,15 +58,17 @@ def phase(times: np.array, freq: float) -> np.array:
         An array that represents the times.
     freq : float
         A float that represents the frequency.
+    harm : int
+        A int that represents the harmonics.
 
     Returns
     -------
     values : np.array
         An array that represents the phase values.
     """
-    delta = times * freq
-    frac = delta - np.floor(delta)
-    values = frac * 2 * np.pi
+    values = times * freq
+    values = values - np.floor(values)
+    values = values * 2 * np.pi * harm
     return values
 
 
@@ -139,11 +141,11 @@ def square(value: float) -> float:
 
     Returns
     -------
-    squared : float
+    value : float
         A float that represents the square value.
     """
-    squared = value ** 2
-    return squared
+    value = value ** 2
+    return value
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
@@ -168,7 +170,7 @@ def spectrum(sin: float, cos: float) -> float:
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
-def z2n(times: np.array, freq: float) -> float:
+def z2n(times: np.array, freq: float, harm: int) -> float:
     """
     Calculate the Z2n potency value.
 
@@ -176,13 +178,15 @@ def z2n(times: np.array, freq: float) -> float:
         An array that represents the times.
     freq : float
         A float that represents the frequency.
+    harm : int
+        A int that represents the harmonics.
 
     Returns
     -------
     value : float
         A float that represents the Z2n potency.
     """
-    phases = phase(times, freq)
+    phases = phase(times, freq, harm)
     sin = summation(sine(phases))
     cos = summation(cosine(phases))
     value = spectrum(square(sin), square(cos))
@@ -225,7 +229,9 @@ def periodogram(series) -> None:
     None
     """
     for freq in trange(series.bins.size, desc=desc):
-        series.z2n[freq] = z2n(series.time, series.bins[freq])
+        for harmonic in range(series.harmonics):
+            series.z2n[freq] = series.z2n[freq] + \
+                z2n(series.time, series.bins[freq], harmonic + 1)
     series.z2n = normalization(series.z2n, (2 / series.time.size))
 
 
