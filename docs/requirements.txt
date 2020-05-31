@@ -8,5 +8,6 @@ psutil
 numpy
 numba
 icc-rt
+scipy
 h5py
 tqdm

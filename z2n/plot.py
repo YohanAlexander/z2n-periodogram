@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 # Owned Libraries
 from z2n import file
+from z2n import stats
 from z2n.series import Series
 
 
@@ -36,7 +37,6 @@ class Plot(Series):
         self.data = data
         self.back = back
         self.figure, self.axes = plt.subplots()
-        self.axis = plt.gca().get_xlim()
 
     def get_input(self) -> str:
         """Return the input image name."""
@@ -177,7 +177,7 @@ class Plot(Series):
         flag = 0
         if self.data.z2n.size:
             if click.confirm("Recalculate on a selected region"):
-                if not self.change_region():
+                if not self.crop_region():
                     if self.plots == 2:
                         if click.confirm("Do you want to keep the background"):
                             try:
@@ -196,7 +196,7 @@ class Plot(Series):
                     else:
                         if click.confirm("Do you want to add a background file"):
                             self.plot_background()
-                        self.change_forest()
+                        self.plot_figure()
                         self.data.set_parameters()
                         self.data.get_parameters()
                 else:
@@ -210,7 +210,7 @@ class Plot(Series):
                     try:
                         plt.close()
                         self.data.set_periodogram()
-                        self.change_forest()
+                        self.plot_figure()
                         self.data.set_parameters()
                         self.data.get_parameters()
                         if click.confirm("Do you want to add a background file"):
@@ -226,7 +226,7 @@ class Plot(Series):
                 flag = 1
         return flag
 
-    def change_region(self) -> int:
+    def crop_region(self) -> int:
         """Change limits on a periodogram region."""
         flag = 0
         click.secho("This will recalculate the periodogram.", fg='yellow')
@@ -291,31 +291,6 @@ class Plot(Series):
             else:
                 flag = 1
         return flag
-
-    def change_forest(self) -> None:
-        """Select regions of uncertainty."""
-        click.secho("Select regions to estimate error.", fg='yellow')
-        self.plot_figure()
-        regions = click.prompt("How many regions", type=int)
-        if regions > 0:
-            means = np.zeros(regions)
-            for region in range(regions):
-                opt = True
-                while opt:
-                    if click.confirm(f"Is the the region {region + 1} selected"):
-                        self.axis = plt.gca().get_xlim()
-                        lower = np.where(np.isclose(
-                            self.data.bins, self.axis[0], 0.1))
-                        upper = np.where(np.isclose(
-                            self.data.bins, self.axis[1], 0.1))
-                        low = np.rint(np.median(lower)).astype(int)
-                        up = np.rint(np.median(upper)).astype(int)
-                        means[region] = np.mean(self.data.z2n[low:up])
-                        opt = False
-            self.data.forest = np.mean(means)
-            self.data.set_bandwidth()
-        else:
-            click.secho("No regions to estimate error.", fg='yellow')
 
     def save_image(self) -> None:
         """Save the image to a file."""

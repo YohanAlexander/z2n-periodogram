@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version='1.6.1',
+        version='1.6.2',
         license='MIT',
         install_requires=[
             'click',
@@ -20,6 +20,7 @@ with open("README.md", "r") as fh:
             'numpy',
             'numba',
             'icc-rt',
+            'scipy',
             'h5py',
             'tqdm',
         ],

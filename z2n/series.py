@@ -139,6 +139,11 @@ class Series:
         flag = 0
         if not self.load_file():
             self.time = self.time.astype(self.time.dtype.name)
+            self.set_observation()
+            self.set_sampling()
+            self.get_time()
+            self.get_observation()
+            self.get_sampling()
         else:
             flag = 1
         return flag
@@ -151,7 +156,6 @@ class Series:
     def set_bins(self) -> int:
         """Change the frequency bins."""
         flag = 1
-        self.set_sampling()
         if click.confirm("Do you want to use the Nyquist frequency"):
             self.fmin = self.sampling * 2
             self.set_fmax()
@@ -184,7 +188,7 @@ class Series:
 
     def get_periodogram(self) -> np.array:
         """Return the periodogram."""
-        click.secho(f"{self.z2n.size} steps.", fg='cyan')
+        click.secho(f"{self.z2n.size} spectrum steps.", fg='cyan')
         return self.z2n
 
     def set_periodogram(self) -> None:
@@ -275,7 +279,8 @@ class Series:
 
     def get_potency(self) -> float:
         """Return the peak potency."""
-        click.secho(f"Peak potency: {self.potency}", fg='cyan')
+        click.secho(
+            f"Peak potency: {self.potency} +/- {self.forest}", fg='cyan')
         return self.potency
 
     def set_potency(self) -> None:
@@ -285,7 +290,8 @@ class Series:
 
     def get_frequency(self) -> float:
         """Return the peak frequency."""
-        click.secho(f"Peak frequency: {self.frequency} Hz", fg='cyan')
+        click.secho(
+            f"Peak frequency: {self.frequency} +/- {self.error} Hz", fg='cyan')
         return self.frequency
 
     def set_frequency(self) -> None:
@@ -295,7 +301,8 @@ class Series:
 
     def get_period(self) -> float:
         """Return the peak period."""
-        click.secho(f"Peak period: {self.period} s", fg='cyan')
+        click.secho(
+            f"Peak period: {self.period} +/- {1/self.error} s", fg='cyan')
         return self.period
 
     def set_period(self) -> None:
@@ -392,36 +399,18 @@ class Series:
 
     def get_parameters(self) -> None:
         """Return the parameters used on the statistic."""
-        self.get_time()
-        self.get_observation()
-        self.get_sampling()
-        self.get_fmin()
-        self.get_fmax()
-        self.get_delta()
-        # self.get_oversample()
-        # self.get_bins()
-        self.get_periodogram()
-        self.get_potency()
-        self.get_forest()
         self.get_bandwidth()
+        self.get_potency()
+        # self.get_forest()
         self.get_frequency()
-        self.get_error()
         self.get_period()
+        # self.get_error()
         self.get_pfraction()
 
     def set_parameters(self) -> None:
         """Change the parameters used on the statistic."""
-        # self.set_time()
-        self.set_observation()
-        self.set_sampling()
-        # self.set_fmin()
-        # self.set_fmax()
-        # self.set_delta()
-        # self.set_oversample()
-        # self.set_bins()
-        # self.set_periodogram()
         self.set_potency()
-        #self.set_forest()
+        self.set_forest()
         self.set_bandwidth()
         self.set_frequency()
         self.set_error()

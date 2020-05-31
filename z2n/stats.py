@@ -4,10 +4,10 @@
 # Other libraries
 import click
 import numpy as np
-from tqdm import trange
 from numba import jit
-
-desc = click.style('Calculating the periodogram', fg='yellow')
+from tqdm import trange
+from scipy import optimize
+import matplotlib.pyplot as plt
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
@@ -43,7 +43,8 @@ def sampling(series) -> None:
     -------
     None
     """
-    observation(series)
+    if not series.observation:
+        observation(series)
     series.sampling = (1 / series.observation)
 
 
@@ -228,7 +229,9 @@ def periodogram(series) -> None:
     -------
     None
     """
-    for freq in trange(series.bins.size, desc=desc):
+    for freq in trange(
+            series.bins.size, desc=click.style(
+                'Calculating the periodogram', fg='yellow')):
         for harmonic in range(series.harmonics):
             series.z2n[freq] = series.z2n[freq] + \
                 z2n(series.time, series.bins[freq], harmonic + 1)
@@ -284,7 +287,8 @@ def period(series) -> None:
     -------
     None
     """
-    frequency(series)
+    if not series.frequency:
+        frequency(series)
     series.period = 1 / series.frequency
 
 
@@ -302,7 +306,8 @@ def pfraction(series) -> None:
     -------
     None
     """
-    frequency(series)
+    if not series.frequency:
+        frequency(series)
     pfrac = (2 * series.potency) / series.time.size
     series.pulsed = pfrac ** 0.5
 
@@ -321,11 +326,28 @@ def forest(series) -> None:
     -------
     None
     """
-    potency(series)
-    index = np.argmax(series.z2n)
-    low = np.rint(index - (0.2 * index)).astype(int)
-    up = np.rint(index + (0.2 * index)).astype(int)
-    series.forest = np.mean([series.z2n[low], series.z2n[up]])
+    if not series.potency:
+        potency(series)
+    click.secho("Select regions to estimate error.", fg='yellow')
+    regions = click.prompt("How many regions", type=int)
+    if regions > 0:
+        means = np.zeros(regions)
+        for region in range(regions):
+            opt = True
+            while opt:
+                if click.confirm("Is the the region " + str(region+1) + " selected"):
+                    axis = plt.gca().get_xlim()
+                    lower = np.where(np.isclose(series.bins, axis[0], 0.1))
+                    upper = np.where(np.isclose(series.bins, axis[1], 0.1))
+                    low = np.rint(np.median(lower)).astype(int)
+                    up = np.rint(np.median(upper)).astype(int)
+                    means[region] = np.mean(series.z2n[low:up])
+                    opt = False
+        series.forest = np.mean(means)
+        series.bandwidth = series.potency - series.forest
+        #gauss(series)
+    else:
+        click.secho("No regions to estimate error.", fg='yellow')
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
@@ -342,7 +364,10 @@ def bandwidth(series) -> None:
     -------
     None
     """
-    forest(series)
+    if not series.potency:
+        potency(series)
+    if not series.forest:
+        forest(series)
     series.bandwidth = series.potency - series.forest
 
 
@@ -360,11 +385,42 @@ def error(series) -> None:
     -------
     None
     """
-    bandwidth(series)
+    if not series.bandwidth:
+        bandwidth(series)
     intersections = np.where(np.isclose(series.z2n, series.bandwidth, 0.1))
     if intersections[0].size:
         low = series.frequency - series.bins[intersections[0][0]]
         up = series.bins[intersections[0][-1]] - series.frequency
         series.error = np.mean([low, up])
+    else:
+        series.error = 0
+
+
+# @jit(forceobj=True, parallel=True, fastmath=True)
+def gauss(series) -> None:
+    """
+    Adjust a gaussian to the natural frequency.
+
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+
+    Returns
+    -------
+    None
+    """
+    if not series.bandwidth:
+        bandwidth(series)
+    def gaussian(x, amplitude, mean, stddev):
+        return amplitude * np.exp(-((x - mean) / 4 / stddev)**2)
+    intersections = np.where(np.isclose(series.z2n, series.bandwidth, 0.1))
+    if intersections[0].size:
+        low = intersections[0][0]
+        up = intersections[0][-1]
+        popt, _ = optimize.curve_fit(
+            gaussian, series.bins[low:up], series.z2n[low:up])
+        print(popt)
+        series.z2n[low:up] = gaussian(series.z2n[low:up], *popt)
     else:
         series.error = 0
