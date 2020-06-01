@@ -14,14 +14,20 @@ from z2n import stats
 from z2n.series import Series
 
 
-class Plot(Series):
+class Plot():
     """
     A class to represent the plot of a time series.
 
     Attributes
     ----------
-    * `plots : int`
-    > A integer for the current number of plots.
+    * `input : str`
+    > A string that represents the input file path.
+    * `output : str`
+    > A string that represents the output file name.
+    * `format : str`
+    > A string that represents the file format.
+    * `back : int`
+    > A integer for the state of the background.
     * `data : Series`
     > A series object that represents the data.
     * `noise : Series`
@@ -33,10 +39,13 @@ class Plot(Series):
 
     def __init__(self) -> None:
         super().__init__()
-        self.plots = 1
+        self.input = ""
+        self.output = ""
+        self.format = ""
+        self.back = 0
         self.data = Series()
         self.noise = Series()
-        self.figure, self.axes = plt.subplots()
+        self.figure, self.axes = tuple(([], []))
 
     def get_input(self) -> str:
         """Return the input image name."""
@@ -68,19 +77,19 @@ class Plot(Series):
 
     def add_background(self) -> None:
         """Add background on the plot."""
-        self.plots = 2
+        self.back = 1
         click.secho("Background file added.", fg='green')
 
     def rm_background(self) -> None:
         """Remove background on the plot."""
-        self.plots = 1
+        self.back = 0
         click.secho("Background file removed.", fg='green')
 
     def plot_frequency(self) -> None:
         """Add vertical line on the peak frequency."""
         if click.confirm("Add a vertical line to the peak frequency"):
             self.data.set_frequency()
-            if self.plots == 1:
+            if not self.back:
                 self.axes.axvline(
                     self.data.frequency, linestyle='dashed', color='tab:red')
             else:
@@ -92,7 +101,7 @@ class Plot(Series):
         """Add horizontal line on the bandwidth."""
         if click.confirm("Add a horizontal line to the bandwidth"):
             self.data.set_bandwidth()
-            if self.plots == 1:
+            if not self.back:
                 self.axes.axhline(
                     self.data.bandwidth, linestyle='dotted', color='tab:grey')
             else:
@@ -104,14 +113,15 @@ class Plot(Series):
         """Create the figure on the plotting window."""
         plt.close()
         plt.ion()
-        if self.plots == 1:
-            self.figure, self.axes = plt.subplots(self.plots)
+        if not self.back:
+            self.figure, self.axes = plt.subplots(self.back + 1)
             self.axes.plot(self.data.bins, self.data.z2n, color='tab:blue')
-        elif self.plots == 2:
+        else:
             self.figure, self.axes = plt.subplots(
-                self.plots, sharex=True, sharey=True)
+                self.back + 1, sharex=True, sharey=True)
             self.axes[0].plot(self.data.bins, self.data.z2n, color='tab:blue')
-            self.axes[1].plot(self.noise.bins, self.noise.z2n, color='tab:cyan')
+            self.axes[1].plot(
+                self.noise.bins, self.noise.z2n, color='tab:cyan')
 
     def plot_file(self) -> int:
         """Plot the periodogram from a file."""
@@ -177,8 +187,9 @@ class Plot(Series):
         flag = 0
         if self.data.z2n.size:
             if click.confirm("Recalculate on a selected region"):
-                if not self.crop_region():
-                    if self.plots == 2:
+                self.plot_figure()
+                if not stats.crop(self.data, Series()):
+                    if self.back:
                         if click.confirm("Do you want to keep the background"):
                             try:
                                 self.noise.bins = np.array(self.data.bins)
@@ -236,72 +247,6 @@ class Plot(Series):
                 flag = 1
         return flag
 
-    def crop_region(self) -> int:
-        """Change limits on a periodogram region."""
-        flag = 0
-        click.secho("This will recalculate the periodogram.", fg='yellow')
-        self.plot_figure()
-        opt = True
-        while opt:
-            if click.confirm("Is the region selected"):
-                self.axis = plt.gca().get_xlim()
-                low = np.where(np.isclose(self.data.bins, self.axis[0], 0.1))
-                up = np.where(np.isclose(self.data.bins, self.axis[1], 0.1))
-                low = np.rint(np.median(low)).astype(int)
-                up = np.rint(np.median(up)).astype(int)
-                self.fmin = self.axis[0]
-                self.fmax = self.axis[1]
-                self.set_delta()
-                block = (self.fmax - self.fmin) / np.array(self.delta)
-                nbytes = np.array(self.delta).dtype.itemsize * block
-                click.secho(
-                    f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
-                if click.confirm("Run the program with these values"):
-                    if nbytes < psutil.virtual_memory()[1]:
-                        self.bins = np.arange(self.fmin, self.fmax, self.delta)
-                        click.secho('Frequency bins set.', fg='green')
-                        self.get_bins()
-                        self.time = self.data.time
-                        plt.close()
-                        self.set_periodogram()
-                        size = (self.data.bins.size - (up - low)) + \
-                            self.bins.size
-                        middle = low + self.bins.size
-                        tempx = np.zeros(size)
-                        tempy = np.zeros(size)
-                        tempx[:low] = self.data.bins[:low]
-                        tempy[:low] = self.data.z2n[:low]
-                        tempx[low:middle] = self.bins
-                        tempy[low:middle] = self.z2n
-                        tempx[middle:] = self.data.bins[up:]
-                        tempy[middle:] = self.data.z2n[up:]
-                        self.data.bins = tempx
-                        self.data.z2n = tempy
-                        self.data.set_bak()
-                        # self.data.get_bak()
-                        self.data.bak = h5py.File(self.data.bak, 'a')
-                        self.data.bak.create_dataset(
-                            'FREQUENCY', data=self.data.bins, compression='lzf')
-                        self.data.bak.create_dataset(
-                            'POTENCY', data=self.data.z2n, compression='lzf')
-                        self.data.bins = self.data.bak['FREQUENCY']
-                        self.data.z2n = self.data.bak['POTENCY']
-                        del self.time
-                        del self.bins
-                        del self.z2n
-                        del tempx
-                        del tempy
-                        flag = 0
-                        opt = False
-                    else:
-                        click.secho("Not enough memory available.", fg='red')
-                        flag = 1
-                else:
-                    flag = 1
-            else:
-                flag = 1
-        return flag
-
     def save_image(self) -> None:
         """Save the image to a file."""
         plt.tight_layout()
@@ -327,7 +272,7 @@ class Plot(Series):
 
     def change_title(self) -> None:
         """Change the title on the figure."""
-        if self.plots != 1:
+        if self.back:
             self.figure.suptitle(click.prompt("Which title"))
             click.secho("Changed title.", fg='green')
         else:
@@ -336,7 +281,7 @@ class Plot(Series):
 
     def change_xlabel(self) -> None:
         """Change the label on the x axis."""
-        if self.plots != 1:
+        if self.back:
             xlabel = click.prompt("Which label")
             self.axes[0].set_xlabel(xlabel)
             self.axes[1].set_xlabel(xlabel)
@@ -347,7 +292,7 @@ class Plot(Series):
 
     def change_xscale(self) -> None:
         """Change the scale on the x axis."""
-        if self.plots != 1:
+        if self.back:
             self.axes[0].set_xscale(click.prompt(
                 "Which scale [linear, log, symlog, logit]"))
             click.secho("Changed X axis scale.", fg='green')
@@ -358,7 +303,7 @@ class Plot(Series):
 
     def change_xlim(self) -> None:
         """Change the limites on the x axis."""
-        if self.plots != 1:
+        if self.back:
             low = click.prompt("Which lower limit", type=float)
             up = click.prompt("Which upper limit", type=float)
             self.axes[0].set_xlim([low, up])
@@ -371,7 +316,7 @@ class Plot(Series):
 
     def change_ylabel(self) -> None:
         """Change the label on the y axis."""
-        if self.plots != 1:
+        if self.back:
             ylabel = click.prompt("Which label")
             self.axes[0].set_ylabel(ylabel)
             self.axes[1].set_ylabel(ylabel)
@@ -382,7 +327,7 @@ class Plot(Series):
 
     def change_yscale(self) -> None:
         """Change the scale on the y axis."""
-        if self.plots != 1:
+        if self.back:
             self.axes[0].set_yscale(click.prompt(
                 "Which scale [linear, log, symlog, logit]"))
             click.secho("Changed y axis scale.", fg='green')
@@ -393,7 +338,7 @@ class Plot(Series):
 
     def change_ylim(self) -> None:
         """Change the limites on the y axis."""
-        if self.plots != 1:
+        if self.back:
             low = click.prompt("Which lower limit", type=float)
             up = click.prompt("Which upper limit", type=float)
             self.axes[0].set_ylim([low, up])
