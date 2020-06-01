@@ -12,10 +12,7 @@ from z2n import __z2n__
 from z2n import __plt__
 from z2n import __docs__
 from z2n import __version__
-
-data = Series()
-noise = Series()
-figure = Plot(data, noise)
+figure = Plot()
 
 
 @click.version_option(prog_name='Z2n Software', version=__version__)
@@ -41,7 +38,7 @@ def docs() -> None:
 @z2n.command()
 def plot() -> None:
     """Open the interactive plotting window."""
-    if data.z2n.size == 0:
+    if figure.data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
         if click.confirm("Do you want to plot from a file"):
             if not figure.plot_file():
@@ -61,10 +58,10 @@ def run() -> None:
 @z2n.command()
 def save() -> None:
     """Save the periodogram to a file."""
-    if data.z2n.size == 0:
+    if figure.data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
     else:
-        data.save_file()
+        figure.data.save_file()
 
 
 @shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=__plt__)

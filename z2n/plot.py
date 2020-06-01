@@ -24,18 +24,18 @@ class Plot(Series):
     > A integer for the current number of plots.
     * `data : Series`
     > A series object that represents the data.
-    * `back : Series`
+    * `noise : Series`
     > A series object that represents the background.
 
     Methods
     -------
     """
 
-    def __init__(self, data, back) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.plots = 1
-        self.data = data
-        self.back = back
+        self.data = Series()
+        self.noise = Series()
         self.figure, self.axes = plt.subplots()
 
     def get_input(self) -> str:
@@ -111,7 +111,7 @@ class Plot(Series):
             self.figure, self.axes = plt.subplots(
                 self.plots, sharex=True, sharey=True)
             self.axes[0].plot(self.data.bins, self.data.z2n, color='tab:blue')
-            self.axes[1].plot(self.back.bins, self.back.z2n, color='tab:cyan')
+            self.axes[1].plot(self.noise.bins, self.noise.z2n, color='tab:cyan')
 
     def plot_file(self) -> int:
         """Plot the periodogram from a file."""
@@ -156,11 +156,11 @@ class Plot(Series):
         """Create subplot of the background."""
         flag = 0
         click.secho("The background file is needed.", fg='yellow')
-        if not self.back.set_time():
+        if not self.noise.set_time():
             try:
-                self.back.bins = np.array(self.data.bins)
+                self.noise.bins = np.array(self.data.bins)
                 plt.close()
-                self.back.set_periodogram()
+                self.noise.set_periodogram()
                 self.add_background()
                 self.plot_figure()
             except KeyboardInterrupt:
@@ -181,23 +181,22 @@ class Plot(Series):
                     if self.plots == 2:
                         if click.confirm("Do you want to keep the background"):
                             try:
-                                self.back.bins = np.array(self.data.bins)
+                                self.noise.bins = np.array(self.data.bins)
                                 plt.close()
-                                self.back.set_periodogram()
+                                self.noise.set_periodogram()
                             except KeyboardInterrupt:
                                 click.secho(
                                     "Error calculating the periodogram.", fg='red')
                                 flag = 1
                         else:
                             self.rm_background()
-                            del self.back.time
-                            del self.back.bins
-                            del self.back.z2n
+                            del self.noise.time
+                            del self.noise.bins
+                            del self.noise.z2n
                     else:
                         if click.confirm("Do you want to add a background file"):
                             self.plot_background()
                         self.plot_figure()
-                        self.data.set_parameters()
                         self.data.get_parameters()
                 else:
                     flag = 1
@@ -211,7 +210,6 @@ class Plot(Series):
                         plt.close()
                         self.data.set_periodogram()
                         self.plot_figure()
-                        self.data.set_parameters()
                         self.data.get_parameters()
                         if click.confirm("Do you want to add a background file"):
                             self.plot_background()

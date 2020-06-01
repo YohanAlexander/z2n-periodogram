@@ -56,11 +56,11 @@ class Series:
     * `period : float`
     > A float that represents the peak period.
     * `error : float`
-    > A float that represents the uncertainty.
+    > A float that represents the frequency uncertainty.
     * `pulsed : float`
     > A float that represents the pulsed fraction.
     * `forest : float`
-    > A float that represents the forest potency.
+    > A float that represents the potency uncertainty.
     * `bandwidth : float`
     > A float that represents the bandwidth potency.
 
@@ -196,6 +196,8 @@ class Series:
         self.set_harmonics()
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
+        click.secho('Periodogram calculated.', fg='green')
+        self.set_parameters()
         self.set_bak()
         # self.get_bak()
         self.bak = h5py.File(self.bak, 'a')
@@ -205,7 +207,6 @@ class Series:
         del self.z2n
         self.bins = self.bak['FREQUENCY']
         self.z2n = self.bak['POTENCY']
-        click.secho('Periodogram calculated.', fg='green')
 
     def get_fmin(self) -> float:
         """Return the minimum frequency."""
@@ -347,7 +348,7 @@ class Series:
 
     def set_error(self) -> None:
         """Return the uncertainty of the frequency."""
-        stats.error(self)
+        stats.gauss(self)
         click.secho('Frequency uncertainty set.', fg='green')
 
     def load_file(self) -> int:
@@ -413,6 +414,6 @@ class Series:
         self.set_forest()
         self.set_bandwidth()
         self.set_frequency()
-        self.set_error()
         self.set_period()
+        self.set_error()
         self.set_pfraction()

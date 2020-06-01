@@ -313,44 +313,6 @@ def pfraction(series) -> None:
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
-def forest(series) -> None:
-    """
-    Calculate the forest potency.
-
-    Parameters
-    ----------
-    series : Series
-        A time series object.
-
-    Returns
-    -------
-    None
-    """
-    if not series.potency:
-        potency(series)
-    click.secho("Select regions to estimate error.", fg='yellow')
-    regions = click.prompt("How many regions", type=int)
-    if regions > 0:
-        means = np.zeros(regions)
-        for region in range(regions):
-            opt = True
-            while opt:
-                if click.confirm("Is the the region " + str(region+1) + " selected"):
-                    axis = plt.gca().get_xlim()
-                    lower = np.where(np.isclose(series.bins, axis[0], 0.1))
-                    upper = np.where(np.isclose(series.bins, axis[1], 0.1))
-                    low = np.rint(np.median(lower)).astype(int)
-                    up = np.rint(np.median(upper)).astype(int)
-                    means[region] = np.mean(series.z2n[low:up])
-                    opt = False
-        series.forest = np.mean(means)
-        series.bandwidth = series.potency - series.forest
-        #gauss(series)
-    else:
-        click.secho("No regions to estimate error.", fg='yellow')
-
-
-@jit(forceobj=True, parallel=True, fastmath=True)
 def bandwidth(series) -> None:
     """
     Calculate the bandwidth.
@@ -371,10 +333,9 @@ def bandwidth(series) -> None:
     series.bandwidth = series.potency - series.forest
 
 
-@jit(forceobj=True, parallel=True, fastmath=True)
-def error(series) -> None:
+def forest(series) -> None:
     """
-    Calculate the uncertainty of the frequency.
+    Calculate the forest potency.
 
     Parameters
     ----------
@@ -385,18 +346,29 @@ def error(series) -> None:
     -------
     None
     """
-    if not series.bandwidth:
-        bandwidth(series)
-    intersections = np.where(np.isclose(series.z2n, series.bandwidth, 0.1))
-    if intersections[0].size:
-        low = series.frequency - series.bins[intersections[0][0]]
-        up = series.bins[intersections[0][-1]] - series.frequency
-        series.error = np.mean([low, up])
+    click.secho("Select regions to estimate error.", fg='yellow')
+    plt.close()
+    plt.ion()
+    plt.plot(series.bins, series.z2n, color='tab:blue')
+    regions = click.prompt("How many regions", type=int)
+    if regions > 0:
+        means = np.zeros(regions)
+        for region in range(regions):
+            opt = True
+            while opt:
+                if click.confirm(f"Is the region {region+1} selected"):
+                    axis = plt.gca().get_xlim()
+                    lower = np.where(np.isclose(series.bins, axis[0], 0.1))
+                    upper = np.where(np.isclose(series.bins, axis[1], 0.1))
+                    low = np.rint(np.median(lower)).astype(int)
+                    up = np.rint(np.median(upper)).astype(int)
+                    means[region] = np.mean(series.z2n[low:up])
+                    opt = False
+        series.forest = np.mean(means)
     else:
-        series.error = 0
+        click.secho("No regions to estimate error.", fg='yellow')
 
 
-# @jit(forceobj=True, parallel=True, fastmath=True)
 def gauss(series) -> None:
     """
     Adjust a gaussian to the natural frequency.
@@ -410,17 +382,21 @@ def gauss(series) -> None:
     -------
     None
     """
-    if not series.bandwidth:
-        bandwidth(series)
-    def gaussian(x, amplitude, mean, stddev):
-        return amplitude * np.exp(-((x - mean) / 4 / stddev)**2)
-    intersections = np.where(np.isclose(series.z2n, series.bandwidth, 0.1))
-    if intersections[0].size:
-        low = intersections[0][0]
-        up = intersections[0][-1]
-        popt, _ = optimize.curve_fit(
-            gaussian, series.bins[low:up], series.z2n[low:up])
-        print(popt)
-        series.z2n[low:up] = gaussian(series.z2n[low:up], *popt)
-    else:
-        series.error = 0
+    def gaussian(x, amplitude, mean, sigma):
+        return amplitude * np.exp(-((x - mean) / 4 / sigma)**2)
+    if not series.potency:
+        potency(series)
+    mean = sum(series.bins * series.z2n) / sum(series.z2n)
+    sigma = np.sqrt(
+        sum(series.z2n * (series.bins - mean)**2) / sum(series.z2n))
+    guess = [series.potency, mean, sigma]
+    popt, _ = optimize.curve_fit(gaussian, series.bins, series.z2n, guess)
+    series.frequency = popt[1]
+    series.error = popt[2]
+    lower = series.frequency - series.error
+    upper = series.frequency + series.error
+    low = np.where(np.isclose(series.bins, lower, 0.1))[0][0]
+    up = np.where(np.isclose(series.bins, upper, 0.1))[0][-1]
+    series.z2n[low:up] = gaussian(series.bins[low:up], *popt)
+    plt.plot(series.bins[low:up], gaussian(
+        series.bins[low:up], *popt), color='tab:red')
