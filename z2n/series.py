@@ -197,7 +197,7 @@ class Series:
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
-        self.set_parameters()
+        # self.set_parameters()
         self.set_bak()
         # self.get_bak()
         self.bak = h5py.File(self.bak, 'a')

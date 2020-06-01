@@ -347,9 +347,6 @@ def forest(series) -> None:
     None
     """
     click.secho("Select regions to estimate error.", fg='yellow')
-    plt.close()
-    plt.ion()
-    plt.plot(series.bins, series.z2n, color='tab:blue')
     regions = click.prompt("How many regions", type=int)
     if regions > 0:
         means = np.zeros(regions)
@@ -386,17 +383,18 @@ def gauss(series) -> None:
         return amplitude * np.exp(-((x - mean) / 4 / sigma)**2)
     if not series.potency:
         potency(series)
-    mean = sum(series.bins * series.z2n) / sum(series.z2n)
-    sigma = np.sqrt(
-        sum(series.z2n * (series.bins - mean)**2) / sum(series.z2n))
+    bins = np.array(series.bins)
+    z2n = np.array(series.z2n)
+    mean = sum(bins * z2n) / sum(z2n)
+    sigma = np.sqrt(sum(z2n * (bins - mean)**2) / sum(z2n))
     guess = [series.potency, mean, sigma]
-    popt, _ = optimize.curve_fit(gaussian, series.bins, series.z2n, guess)
-    series.frequency = popt[1]
-    series.error = popt[2]
+    popt, _ = optimize.curve_fit(gaussian, bins, z2n, guess)
+    series.frequency = np.absolute(popt[1])
+    series.error = np.absolute(popt[2])
     lower = series.frequency - series.error
     upper = series.frequency + series.error
-    low = np.where(np.isclose(series.bins, lower, 0.1))[0][0]
-    up = np.where(np.isclose(series.bins, upper, 0.1))[0][-1]
-    series.z2n[low:up] = gaussian(series.bins[low:up], *popt)
-    plt.plot(series.bins[low:up], gaussian(
-        series.bins[low:up], *popt), color='tab:red')
+    low = np.where(np.isclose(bins, lower, 0.1))[0][0]
+    up = np.where(np.isclose(bins, upper, 0.1))[0][-1]
+    series.z2n[low:up] = gaussian(bins[low:up], *popt)
+    del bins
+    del z2n

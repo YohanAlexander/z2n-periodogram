@@ -197,6 +197,8 @@ class Plot(Series):
                         if click.confirm("Do you want to add a background file"):
                             self.plot_background()
                         self.plot_figure()
+                        self.data.set_parameters()
+                        self.plot_figure()
                         self.data.get_parameters()
                 else:
                     flag = 1
@@ -209,6 +211,8 @@ class Plot(Series):
                     try:
                         plt.close()
                         self.data.set_periodogram()
+                        self.plot_figure()
+                        self.data.set_parameters()
                         self.plot_figure()
                         self.data.get_parameters()
                         if click.confirm("Do you want to add a background file"):
