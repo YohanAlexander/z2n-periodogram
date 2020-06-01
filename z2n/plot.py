@@ -124,39 +124,31 @@ class Plot():
     def plot_file(self) -> int:
         """Plot the periodogram from a file."""
         flag = 0
-        click.secho("The time series file is needed.", fg='yellow')
-        if not self.data.set_time():
-            click.secho("The periodogram file is needed.", fg='yellow')
-            self.data.set_format()
-            if self.data.format == 'ascii':
-                self.set_input()
-                self.data.input = self.input
-                file.plot_ascii(self.data)
-                click.secho("File loaded.", fg='green')
-                self.plot_figure()
-            elif self.data.format == 'csv':
-                self.set_input()
-                self.data.input = self.input
-                file.plot_csv(self.data)
-                click.secho("File loaded.", fg='green')
-                self.plot_figure()
-            elif self.data.format == 'fits':
-                self.set_input()
-                self.data.input = self.input
-                file.plot_fits(self.data)
-                click.secho("File loaded.", fg='green')
-                self.plot_figure()
-            elif self.data.format == 'hdf5':
-                self.set_input()
-                self.data.input = self.input
-                file.plot_hdf5(self.data)
-                click.secho("File loaded.", fg='green')
-                self.plot_figure()
-            else:
-                click.secho(
-                    f"{self.data.format} format not supported.", fg='red')
-                flag = 1
+        click.secho("The periodogram file is needed.", fg='yellow')
+        self.data.set_format()
+        if self.data.format == 'ascii':
+            self.data.set_input()
+            file.plot_ascii(self.data)
+            click.secho("File loaded.", fg='green')
+            self.plot_figure()
+        elif self.data.format == 'csv':
+            self.data.set_input()
+            file.plot_csv(self.data)
+            click.secho("File loaded.", fg='green')
+            self.plot_figure()
+        elif self.data.format == 'fits':
+            self.data.set_input()
+            file.plot_fits(self.data)
+            click.secho("File loaded.", fg='green')
+            self.plot_figure()
+        elif self.data.format == 'hdf5':
+            self.data.set_input()
+            file.plot_hdf5(self.data)
+            click.secho("File loaded.", fg='green')
+            self.plot_figure()
         else:
+            click.secho(
+                f"{self.data.format} format not supported.", fg='red')
             flag = 1
         return flag
 

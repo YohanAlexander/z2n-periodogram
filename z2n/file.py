@@ -53,7 +53,7 @@ def load_fits(series) -> None:
     -------
     None
     """
-    events = Table.read(series.input, hdu='EVENTS', format='fits')
+    events = Table.read(series.input, format='fits')
     series.time = events['TIME'].data
 
 
@@ -70,7 +70,7 @@ def load_hdf5(series) -> None:
     -------
     None
     """
-    table = Table.read(series.input, path='EVENTS', format='hdf5')
+    table = Table.read(series.input, format='hdf5')
     series.time = table['TIME'].data
 
 
@@ -87,9 +87,20 @@ def save_ascii(series) -> None:
     -------
     None
     """
-    array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('FREQUENCY', 'POTENCY'))
+    def pad(array, size):
+        if array.size < size:
+            array = np.hstack([array, np.zeros(size)])
+        return array
+    size = np.absolute(series.time.size - series.bins.size)
+    time = pad(series.time, size)
+    bins = pad(series.bins, size)
+    z2n = pad(series.z2n, size)
+    array = np.column_stack((time, bins, z2n))
+    table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.txt', format='ascii')
+    del time
+    del bins
+    del z2n
 
 
 def save_csv(series) -> None:
@@ -105,9 +116,20 @@ def save_csv(series) -> None:
     -------
     None
     """
-    array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('FREQUENCY', 'POTENCY'))
+    def pad(array, size):
+        if array.size < size:
+            array = np.hstack([array, np.zeros(size)])
+        return array
+    size = np.absolute(series.time.size - series.bins.size)
+    time = pad(series.time, size)
+    bins = pad(series.bins, size)
+    z2n = pad(series.z2n, size)
+    array = np.column_stack((time, bins, z2n))
+    table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.csv', format='csv')
+    del time
+    del bins
+    del z2n
 
 
 def save_fits(series) -> None:
@@ -123,9 +145,20 @@ def save_fits(series) -> None:
     -------
     None
     """
-    array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('FREQUENCY', 'POTENCY'))
+    def pad(array, size):
+        if array.size < size:
+            array = np.hstack([array, np.zeros(size)])
+        return array
+    size = np.absolute(series.time.size - series.bins.size)
+    time = pad(series.time, size)
+    bins = pad(series.bins, size)
+    z2n = pad(series.z2n, size)
+    array = np.column_stack((time, bins, z2n))
+    table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.fits', format='fits')
+    del time
+    del bins
+    del z2n
 
 
 def save_hdf5(series) -> None:
@@ -141,10 +174,20 @@ def save_hdf5(series) -> None:
     -------
     None
     """
-    array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('FREQUENCY', 'POTENCY'))
-    table.write(f'{series.output}.hdf5', path='Z2N',
-                format='hdf5', compression=True)
+    def pad(array, size):
+        if array.size < size:
+            array = np.hstack([array, np.zeros(size)])
+        return array
+    size = np.absolute(series.time.size - series.bins.size)
+    time = pad(series.time, size)
+    bins = pad(series.bins, size)
+    z2n = pad(series.z2n, size)
+    array = np.column_stack((time, bins, z2n))
+    table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
+    table.write(f'{series.output}.hdf5', format='hdf5', compression=True)
+    del time
+    del bins
+    del z2n
 
 
 def plot_ascii(series) -> None:
@@ -161,9 +204,10 @@ def plot_ascii(series) -> None:
     None
     """
     table = Table.read(series.input, names=(
-        'FREQUENCY', 'POTENCY'), format='ascii')
-    series.bins = table['FREQUENCY'].data
-    series.z2n = table['POTENCY'].data
+        'TIME', 'FREQUENCY', 'POTENCY'), format='ascii')
+    series.time = np.trim_zeros(table['TIME'].data)
+    series.bins = np.trim_zeros(table['FREQUENCY'].data)
+    series.z2n = np.trim_zeros(table['POTENCY'].data)
 
 
 def plot_csv(series) -> None:
@@ -180,9 +224,10 @@ def plot_csv(series) -> None:
     None
     """
     table = Table.read(series.input, names=(
-        'FREQUENCY', 'POTENCY'), format='csv')
-    series.bins = table['FREQUENCY'].data
-    series.z2n = table['POTENCY'].data
+        'TIME', 'FREQUENCY', 'POTENCY'), format='csv')
+    series.time = np.trim_zeros(table['TIME'].data)
+    series.bins = np.trim_zeros(table['FREQUENCY'].data)
+    series.z2n = np.trim_zeros(table['POTENCY'].data)
 
 
 def plot_fits(series) -> None:
@@ -199,8 +244,9 @@ def plot_fits(series) -> None:
     None
     """
     table = Table.read(series.input, format='fits')
-    series.bins = table['FREQUENCY'].data
-    series.z2n = table['POTENCY'].data
+    series.time = np.trim_zeros(table['TIME'].data)
+    series.bins = np.trim_zeros(table['FREQUENCY'].data)
+    series.z2n = np.trim_zeros(table['POTENCY'].data)
 
 
 def plot_hdf5(series) -> None:
@@ -216,6 +262,7 @@ def plot_hdf5(series) -> None:
     -------
     None
     """
-    table = Table.read(series.input, path='Z2N', format='hdf5')
-    series.bins = table['FREQUENCY'].data
-    series.z2n = table['POTENCY'].data
+    table = Table.read(series.input, format='hdf5')
+    series.time = np.trim_zeros(table['TIME'].data)
+    series.bins = np.trim_zeros(table['FREQUENCY'].data)
+    series.z2n = np.trim_zeros(table['POTENCY'].data)

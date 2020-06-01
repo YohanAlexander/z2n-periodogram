@@ -401,7 +401,6 @@ def gauss(series) -> None:
     # low = np.where(np.isclose(bins, lower, 0.1))[0][0]
     # up = np.where(np.isclose(bins, upper, 0.1))[0][-1]
     # series.z2n[low:up] = gaussian(bins[low:up], *popt)
-    # plt.plot(bins[low:up], gaussian(bins[low:up], *popt), color='red')
     del bins
     del pot
 
