@@ -57,6 +57,8 @@ class Series:
     > A float that represents the peak period.
     * `error : float`
     > A float that represents the frequency uncertainty.
+    * `noise : float`
+    > A float that represents the period uncertainty.
     * `pulsed : float`
     > A float that represents the pulsed fraction.
     * `forest : float`
@@ -89,6 +91,7 @@ class Series:
         self.frequency = 0
         self.error = 0
         self.period = 0
+        self.noise = 0
         self.pulsed = 0
 
     def get_bak(self) -> str:
@@ -196,8 +199,6 @@ class Series:
         self.set_harmonics()
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
-        click.secho('Periodogram calculated.', fg='green')
-        # self.set_parameters()
         self.set_bak()
         # self.get_bak()
         self.bak = h5py.File(self.bak, 'a')
@@ -207,6 +208,7 @@ class Series:
         del self.z2n
         self.bins = self.bak['FREQUENCY']
         self.z2n = self.bak['POTENCY']
+        click.secho('Periodogram calculated.', fg='green')
 
     def get_fmin(self) -> float:
         """Return the minimum frequency."""
@@ -303,7 +305,7 @@ class Series:
     def get_period(self) -> float:
         """Return the peak period."""
         click.secho(
-            f"Peak period: {self.period} +/- {1/self.error} s", fg='cyan')
+            f"Peak period: {self.period} +/- {self.noise} s", fg='cyan')
         return self.period
 
     def set_period(self) -> None:
@@ -350,6 +352,16 @@ class Series:
         """Return the uncertainty of the frequency."""
         stats.gauss(self)
         click.secho('Frequency uncertainty set.', fg='green')
+
+    def get_noise(self) -> float:
+        """Return the uncertainty of the period."""
+        click.secho(f"Period Uncertainty: {self.noise} +/-", fg='cyan')
+        return self.noise
+
+    def set_noise(self) -> None:
+        """Return the uncertainty of the period."""
+        stats.gauss(self)
+        click.secho('Period uncertainty set.', fg='green')
 
     def load_file(self) -> int:
         """Load a input file."""
@@ -404,8 +416,9 @@ class Series:
         self.get_potency()
         # self.get_forest()
         self.get_frequency()
-        self.get_period()
         # self.get_error()
+        self.get_period()
+        # self.get_noise()
         self.get_pfraction()
 
     def set_parameters(self) -> None:
@@ -414,6 +427,7 @@ class Series:
         self.set_forest()
         self.set_bandwidth()
         self.set_frequency()
-        self.set_period()
         self.set_error()
+        self.set_period()
+        self.set_noise()
         self.set_pfraction()

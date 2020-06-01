@@ -306,8 +306,8 @@ def pfraction(series) -> None:
     -------
     None
     """
-    if not series.frequency:
-        frequency(series)
+    if not series.potency:
+        potency(series)
     pfrac = (2 * series.potency) / series.time.size
     series.pulsed = pfrac ** 0.5
 
@@ -351,16 +351,16 @@ def forest(series) -> None:
     if regions > 0:
         means = np.zeros(regions)
         for region in range(regions):
-            opt = True
-            while opt:
-                if click.confirm(f"Is the region {region+1} selected"):
+            flag = True
+            while flag:
+                if click.confirm(f"Is the region {region + 1} selected"):
                     axis = plt.gca().get_xlim()
                     lower = np.where(np.isclose(series.bins, axis[0], 0.1))
                     upper = np.where(np.isclose(series.bins, axis[1], 0.1))
                     low = np.rint(np.median(lower)).astype(int)
                     up = np.rint(np.median(upper)).astype(int)
                     means[region] = np.mean(series.z2n[low:up])
-                    opt = False
+                    flag = False
         series.forest = np.mean(means)
     else:
         click.secho("No regions to estimate error.", fg='yellow')
@@ -380,21 +380,25 @@ def gauss(series) -> None:
     None
     """
     def gaussian(x, amplitude, mean, sigma):
-        return amplitude * np.exp(-((x - mean) / 4 / sigma)**2)
+        return amplitude * np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
     if not series.potency:
         potency(series)
     bins = np.array(series.bins)
     z2n = np.array(series.z2n)
     mean = sum(bins * z2n) / sum(z2n)
-    sigma = np.sqrt(sum(z2n * (bins - mean)**2) / sum(z2n))
+    sigma = np.sqrt(sum(z2n * (bins - mean) ** 2) / sum(z2n))
     guess = [series.potency, mean, sigma]
     popt, _ = optimize.curve_fit(gaussian, bins, z2n, guess)
     series.frequency = np.absolute(popt[1])
     series.error = np.absolute(popt[2])
+    period(series)
+    series.noise = np.absolute(
+        (1 / (series.frequency + series.error)) - series.period)
     lower = series.frequency - series.error
     upper = series.frequency + series.error
     low = np.where(np.isclose(bins, lower, 0.1))[0][0]
     up = np.where(np.isclose(bins, upper, 0.1))[0][-1]
-    series.z2n[low:up] = gaussian(bins[low:up], *popt)
+    # series.z2n[low:up] = gaussian(bins[low:up], *popt)
+    # plt.plot(bins[low:up], gaussian(bins[low:up], *popt), color='red')
     del bins
     del z2n
