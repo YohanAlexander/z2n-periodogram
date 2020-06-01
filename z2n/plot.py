@@ -184,6 +184,10 @@ class Plot(Series):
                                 self.noise.bins = np.array(self.data.bins)
                                 plt.close()
                                 self.noise.set_periodogram()
+                                self.plot_figure()
+                                self.data.set_parameters()
+                                self.plot_figure()
+                                self.data.get_parameters()
                             except KeyboardInterrupt:
                                 click.secho(
                                     "Error calculating the periodogram.", fg='red')
@@ -193,6 +197,10 @@ class Plot(Series):
                             del self.noise.time
                             del self.noise.bins
                             del self.noise.z2n
+                            self.plot_figure()
+                            self.data.set_parameters()
+                            self.plot_figure()
+                            self.data.get_parameters()
                     else:
                         if click.confirm("Do you want to add a background file"):
                             self.plot_background()

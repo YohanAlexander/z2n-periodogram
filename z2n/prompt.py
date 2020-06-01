@@ -67,6 +67,11 @@ def save() -> None:
 @shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=__plt__)
 def plt() -> None:
     """Open the interactive periodogram plotting window."""
+
+
+@plt.command()
+def lines() -> None:
+    """Change parameter lines on the figure."""
     figure.plot_frequency()
     figure.plot_bandwidth()
 
