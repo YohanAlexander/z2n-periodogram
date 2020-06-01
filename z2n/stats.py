@@ -386,11 +386,11 @@ def gauss(series) -> None:
     if not series.potency:
         potency(series)
     bins = np.array(series.bins)
-    z2n = np.array(series.z2n)
-    mean = sum(bins * z2n) / sum(z2n)
-    sigma = np.sqrt(sum(z2n * (bins - mean) ** 2) / sum(z2n))
+    pot = np.array(series.z2n)
+    mean = sum(bins * pot) / sum(pot)
+    sigma = np.sqrt(sum(pot * (bins - mean) ** 2) / sum(pot))
     guess = [series.potency, mean, sigma]
-    popt, _ = optimize.curve_fit(gaussian, bins, z2n, guess)
+    popt, pcov = optimize.curve_fit(gaussian, bins, pot, guess)
     series.frequency = np.absolute(popt[1])
     series.error = np.absolute(popt[2])
     period(series)
@@ -403,7 +403,7 @@ def gauss(series) -> None:
     # series.z2n[low:up] = gaussian(bins[low:up], *popt)
     # plt.plot(bins[low:up], gaussian(bins[low:up], *popt), color='red')
     del bins
-    del z2n
+    del pot
 
 
 def crop(series, temp) -> int:

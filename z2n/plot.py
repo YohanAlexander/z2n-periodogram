@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Other Libraries
-import h5py
 import click
-import psutil
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -45,7 +43,7 @@ class Plot():
         self.back = 0
         self.data = Series()
         self.noise = Series()
-        self.figure, self.axes = tuple(([], []))
+        self.figure, self.axes = ((), ())
 
     def get_input(self) -> str:
         """Return the input image name."""
