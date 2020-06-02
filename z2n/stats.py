@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Other libraries
-import h5py
 import click
-import psutil
 import numpy as np
 from numba import jit
 from tqdm import trange
@@ -335,9 +333,29 @@ def bandwidth(series) -> None:
     series.bandwidth = series.potency - series.forest
 
 
+@jit(forceobj=True, parallel=True, fastmath=True)
+def error(series) -> None:
+    """
+    Calculate the frequency uncertainty.
+
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+
+    Returns
+    -------
+    None
+    """
+    if not series.error:
+        gauss(series)
+    if not series.noise:
+        gauss(series)
+
+
 def forest(series) -> None:
     """
-    Calculate the forest potency.
+    Calculate the potency uncertainty.
 
     Parameters
     ----------
@@ -353,7 +371,7 @@ def forest(series) -> None:
     if regions > 0:
         means = np.zeros(regions)
         for region in range(regions):
-            flag = True
+            flag = 1
             while flag:
                 if click.confirm(f"Is the region {region + 1} selected"):
                     axis = plt.gca().get_xlim()
@@ -362,7 +380,7 @@ def forest(series) -> None:
                     low = np.rint(np.median(lower)).astype(int)
                     up = np.rint(np.median(upper)).astype(int)
                     means[region] = np.mean(series.z2n[low:up])
-                    flag = False
+                    flag = 0
         series.forest = np.mean(means)
     else:
         click.secho("No regions to estimate error.", fg='yellow')
@@ -390,19 +408,18 @@ def gauss(series) -> None:
     mean = sum(bins * pot) / sum(pot)
     sigma = np.sqrt(sum(pot * (bins - mean) ** 2) / sum(pot))
     guess = [series.potency, mean, sigma]
-    popt, pcov = optimize.curve_fit(gaussian, bins, pot, guess)
+    popt, _ = optimize.curve_fit(gaussian, bins, pot, guess)
     series.frequency = np.absolute(popt[1])
     series.error = np.absolute(popt[2])
     period(series)
     series.noise = np.absolute(
         (1 / (series.frequency + series.error)) - series.period)
-    # lower = series.frequency - series.error
-    # upper = series.frequency + series.error
-    # low = np.where(np.isclose(bins, lower, 0.1))[0][0]
-    # up = np.where(np.isclose(bins, upper, 0.1))[0][-1]
-    # series.z2n[low:up] = gaussian(bins[low:up], *popt)
+    series.gauss = gaussian(bins, *popt)
+    series.bak.create_dataset('GAUSSIAN', data=series.gauss, compression='lzf')
     del bins
     del pot
+    del series.gauss
+    series.gauss = series.bak['GAUSSIAN']
 
 
 def crop(series, temp) -> int:
@@ -419,8 +436,8 @@ def crop(series, temp) -> int:
     None
     """
     flag = 0
+    flag2 = 1
     click.secho("This will recalculate the periodogram.", fg='yellow')
-    flag2 = True
     while flag2:
         if click.confirm("Is the region selected"):
             axis = plt.gca().get_xlim()
@@ -430,50 +447,31 @@ def crop(series, temp) -> int:
             up = np.rint(np.median(up)).astype(int)
             temp.fmin = axis[0]
             temp.fmax = axis[1]
-            temp.set_delta()
-            block = (temp.fmax - temp.fmin) / np.array(temp.delta)
-            nbytes = np.array(temp.delta).dtype.itemsize * block
-            click.secho(
-                f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
-            if click.confirm("Run the program with these values"):
-                if nbytes < psutil.virtual_memory()[1]:
-                    temp.bins = np.arange(temp.fmin, temp.fmax, temp.delta)
-                    click.secho('Frequency bins set.', fg='green')
-                    temp.get_bins()
-                    temp.time = series.time
-                    plt.close()
-                    temp.set_periodogram()
-                    size = (series.bins.size - (up - low)) + temp.bins.size
-                    middle = low + temp.bins.size
-                    tempx = np.zeros(size)
-                    tempy = np.zeros(size)
-                    tempx[:low] = series.bins[:low]
-                    tempy[:low] = series.z2n[:low]
-                    tempx[low:middle] = temp.bins
-                    tempy[low:middle] = temp.z2n
-                    tempx[middle:] = series.bins[up:]
-                    tempy[middle:] = series.z2n[up:]
-                    series.bins = tempx
-                    series.z2n = tempy
-                    series.set_bak()
-                    # series.get_bak()
-                    series.bak = h5py.File(series.bak, 'a')
-                    series.bak.create_dataset(
-                        'FREQUENCY', data=series.bins, compression='lzf')
-                    series.bak.create_dataset(
-                        'POTENCY', data=series.z2n, compression='lzf')
-                    series.bins = series.bak['FREQUENCY']
-                    series.z2n = series.bak['POTENCY']
-                    del temp
-                    del tempx
-                    del tempy
-                    flag = 0
-                    flag2 = False
-                else:
-                    click.secho("Not enough memory available.", fg='red')
-                    flag = 1
+            temp.bins = 1
+            if not temp.set_bins():
+                temp.time = np.array(series.time)
+                plt.close()
+                temp.set_periodogram()
+                size = (series.bins.size - (up - low)) + temp.bins.size
+                middle = low + temp.bins.size
+                tempx = np.zeros(size)
+                tempy = np.zeros(size)
+                tempx[:low] = series.bins[:low]
+                tempy[:low] = series.z2n[:low]
+                tempx[low:middle] = temp.bins
+                tempy[low:middle] = temp.z2n
+                tempx[middle:] = series.bins[up:]
+                tempy[middle:] = series.z2n[up:]
+                series.bins = tempx
+                series.z2n = tempy
+                series.set_bak()
+                # series.get_bak()
+                del temp
+                del tempx
+                del tempy
+                flag = 0
+                flag2 = 0
             else:
                 flag = 1
-        else:
-            flag = 1
+                flag2 = 0
     return flag

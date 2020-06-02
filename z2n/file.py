@@ -208,6 +208,7 @@ def plot_ascii(series) -> None:
     series.time = np.trim_zeros(table['TIME'].data)
     series.bins = np.trim_zeros(table['FREQUENCY'].data)
     series.z2n = np.trim_zeros(table['POTENCY'].data)
+    series.set_bak()
 
 
 def plot_csv(series) -> None:
@@ -228,6 +229,7 @@ def plot_csv(series) -> None:
     series.time = np.trim_zeros(table['TIME'].data)
     series.bins = np.trim_zeros(table['FREQUENCY'].data)
     series.z2n = np.trim_zeros(table['POTENCY'].data)
+    series.set_bak()
 
 
 def plot_fits(series) -> None:
@@ -247,6 +249,7 @@ def plot_fits(series) -> None:
     series.time = np.trim_zeros(table['TIME'].data)
     series.bins = np.trim_zeros(table['FREQUENCY'].data)
     series.z2n = np.trim_zeros(table['POTENCY'].data)
+    series.set_bak()
 
 
 def plot_hdf5(series) -> None:
@@ -266,3 +269,4 @@ def plot_hdf5(series) -> None:
     series.time = np.trim_zeros(table['TIME'].data)
     series.bins = np.trim_zeros(table['FREQUENCY'].data)
     series.z2n = np.trim_zeros(table['POTENCY'].data)
+    series.set_bak()

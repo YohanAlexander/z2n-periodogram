@@ -26,6 +26,8 @@ class Plot():
     > A string that represents the file format.
     * `back : int`
     > A integer for the state of the background.
+    * `gauss : int`
+    > A integer for the state of the gaussian.
     * `data : Series`
     > A series object that represents the data.
     * `noise : Series`
@@ -41,6 +43,7 @@ class Plot():
         self.output = ""
         self.format = ""
         self.back = 0
+        self.gauss = 0
         self.data = Series()
         self.noise = Series()
         self.figure, self.axes = ((), ())
@@ -72,6 +75,19 @@ class Plot():
     def set_format(self) -> None:
         """Change the image format."""
         self.format = click.prompt("Which format [png, pdf, ps, eps]")
+
+    def add_gaussian(self) -> None:
+        """Add gaussian on the plot."""
+        self.gauss = 1
+        if not self.data.gauss:
+            self.data.set_gaussian()
+        click.secho("Gaussian plot added.", fg='green')
+
+    def rm_gaussian(self) -> None:
+        """Remove gaussian on the plot."""
+        self.gauss = 0
+        self.data.gauss = np.array([])
+        click.secho("Gaussian plot removed.", fg='green')
 
     def add_background(self) -> None:
         """Add background on the plot."""
@@ -114,12 +130,29 @@ class Plot():
         if not self.back:
             self.figure, self.axes = plt.subplots(self.back + 1)
             self.axes.plot(self.data.bins, self.data.z2n, color='tab:blue')
+            if self.gauss:
+                self.axes.plot(
+                    self.data.bins, self.data.gauss, color='tab:green')
         else:
             self.figure, self.axes = plt.subplots(
                 self.back + 1, sharex=True, sharey=True)
             self.axes[0].plot(self.data.bins, self.data.z2n, color='tab:blue')
             self.axes[1].plot(
                 self.noise.bins, self.noise.z2n, color='tab:cyan')
+            if self.gauss:
+                self.axes[0].plot(
+                    self.data.bins, self.data.gauss, color='tab:green')
+
+    def plot_gaussian(self) -> None:
+        """Create the gaussian on the plotting window."""
+        if not self.gauss:
+            if click.confirm("Fit gaussian on the periodogram plot"):
+                self.add_gaussian()
+                self.plot_figure()
+        else:
+            if click.confirm("Remove gaussian on the periodogram plot"):
+                self.rm_gaussian()
+                self.plot_figure()
 
     def plot_file(self) -> int:
         """Plot the periodogram from a file."""
@@ -129,22 +162,26 @@ class Plot():
         if self.data.format == 'ascii':
             self.data.set_input()
             file.plot_ascii(self.data)
-            click.secho("File loaded.", fg='green')
+            click.secho("Periodogram loaded.", fg='green')
+            self.plot_gaussian()
             self.plot_figure()
         elif self.data.format == 'csv':
             self.data.set_input()
             file.plot_csv(self.data)
-            click.secho("File loaded.", fg='green')
+            click.secho("Periodogram loaded.", fg='green')
+            self.plot_gaussian()
             self.plot_figure()
         elif self.data.format == 'fits':
             self.data.set_input()
             file.plot_fits(self.data)
-            click.secho("File loaded.", fg='green')
+            click.secho("Periodogram loaded.", fg='green')
+            self.plot_gaussian()
             self.plot_figure()
         elif self.data.format == 'hdf5':
             self.data.set_input()
             file.plot_hdf5(self.data)
-            click.secho("File loaded.", fg='green')
+            click.secho("Periodogram loaded.", fg='green')
+            self.plot_gaussian()
             self.plot_figure()
         else:
             click.secho(
@@ -178,6 +215,7 @@ class Plot():
         if self.data.z2n.size:
             if click.confirm("Recalculate on a selected region"):
                 self.plot_figure()
+                self.rm_gaussian()
                 if not stats.crop(self.data, Series()):
                     if self.back:
                         if click.confirm("Do you want to keep the background"):
@@ -189,6 +227,7 @@ class Plot():
                                 self.data.set_parameters()
                                 self.plot_figure()
                                 self.data.get_parameters()
+                                self.plot_gaussian()
                             except KeyboardInterrupt:
                                 click.secho(
                                     "Error calculating the periodogram.", fg='red')
@@ -202,13 +241,15 @@ class Plot():
                             self.data.set_parameters()
                             self.plot_figure()
                             self.data.get_parameters()
+                            self.plot_gaussian()
                     else:
-                        if click.confirm("Do you want to add a background file"):
-                            self.plot_background()
                         self.plot_figure()
                         self.data.set_parameters()
                         self.plot_figure()
                         self.data.get_parameters()
+                        if click.confirm("Do you want to add a background file"):
+                            self.plot_background()
+                        self.plot_gaussian()
                 else:
                     flag = 1
             else:
@@ -226,6 +267,7 @@ class Plot():
                         self.data.get_parameters()
                         if click.confirm("Do you want to add a background file"):
                             self.plot_background()
+                        self.plot_gaussian()
                     except KeyboardInterrupt:
                         click.secho(
                             "Error calculating the periodogram.", fg='red')

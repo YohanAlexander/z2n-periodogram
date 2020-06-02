@@ -35,6 +35,8 @@ class Series:
     > An arrray that represents the frequency bins.
     * `z2n : np.array`
     > An arrray that represents the periodogram.
+    * `gauss : np.array`
+    > An arrray that represents the gaussian fit.
     * `harmonics : int`
     > An integer that represents the number of harmonics.
     * `oversample : int`
@@ -78,6 +80,7 @@ class Series:
         self.time = np.array([])
         self.bins = np.array([])
         self.z2n = np.array([])
+        self.gauss = np.array([])
         self.fmin = 0
         self.fmax = 0
         self.delta = 0
@@ -103,6 +106,16 @@ class Series:
         """Change the backup file path."""
         self.bak = tempfile.NamedTemporaryFile(
             suffix='.z2n', delete=False).name
+        self.bak = h5py.File(self.bak, 'a')
+        self.bak.create_dataset('TIME', data=self.time, compression='lzf')
+        self.bak.create_dataset('FREQUENCY', data=self.bins, compression='lzf')
+        self.bak.create_dataset('POTENCY', data=self.z2n, compression='lzf')
+        del self.time
+        del self.bins
+        del self.z2n
+        self.time = self.bak['TIME']
+        self.bins = self.bak['FREQUENCY']
+        self.z2n = self.bak['POTENCY']
 
     def get_input(self) -> str:
         """Return the input file path."""
@@ -142,6 +155,7 @@ class Series:
         flag = 0
         if not self.load_file():
             self.time = self.time.astype(self.time.dtype.name)
+            click.secho('Time series set.', fg='green')
             self.set_observation()
             self.set_sampling()
             self.get_time()
@@ -151,6 +165,16 @@ class Series:
             flag = 1
         return flag
 
+    def get_gaussian(self) -> np.array:
+        """Return the gaussian fit."""
+        click.secho(f"{self.gauss.size} spectrum steps.", fg='cyan')
+        return self.gauss
+
+    def set_gaussian(self) -> int:
+        """Change the gaussian fit."""
+        stats.gauss(self)
+        click.secho('Gaussian fit set.', fg='green')
+
     def get_bins(self) -> np.array:
         """Return the frequency bins."""
         click.secho(f"{self.bins.size} frequency bins.", fg='cyan')
@@ -159,7 +183,10 @@ class Series:
     def set_bins(self) -> int:
         """Change the frequency bins."""
         flag = 1
-        if click.confirm("Do you want to use the Nyquist frequency"):
+        if self.bins:
+            self.set_delta()
+            self.get_delta()
+        elif click.confirm("Do you want to use the Nyquist frequency"):
             self.fmin = self.sampling * 2
             self.set_fmax()
             self.set_oversample()
@@ -197,19 +224,12 @@ class Series:
     def set_periodogram(self) -> None:
         """Change the periodogram."""
         self.set_harmonics()
+        self.time = np.array(self.time)
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
-        # self.set_parameters()
         self.set_bak()
         # self.get_bak()
-        self.bak = h5py.File(self.bak, 'a')
-        self.bak.create_dataset('FREQUENCY', data=self.bins, compression='lzf')
-        self.bak.create_dataset('POTENCY', data=self.z2n, compression='lzf')
-        del self.bins
-        del self.z2n
-        self.bins = self.bak['FREQUENCY']
-        self.z2n = self.bak['POTENCY']
 
     def get_fmin(self) -> float:
         """Return the minimum frequency."""
@@ -351,7 +371,7 @@ class Series:
 
     def set_error(self) -> None:
         """Return the uncertainty of the frequency."""
-        stats.gauss(self)
+        stats.error(self)
         click.secho('Frequency uncertainty set.', fg='green')
 
     def get_noise(self) -> float:
@@ -361,7 +381,7 @@ class Series:
 
     def set_noise(self) -> None:
         """Return the uncertainty of the period."""
-        stats.gauss(self)
+        stats.error(self)
         click.secho('Period uncertainty set.', fg='green')
 
     def load_file(self) -> int:
