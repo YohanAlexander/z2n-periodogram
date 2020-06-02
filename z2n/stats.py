@@ -43,8 +43,6 @@ def sampling(series) -> None:
     -------
     None
     """
-    if not series.observation:
-        observation(series)
     series.sampling = (1 / series.observation)
 
 
@@ -287,8 +285,6 @@ def period(series) -> None:
     -------
     None
     """
-    if not series.frequency:
-        frequency(series)
     series.period = 1 / series.frequency
 
 
@@ -306,8 +302,6 @@ def pfraction(series) -> None:
     -------
     None
     """
-    if not series.potency:
-        potency(series)
     pfrac = (2 * series.potency) / series.time.size
     series.pulsed = pfrac ** 0.5
 
@@ -326,31 +320,7 @@ def bandwidth(series) -> None:
     -------
     None
     """
-    if not series.potency:
-        potency(series)
-    if not series.forest:
-        forest(series)
     series.bandwidth = series.potency - series.forest
-
-
-@jit(forceobj=True, parallel=True, fastmath=True)
-def error(series) -> None:
-    """
-    Calculate the frequency uncertainty.
-
-    Parameters
-    ----------
-    series : Series
-        A time series object.
-
-    Returns
-    -------
-    None
-    """
-    if not series.error:
-        gauss(series)
-    if not series.noise:
-        gauss(series)
 
 
 def forest(series) -> None:
@@ -366,7 +336,7 @@ def forest(series) -> None:
     -------
     None
     """
-    click.secho("Select regions to estimate error.", fg='yellow')
+    click.secho("Select regions to estimate potency uncertainty.", fg='yellow')
     regions = click.prompt("How many regions", type=int)
     if regions > 0:
         means = np.zeros(regions)
@@ -375,10 +345,10 @@ def forest(series) -> None:
             while flag:
                 if click.confirm(f"Is the region {region + 1} selected"):
                     axis = plt.gca().get_xlim()
-                    lower = np.where(np.isclose(series.bins, axis[0], 0.1))
-                    upper = np.where(np.isclose(series.bins, axis[1], 0.1))
-                    low = np.rint(np.median(lower)).astype(int)
-                    up = np.rint(np.median(upper)).astype(int)
+                    low = np.where(np.isclose(series.bins, axis[0], 0.1))
+                    up = np.where(np.isclose(series.bins, axis[1], 0.1))
+                    low = np.rint(np.median(low)).astype(int)
+                    up = np.rint(np.median(up)).astype(int)
                     means[region] = np.mean(series.z2n[low:up])
                     flag = 0
         series.forest = np.mean(means)
@@ -386,9 +356,9 @@ def forest(series) -> None:
         click.secho("No regions to estimate error.", fg='yellow')
 
 
-def gauss(series) -> None:
+def error(series) -> None:
     """
-    Adjust a gaussian to the natural frequency.
+    Calculate the frequency uncertainty.
 
     Parameters
     ----------
@@ -401,25 +371,30 @@ def gauss(series) -> None:
     """
     def gaussian(x, amplitude, mean, sigma):
         return amplitude * np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
-    if not series.potency:
-        potency(series)
-    bins = np.array(series.bins)
-    pot = np.array(series.z2n)
-    mean = sum(bins * pot) / sum(pot)
-    sigma = np.sqrt(sum(pot * (bins - mean) ** 2) / sum(pot))
-    guess = [series.potency, mean, sigma]
-    popt, _ = optimize.curve_fit(gaussian, bins, pot, guess)
-    series.frequency = np.absolute(popt[1])
-    series.error = np.absolute(popt[2])
-    period(series)
-    series.noise = np.absolute(
-        (1 / (series.frequency + series.error)) - series.period)
-    series.gauss = gaussian(bins, *popt)
-    series.bak.create_dataset('GAUSSIAN', data=series.gauss, compression='lzf')
-    del bins
-    del pot
-    del series.gauss
-    series.gauss = series.bak['GAUSSIAN']
+    flag = 1
+    click.secho(
+        "Select the peak region to estimate frequency uncertainty.", fg='yellow')
+    while flag:
+        if click.confirm("Is the peak region selected"):
+            axis = plt.gca().get_xlim()
+            low = np.where(np.isclose(series.bins, axis[0], 0.1))[0][0]
+            up = np.where(np.isclose(series.bins, axis[1], 0.1))[0][-1]
+            bins = np.array(series.bins[low:up])
+            pot = np.array(series.z2n[low:up])
+            mean = sum(bins * pot) / sum(pot)
+            sigma = np.sqrt(sum(pot * (bins - mean) ** 2) / sum(pot))
+            guess = [pot.max(), mean, sigma]
+            popt, _ = optimize.curve_fit(gaussian, bins, pot, guess)
+            series.potency = np.absolute(popt[0])
+            bandwidth(series)
+            series.frequency = np.absolute(popt[1])
+            series.error = np.absolute(popt[2])
+            period(series)
+            series.noise = np.absolute(
+                (1 / (series.frequency + series.error)) - series.period)
+            del pot
+            del bins
+            flag = 0
 
 
 def crop(series, temp) -> int:

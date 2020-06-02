@@ -35,8 +35,6 @@ class Series:
     > An arrray that represents the frequency bins.
     * `z2n : np.array`
     > An arrray that represents the periodogram.
-    * `gauss : np.array`
-    > An arrray that represents the gaussian fit.
     * `harmonics : int`
     > An integer that represents the number of harmonics.
     * `oversample : int`
@@ -80,7 +78,6 @@ class Series:
         self.time = np.array([])
         self.bins = np.array([])
         self.z2n = np.array([])
-        self.gauss = np.array([])
         self.fmin = 0
         self.fmax = 0
         self.delta = 0
@@ -164,16 +161,6 @@ class Series:
         else:
             flag = 1
         return flag
-
-    def get_gaussian(self) -> np.array:
-        """Return the gaussian fit."""
-        click.secho(f"{self.gauss.size} spectrum steps.", fg='cyan')
-        return self.gauss
-
-    def set_gaussian(self) -> int:
-        """Change the gaussian fit."""
-        stats.gauss(self)
-        click.secho('Gaussian fit set.', fg='green')
 
     def get_bins(self) -> np.array:
         """Return the frequency bins."""
@@ -381,7 +368,7 @@ class Series:
 
     def set_noise(self) -> None:
         """Return the uncertainty of the period."""
-        stats.error(self)
+        # stats.error(self)
         click.secho('Period uncertainty set.', fg='green')
 
     def load_file(self) -> int:
@@ -433,22 +420,22 @@ class Series:
 
     def get_parameters(self) -> None:
         """Return the parameters used on the statistic."""
-        self.get_bandwidth()
         self.get_potency()
-        # self.get_forest()
         self.get_frequency()
-        # self.get_error()
         self.get_period()
+        # self.get_forest()
+        # self.get_error()
         # self.get_noise()
+        self.get_bandwidth()
         self.get_pfraction()
 
     def set_parameters(self) -> None:
         """Change the parameters used on the statistic."""
         self.set_potency()
-        self.set_forest()
-        self.set_bandwidth()
         self.set_frequency()
-        self.set_error()
         self.set_period()
+        self.set_forest()
+        self.set_error()
         self.set_noise()
+        self.set_bandwidth()
         self.set_pfraction()
