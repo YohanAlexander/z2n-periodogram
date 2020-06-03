@@ -7,6 +7,7 @@ import numpy as np
 from numba import jit
 from tqdm import trange
 from scipy import optimize
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 
 
@@ -47,7 +48,7 @@ def sampling(series) -> None:
 
 
 @jit(nopython=True, parallel=True, fastmath=True)
-def phase(times: np.array, freq: float, harm: int) -> np.array:
+def phase(times: np.array, freq: float) -> np.array:
     """
     Calculate the phase values.
 
@@ -57,8 +58,6 @@ def phase(times: np.array, freq: float, harm: int) -> np.array:
         An array that represents the times.
     freq : float
         A float that represents the frequency.
-    harm : int
-        A int that represents the harmonics.
 
     Returns
     -------
@@ -67,7 +66,7 @@ def phase(times: np.array, freq: float, harm: int) -> np.array:
     """
     values = times * freq
     values = values - np.floor(values)
-    values = values * 2 * np.pi * harm
+    values = values * 2 * np.pi
     return values
 
 
@@ -169,7 +168,7 @@ def spectrum(sin: float, cos: float) -> float:
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
-def z2n(times: np.array, freq: float, harm: int) -> float:
+def z2n(times: np.array, freq: float) -> float:
     """
     Calculate the Z2n potency value.
 
@@ -177,15 +176,13 @@ def z2n(times: np.array, freq: float, harm: int) -> float:
         An array that represents the times.
     freq : float
         A float that represents the frequency.
-    harm : int
-        A int that represents the harmonics.
 
     Returns
     -------
     value : float
         A float that represents the Z2n potency.
     """
-    phases = phase(times, freq, harm)
+    phases = phase(times, freq)
     sin = summation(sine(phases))
     cos = summation(cosine(phases))
     value = spectrum(square(sin), square(cos))
@@ -230,9 +227,8 @@ def periodogram(series) -> None:
     for freq in trange(
             series.bins.size, desc=click.style(
                 'Calculating the periodogram', fg='yellow')):
-        for harmonic in range(series.harmonics):
-            series.z2n[freq] = series.z2n[freq] + \
-                z2n(series.time, series.bins[freq], harmonic + 1)
+        series.z2n[freq] = series.z2n[freq] + \
+            z2n(series.time, series.bins[freq])
     series.z2n = normalization(series.z2n, (2 / series.time.size))
 
 
@@ -345,15 +341,13 @@ def forest(series) -> None:
             while flag:
                 if click.confirm(f"Is the region {region + 1} selected"):
                     axis = plt.gca().get_xlim()
-                    low = np.where(np.isclose(series.bins, axis[0], 0.1))
-                    up = np.where(np.isclose(series.bins, axis[1], 0.1))
-                    low = np.rint(np.median(low)).astype(int)
-                    up = np.rint(np.median(up)).astype(int)
+                    low = np.where(np.isclose(series.bins, axis[0], 0.1))[0][0]
+                    up = np.where(np.isclose(series.bins, axis[1], 0.1))[0][-1]
                     means[region] = np.mean(series.z2n[low:up])
                     flag = 0
         series.forest = np.mean(means)
     else:
-        click.secho("No regions to estimate error.", fg='yellow')
+        click.secho("No regions to estimate uncertainty.", fg='yellow')
 
 
 def error(series) -> None:
@@ -369,8 +363,9 @@ def error(series) -> None:
     -------
     None
     """
-    def gaussian(x, amplitude, mean, sigma):
-        return amplitude * np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
+    def sinc(x, amplitude, mean, sigma):
+        gaussian = np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
+        return amplitude * (np.sinc((x - mean) / sigma)) ** 2 + gaussian
     flag = 1
     click.secho(
         "Select the peak region to estimate frequency uncertainty.", fg='yellow')
@@ -379,21 +374,24 @@ def error(series) -> None:
             axis = plt.gca().get_xlim()
             low = np.where(np.isclose(series.bins, axis[0], 0.1))[0][0]
             up = np.where(np.isclose(series.bins, axis[1], 0.1))[0][-1]
-            bins = np.array(series.bins[low:up])
-            pot = np.array(series.z2n[low:up])
-            mean = sum(bins * pot) / sum(pot)
-            sigma = np.sqrt(sum(pot * (bins - mean) ** 2) / sum(pot))
-            guess = [pot.max(), mean, sigma]
-            popt, _ = optimize.curve_fit(gaussian, bins, pot, guess)
+            mean, sigma = norm.fit(series.bins[low:up])
+            guess = [series.potency, mean, sigma]
+            popt, _ = optimize.curve_fit(
+                sinc, series.bins[low:up], series.z2n[low:up], guess)
             series.potency = np.absolute(popt[0])
-            bandwidth(series)
             series.frequency = np.absolute(popt[1])
-            series.error = np.absolute(popt[2])
             period(series)
+            forest(series)
+            series.error = np.absolute(popt[2])
             series.noise = np.absolute(
                 (1 / (series.frequency + series.error)) - series.period)
-            del pot
-            del bins
+            bandwidth(series)
+            pfraction(series)
+            series.z2n[low:up] = sinc(series.bins[low:up], *popt)
+            # plt.plot(series.bins[low:up], sinc(
+            #    series.bins[low:up], *guess), color='tab:red')
+            # plt.plot(series.bins[low:up], sinc(
+            #    series.bins[low:up], *popt), color='tab:green')
             flag = 0
 
 
@@ -416,10 +414,10 @@ def crop(series, temp) -> int:
     while flag2:
         if click.confirm("Is the region selected"):
             axis = plt.gca().get_xlim()
-            low = np.where(np.isclose(series.bins, axis[0], 0.1))
-            up = np.where(np.isclose(series.bins, axis[1], 0.1))
-            low = np.rint(np.median(low)).astype(int)
-            up = np.rint(np.median(up)).astype(int)
+            low = np.median(
+                np.where(np.isclose(series.bins, axis[0], 0.1))).astype(int)
+            up = np.median(
+                np.where(np.isclose(series.bins, axis[1], 0.1))).astype(int)
             temp.fmin = axis[0]
             temp.fmax = axis[1]
             temp.bins = 1
@@ -440,7 +438,6 @@ def crop(series, temp) -> int:
                 series.bins = tempx
                 series.z2n = tempy
                 series.set_bak()
-                # series.get_bak()
                 del temp
                 del tempx
                 del tempy

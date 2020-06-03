@@ -7,10 +7,7 @@ from z2n import prompt
 
 def cli() -> None:
     """Entry point to the Z2n Software."""
-    try:
-        prompt.z2n()
-    except SystemExit:
-        pass
+    prompt.z2n()
 
 
 if __name__ == "__main__":

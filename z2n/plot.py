@@ -36,7 +36,6 @@ class Plot():
     """
 
     def __init__(self) -> None:
-        super().__init__()
         self.input = ""
         self.output = ""
         self.format = ""
@@ -81,12 +80,13 @@ class Plot():
     def rm_background(self) -> None:
         """Remove background on the plot."""
         self.back = 0
+        del self.noise
+        self.noise = Series()
         click.secho("Background file removed.", fg='green')
 
     def plot_frequency(self) -> None:
         """Add vertical line on the peak frequency."""
         if click.confirm("Add a vertical line to the peak frequency"):
-            self.data.set_frequency()
             if not self.back:
                 self.axes.axvline(
                     self.data.frequency, linestyle='dashed', color='tab:red')
@@ -98,7 +98,6 @@ class Plot():
     def plot_bandwidth(self) -> None:
         """Add horizontal line on the bandwidth."""
         if click.confirm("Add a horizontal line to the bandwidth"):
-            self.data.set_bandwidth()
             if not self.back:
                 self.axes.axhline(
                     self.data.bandwidth, linestyle='dotted', color='tab:grey')
@@ -131,21 +130,33 @@ class Plot():
             file.plot_ascii(self.data)
             click.secho("Periodogram loaded.", fg='green')
             self.plot_figure()
+            stats.error(self.data)
+            self.plot_figure()
+            self.data.get_parameters()
         elif self.data.format == 'csv':
             self.data.set_input()
             file.plot_csv(self.data)
             click.secho("Periodogram loaded.", fg='green')
             self.plot_figure()
+            stats.error(self.data)
+            self.plot_figure()
+            self.data.get_parameters()
         elif self.data.format == 'fits':
             self.data.set_input()
             file.plot_fits(self.data)
             click.secho("Periodogram loaded.", fg='green')
             self.plot_figure()
+            stats.error(self.data)
+            self.plot_figure()
+            self.data.get_parameters()
         elif self.data.format == 'hdf5':
             self.data.set_input()
             file.plot_hdf5(self.data)
             click.secho("Periodogram loaded.", fg='green')
             self.plot_figure()
+            stats.error(self.data)
+            self.plot_figure()
+            self.data.get_parameters()
         else:
             click.secho(
                 f"{self.data.format} format not supported.", fg='red')
@@ -189,15 +200,12 @@ class Plot():
                                 self.data.set_parameters()
                                 self.plot_figure()
                                 self.data.get_parameters()
-                            except KeyboardInterrupt:
+                            except:
                                 click.secho(
                                     "Error calculating the periodogram.", fg='red')
                                 flag = 1
                         else:
                             self.rm_background()
-                            del self.noise.time
-                            del self.noise.bins
-                            del self.noise.z2n
                             self.plot_figure()
                             self.data.set_parameters()
                             self.plot_figure()
@@ -226,10 +234,9 @@ class Plot():
                         self.data.get_parameters()
                         if click.confirm("Do you want to add a background file"):
                             self.plot_background()
-                    except KeyboardInterrupt:
+                    except:
                         click.secho(
                             "Error calculating the periodogram.", fg='red')
-                        self.data.z2n = np.array([])
                         flag = 1
                 else:
                     flag = 1
@@ -238,7 +245,7 @@ class Plot():
         return flag
 
     def save_image(self) -> None:
-        """Save the image to a file."""
+        """Save the image on a file."""
         plt.tight_layout()
         self.set_format()
         if self.format == 'png':
@@ -284,11 +291,11 @@ class Plot():
         """Change the scale on the x axis."""
         if self.back:
             self.axes[0].set_xscale(click.prompt(
-                "Which scale [linear, log, symlog, logit]"))
+                "Which scale [linear, log]"))
             click.secho("Changed X axis scale.", fg='green')
         else:
             self.axes.set_xscale(click.prompt(
-                "Which scale [linear, log, symlog, logit]"))
+                "Which scale [linear, log]"))
             click.secho("Changed X axis scale.", fg='green')
 
     def change_xlim(self) -> None:
@@ -319,11 +326,11 @@ class Plot():
         """Change the scale on the y axis."""
         if self.back:
             self.axes[0].set_yscale(click.prompt(
-                "Which scale [linear, log, symlog, logit]"))
+                "Which scale [linear, log]"))
             click.secho("Changed y axis scale.", fg='green')
         else:
             self.axes.set_yscale(click.prompt(
-                "Which scale [linear, log, symlog, logit]"))
+                "Which scale [linear, log]"))
             click.secho("Changed y axis scale.", fg='green')
 
     def change_ylim(self) -> None:

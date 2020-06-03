@@ -19,12 +19,12 @@ figure = Plot()
 @shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
 def z2n():
     """
-    This program allows the user to calculate periodograms using the Z2n
-    statistics a la Buccheri et al. 1983.
+    This program allows the user to calculate periodograms, given a time series,
+    using the Z2n statistics a la Buccheri et al. 1983.
 
-    The standard Z2n statistics calculates the phase of each time and
-    the corresponding sinusoidal functions. Be advised that this is very
-    computationally expensive if the number of frequency bins is high.
+    The standard Z2n statistics calculates the phase of each arrival time and
+    the corresponding sinusoidal functions for each time. Be advised that this
+    is very computationally expensive if the number of frequency bins is high.
     """
 
 
@@ -57,7 +57,7 @@ def run() -> None:
 
 @z2n.command()
 def save() -> None:
-    """Save the periodogram to a file."""
+    """Save the periodogram on a file."""
     if figure.data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
     else:
@@ -120,5 +120,5 @@ def ylim() -> None:
 
 @plt.command()
 def save() -> None:
-    """Save the image to a file."""
+    """Save the image on a file."""
     figure.save_image()
