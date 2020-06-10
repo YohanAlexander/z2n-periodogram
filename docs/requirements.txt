@@ -1,3 +1,4 @@
+markdown-katex
 mkautodoc
 click
 click-shell

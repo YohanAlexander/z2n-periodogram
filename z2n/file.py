@@ -21,6 +21,7 @@ def load_ascii(series) -> None:
     """
     table = Table.read(series.input, names=('TIME',), format='ascii')
     series.time = table['TIME'].data
+    series.time = series.time.astype(series.time.dtype.name)
 
 
 def load_csv(series) -> None:
@@ -38,6 +39,7 @@ def load_csv(series) -> None:
     """
     table = Table.read(series.input, names=('TIME',), format='csv')
     series.time = table['TIME'].data
+    series.time = series.time.astype(series.time.dtype.name)
 
 
 def load_fits(series) -> None:
@@ -55,6 +57,7 @@ def load_fits(series) -> None:
     """
     events = Table.read(series.input, format='fits')
     series.time = events['TIME'].data
+    series.time = series.time.astype(series.time.dtype.name)
 
 
 def load_hdf5(series) -> None:
@@ -72,6 +75,7 @@ def load_hdf5(series) -> None:
     """
     table = Table.read(series.input, format='hdf5')
     series.time = table['TIME'].data
+    series.time = series.time.astype(series.time.dtype.name)
 
 
 def save_ascii(series) -> None:

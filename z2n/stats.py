@@ -190,7 +190,7 @@ def z2n(times: np.array, freq: float) -> float:
 
 
 @jit(nopython=True, parallel=True, fastmath=True)
-def normalization(spec: np.array, norm: float) -> np.array:
+def normalization(spec: np.array, normal: float) -> np.array:
     """
     Calculate the normalization values.
 
@@ -198,7 +198,7 @@ def normalization(spec: np.array, norm: float) -> np.array:
     ----------
     spec : np.array
         An array that represents the z2n values.
-    norm : float
+    normal : float
         A float that represents the normalization.
 
     Returns
@@ -206,7 +206,7 @@ def normalization(spec: np.array, norm: float) -> np.array:
     values : np.array
         An array that represents the normalized values.
     """
-    values = spec * norm
+    values = spec * normal
     return values
 
 
