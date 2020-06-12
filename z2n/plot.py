@@ -84,7 +84,7 @@ class Plot():
         self.noise = Series()
         click.secho("Background file removed.", fg='green')
 
-    def plot_frequency(self) -> None:
+    def plot_peak(self) -> None:
         """Add vertical line on the peak frequency."""
         if click.confirm("Add a vertical line to the peak frequency"):
             if not self.back:
@@ -94,17 +94,6 @@ class Plot():
                 self.axes[0].axvline(
                     self.data.frequency, linestyle='dashed', color='tab:red')
             click.secho("Peak line added.", fg='green')
-
-    def plot_bandwidth(self) -> None:
-        """Add horizontal line on the bandwidth."""
-        if click.confirm("Add a horizontal line to the bandwidth"):
-            if not self.back:
-                self.axes.axhline(
-                    self.data.bandwidth, linestyle='dotted', color='tab:grey')
-            else:
-                self.axes[0].axhline(
-                    self.data.bandwidth, linestyle='dotted', color='tab:grey')
-            click.secho("Bandwidth line added.", fg='green')
 
     def plot_figure(self) -> None:
         """Create the figure on the plotting window."""
@@ -168,17 +157,11 @@ class Plot():
         flag = 0
         click.secho("The background file is needed.", fg='yellow')
         if not self.noise.set_time():
-            try:
-                self.noise.bins = np.array(self.data.bins)
-                plt.close()
-                self.noise.set_periodogram()
-                self.add_background()
-                self.plot_figure()
-            except KeyboardInterrupt:
-                click.secho(
-                    "Error calculating the periodogram.", fg='red')
-                self.rm_background()
-                flag = 1
+            self.noise.bins = np.array(self.data.bins)
+            plt.close()
+            self.noise.set_periodogram()
+            self.add_background()
+            self.plot_figure()
         else:
             flag = 1
         return flag
@@ -186,60 +169,50 @@ class Plot():
     def plot_periodogram(self) -> int:
         """Create plot of the periodogram."""
         flag = 0
-        if self.data.z2n.size:
-            if click.confirm("Recalculate on a selected region"):
-                self.plot_figure()
-                if not stats.crop(self.data, Series()):
-                    if self.back:
-                        if click.confirm("Do you want to keep the background"):
-                            try:
-                                self.noise.bins = np.array(self.data.bins)
-                                plt.close()
-                                self.noise.set_periodogram()
-                                self.plot_figure()
-                                self.data.set_parameters()
-                                self.plot_figure()
-                                self.data.get_parameters()
-                            except:
-                                click.secho(
-                                    "Error calculating the periodogram.", fg='red')
-                                flag = 1
-                        else:
-                            self.rm_background()
-                            self.plot_figure()
-                            self.data.set_parameters()
-                            self.plot_figure()
-                            self.data.get_parameters()
-                    else:
-                        self.plot_figure()
-                        self.data.set_parameters()
-                        self.plot_figure()
-                        self.data.get_parameters()
-                        if click.confirm("Do you want to add a background file"):
-                            self.plot_background()
+        if not self.data.z2n.size:
+            click.secho("The time series file is needed.", fg='yellow')
+            if not self.data.set_time():
+                if not self.data.set_bins():
+                    plt.close()
+                    self.data.set_periodogram()
+                    self.plot_figure()
+                    self.data.set_parameters()
+                    self.plot_figure()
+                    self.data.get_parameters()
+                    if click.confirm("Do you want to add a background file"):
+                        self.plot_background()
                 else:
                     flag = 1
             else:
                 flag = 1
         else:
-            click.secho("The time series file is needed.", fg='yellow')
-            if not self.data.set_time():
-                if not self.data.set_bins():
-                    try:
-                        plt.close()
-                        self.data.set_periodogram()
-                        self.plot_figure()
-                        self.data.set_parameters()
-                        self.plot_figure()
-                        self.data.get_parameters()
-                        if click.confirm("Do you want to add a background file"):
-                            self.plot_background()
-                    except:
-                        click.secho(
-                            "Error calculating the periodogram.", fg='red')
+            if click.confirm("Do you want to recalculate on a selected region"):
+                click.secho(
+                    "This will recalculate the periodogram.", fg='yellow')
+                self.rm_background()
+                self.plot_figure()
+                flag2 = 1
+                while flag2:
+                    if click.confirm("Is the region selected"):
+                        axis = plt.gca().get_xlim()
+                        self.data.fmin = axis[0]
+                        self.data.fmax = axis[1]
+                        if not self.data.set_bins():
+                            plt.close()
+                            self.data.set_periodogram()
+                            self.plot_figure()
+                            self.data.set_parameters()
+                            self.plot_figure()
+                            self.data.get_parameters()
+                            if click.confirm("Do you want to add a background file"):
+                                self.plot_background()
+                            flag = 0
+                            flag2 = 0
+                        else:
+                            flag = 1
+                            flag2 = 0
+                    else:
                         flag = 1
-                else:
-                    flag = 1
             else:
                 flag = 1
         return flag

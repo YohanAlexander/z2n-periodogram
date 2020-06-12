@@ -43,8 +43,8 @@ class Series:
     > A float that represents the maximum frequency.
     * `delta : float`
     > A float that represents the frequency steps.
-    * `observation : float`
-    > A float that represents the observation period.
+    * `exposure : float`
+    > A float that represents the exposure period.
     * `sampling : float`
     > A float that represents the sampling rate.
     * `potency : float`
@@ -53,16 +53,12 @@ class Series:
     > A float that represents the peak frequency.
     * `period : float`
     > A float that represents the peak period.
-    * `error : float`
+    * `errorf : float`
     > A float that represents the frequency uncertainty.
-    * `noise : float`
+    * `errorp : float`
     > A float that represents the period uncertainty.
     * `pulsed : float`
     > A float that represents the pulsed fraction.
-    * `forest : float`
-    > A float that represents the potency uncertainty.
-    * `bandwidth : float`
-    > A float that represents the bandwidth potency.
 
     Methods
     -------
@@ -80,15 +76,13 @@ class Series:
         self.fmax = 0
         self.delta = 0
         self.oversample = 0
-        self.observation = 0
+        self.exposure = 0
         self.sampling = 0
         self.potency = 0
-        self.forest = 0
-        self.bandwidth = 0
         self.frequency = 0
-        self.error = 0
+        self.errorf = 0
         self.period = 0
-        self.noise = 0
+        self.errorp = 0
         self.pulsed = 0
 
     def get_bak(self) -> str:
@@ -150,10 +144,10 @@ class Series:
         if not self.load_file():
             self.time = self.time.astype(self.time.dtype.name)
             click.secho('Time series set.', fg='green')
-            self.set_observation()
+            self.set_exposure()
             self.set_sampling()
             self.get_time()
-            self.get_observation()
+            self.get_exposure()
             self.get_sampling()
         else:
             flag = 1
@@ -167,24 +161,21 @@ class Series:
     def set_bins(self) -> int:
         """Change the frequency bins."""
         flag = 1
+        click.secho("The frequency bins are needed (Hz).", fg='yellow')
         if self.bins:
             self.set_delta()
-            self.get_delta()
-        elif click.confirm("Do you want to use the Nyquist frequency"):
+        elif click.confirm("Use the Nyquist rate as the minimum frequency"):
             self.fmin = self.sampling * 2
             self.set_fmax()
             self.set_oversample()
-            self.delta = 1 / (self.oversample * self.observation)
-            self.get_fmin()
-            self.get_fmax()
-            self.get_delta()
+            self.delta = 1 / (self.oversample * self.exposure)
         else:
             self.set_fmin()
             self.set_fmax()
             self.set_delta()
-            self.get_fmin()
-            self.get_fmax()
-            self.get_delta()
+        self.get_fmin()
+        self.get_fmax()
+        self.get_delta()
         block = (self.fmax - self.fmin) / np.array(self.delta)
         nbytes = np.array(self.delta).dtype.itemsize * block
         click.secho(
@@ -255,14 +246,14 @@ class Series:
         self.oversample = click.prompt("Oversample factor", type=int)
         click.secho('Oversample factor set.', fg='green')
 
-    def get_observation(self) -> float:
-        """Return the period of observation."""
-        click.secho(f"Exposure time: {self.observation} s", fg='cyan')
-        return self.observation
+    def get_exposure(self) -> float:
+        """Return the period of exposure."""
+        click.secho(f"Exposure time: {self.exposure} s", fg='cyan')
+        return self.exposure
 
-    def set_observation(self) -> None:
-        """Change the period of observation."""
-        stats.observation(self)
+    def set_exposure(self) -> None:
+        """Change the period of exposure."""
+        stats.exposure(self)
         click.secho('Exposure time set.', fg='green')
 
     def get_sampling(self) -> float:
@@ -278,7 +269,7 @@ class Series:
     def get_potency(self) -> float:
         """Return the peak potency."""
         click.secho(
-            f"Peak potency: {self.potency} +/- {self.forest}", fg='cyan')
+            f"Peak potency: {self.potency}", fg='cyan')
         return self.potency
 
     def set_potency(self) -> None:
@@ -289,7 +280,7 @@ class Series:
     def get_frequency(self) -> float:
         """Return the peak frequency."""
         click.secho(
-            f"Peak frequency: {self.frequency} +/- {self.error} Hz", fg='cyan')
+            f"Peak frequency: {self.frequency} +/- {self.errorf} Hz", fg='cyan')
         return self.frequency
 
     def set_frequency(self) -> None:
@@ -300,7 +291,7 @@ class Series:
     def get_period(self) -> float:
         """Return the peak period."""
         click.secho(
-            f"Peak period: {self.period} +/- {self.noise} s", fg='cyan')
+            f"Peak period: {self.period} +/- {self.errorp} s", fg='cyan')
         return self.period
 
     def set_period(self) -> None:
@@ -318,42 +309,22 @@ class Series:
         stats.pfraction(self)
         click.secho('Pulsed fraction set.', fg='green')
 
-    def get_forest(self) -> float:
-        """Return the potency uncertainty."""
-        click.secho(f"Potency uncertainty: {self.forest}", fg='cyan')
-        return self.forest
-
-    def set_forest(self) -> None:
-        """Change the forest potency."""
-        stats.forest(self)
-        click.secho('Potency uncertainty set.', fg='green')
-
-    def get_bandwidth(self) -> float:
-        """Return the bandwidth potency."""
-        click.secho(f"Bandwidth: {self.bandwidth}", fg='cyan')
-        return self.bandwidth
-
-    def set_bandwidth(self) -> None:
-        """Change the bandwidth potency."""
-        stats.bandwidth(self)
-        click.secho('Bandwidth set.', fg='green')
-
-    def get_error(self) -> float:
+    def get_errorf(self) -> float:
         """Return the uncertainty of the frequency."""
-        click.secho(f"Frequency Uncertainty: {self.error} +/-", fg='cyan')
-        return self.error
+        click.secho(f"Frequency Uncertainty: {self.errorf} +/-", fg='cyan')
+        return self.errorf
 
-    def set_error(self) -> None:
+    def set_errorf(self) -> None:
         """Return the uncertainty of the frequency."""
         stats.error(self)
         click.secho('Frequency uncertainty set.', fg='green')
 
-    def get_noise(self) -> float:
+    def get_errorp(self) -> float:
         """Return the uncertainty of the period."""
-        click.secho(f"Period Uncertainty: {self.noise} +/-", fg='cyan')
-        return self.noise
+        click.secho(f"Period Uncertainty: {self.errorp} +/-", fg='cyan')
+        return self.errorp
 
-    def set_noise(self) -> None:
+    def set_errorp(self) -> None:
         """Return the uncertainty of the period."""
         stats.error(self)
         click.secho('Period uncertainty set.', fg='green')
@@ -410,20 +381,8 @@ class Series:
         self.get_potency()
         self.get_frequency()
         self.get_period()
-        # self.get_forest()
-        # self.get_error()
-        # self.get_noise()
-        self.get_bandwidth()
         self.get_pfraction()
 
     def set_parameters(self) -> None:
         """Change the parameters used on the statistic."""
-        # self.set_potency()
-        # self.set_frequency()
-        # self.set_period()
-        # self.set_forest()
-        # self.set_error()
-        # self.set_noise()
-        # self.set_bandwidth()
-        # self.set_pfraction()
         stats.error(self)

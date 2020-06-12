@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
-def observation(series) -> None:
+def exposure(series) -> None:
     """
-    Calculate the period of observation.
+    Calculate the period of exposure.
 
     Parameters
     ----------
@@ -27,7 +27,7 @@ def observation(series) -> None:
     """
     last = np.max(series.time)
     first = np.min(series.time)
-    series.observation = last - first
+    series.exposure = last - first
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
@@ -44,7 +44,7 @@ def sampling(series) -> None:
     -------
     None
     """
-    series.sampling = (1 / series.observation)
+    series.sampling = (1 / series.exposure)
 
 
 @jit(nopython=True, parallel=True, fastmath=True)
@@ -302,57 +302,20 @@ def pfraction(series) -> None:
     series.pulsed = pfrac ** 0.5
 
 
+@jit(nopython=True, parallel=True, fastmath=True)
+def gaussian(x, amplitude, mean, sigma):
+    return amplitude * np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
+
+
 @jit(forceobj=True, parallel=True, fastmath=True)
-def bandwidth(series) -> None:
-    """
-    Calculate the bandwidth.
-
-    Parameters
-    ----------
-    series : Series
-        A time series object.
-
-    Returns
-    -------
-    None
-    """
-    series.bandwidth = series.potency - series.forest
+def fitcurve(gaussian, bins, pot, guess):
+    return optimize.curve_fit(gaussian, bins, pot, guess)
 
 
-def forest(series) -> None:
-    """
-    Calculate the potency uncertainty.
-
-    Parameters
-    ----------
-    series : Series
-        A time series object.
-
-    Returns
-    -------
-    None
-    """
-    click.secho("Select regions to estimate potency uncertainty.", fg='yellow')
-    regions = click.prompt("How many regions", type=int)
-    if regions > 0:
-        means = np.zeros(regions)
-        for region in range(regions):
-            flag = 1
-            while flag:
-                if click.confirm(f"Is the region {region + 1} selected"):
-                    axis = plt.gca().get_xlim()
-                    low = np.where(np.isclose(series.bins, axis[0], 0.1))[0][0]
-                    up = np.where(np.isclose(series.bins, axis[1], 0.1))[0][-1]
-                    means[region] = np.mean(series.z2n[low:up])
-                    flag = 0
-        series.forest = np.mean(means)
-    else:
-        click.secho("No regions to estimate uncertainty.", fg='yellow')
-
-
+# @jit(forceobj=True, parallel=True, fastmath=True)
 def error(series) -> None:
     """
-    Calculate the frequency uncertainty.
+    Calculate the uncertainty.
 
     Parameters
     ----------
@@ -363,87 +326,24 @@ def error(series) -> None:
     -------
     None
     """
-    def sinc(x, amplitude, mean, sigma):
-        gaussian = np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
-        return amplitude * (np.sinc((x - mean) / sigma)) ** 2 + gaussian
     flag = 1
     click.secho(
-        "Select the peak region to estimate frequency uncertainty.", fg='yellow')
+        "Select the peak region to estimate uncertainty.", fg='yellow')
     while flag:
         if click.confirm("Is the peak region selected"):
             axis = plt.gca().get_xlim()
             low = np.where(np.isclose(series.bins, axis[0], 0.1))[0][0]
             up = np.where(np.isclose(series.bins, axis[1], 0.1))[0][-1]
             mean, sigma = norm.fit(series.bins[low:up])
+            potency(series)
             guess = [series.potency, mean, sigma]
-            popt, _ = optimize.curve_fit(
-                sinc, series.bins[low:up], series.z2n[low:up], guess)
+            popt, _ = fitcurve(
+                gaussian, series.bins[low:up], series.z2n[low:up], guess)
             series.potency = np.absolute(popt[0])
             series.frequency = np.absolute(popt[1])
             period(series)
-            forest(series)
-            series.error = np.absolute(popt[2])
-            series.noise = np.absolute(
-                (1 / (series.frequency + series.error)) - series.period)
-            bandwidth(series)
+            series.errorf = np.absolute(popt[2])
+            series.errorp = np.absolute(
+                (1 / (series.frequency + series.errorf)) - series.period)
             pfraction(series)
-            series.z2n[low:up] = sinc(series.bins[low:up], *popt)
-            # plt.plot(series.bins[low:up], sinc(
-            #    series.bins[low:up], *guess), color='tab:red')
-            # plt.plot(series.bins[low:up], sinc(
-            #    series.bins[low:up], *popt), color='tab:green')
             flag = 0
-
-
-def crop(series, temp) -> int:
-    """
-    Crop and recalculate periodogram region.
-
-    Parameters
-    ----------
-    series : Series
-        A time series object.
-
-    Returns
-    -------
-    None
-    """
-    flag = 0
-    flag2 = 1
-    click.secho("This will recalculate the periodogram.", fg='yellow')
-    while flag2:
-        if click.confirm("Is the region selected"):
-            axis = plt.gca().get_xlim()
-            low = np.median(
-                np.where(np.isclose(series.bins, axis[0], 0.1))).astype(int)
-            up = np.median(
-                np.where(np.isclose(series.bins, axis[1], 0.1))).astype(int)
-            temp.fmin = axis[0]
-            temp.fmax = axis[1]
-            temp.bins = 1
-            if not temp.set_bins():
-                temp.time = np.array(series.time)
-                plt.close()
-                temp.set_periodogram()
-                size = (series.bins.size - (up - low)) + temp.bins.size
-                middle = low + temp.bins.size
-                tempx = np.zeros(size)
-                tempy = np.zeros(size)
-                tempx[:low] = series.bins[:low]
-                tempy[:low] = series.z2n[:low]
-                tempx[low:middle] = temp.bins
-                tempy[low:middle] = temp.z2n
-                tempx[middle:] = series.bins[up:]
-                tempy[middle:] = series.z2n[up:]
-                series.bins = tempx
-                series.z2n = tempy
-                series.set_bak()
-                del temp
-                del tempx
-                del tempy
-                flag = 0
-                flag2 = 0
-            else:
-                flag = 1
-                flag2 = 0
-    return flag
