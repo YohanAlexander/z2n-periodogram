@@ -304,17 +304,13 @@ def pfraction(series) -> None:
 
 @jit(nopython=True, parallel=True, fastmath=True)
 def gaussian(x, amplitude, mean, sigma):
-    """
-    Returns a Gaussian like function.
-    """
+    """Returns a Gaussian like function."""
     return amplitude * np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
 def fitcurve(function, bins, powerspec, guess):
-    """
-    Fit a input curve function to the data.
-    """
+    """Fit a input curve function to the data."""
     return optimize.curve_fit(function, bins, powerspec, guess)
 
 
