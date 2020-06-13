@@ -147,7 +147,7 @@ def square(value: float) -> float:
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
-def spectrum(sin: float, cos: float) -> float:
+def power(sin: float, cos: float) -> float:
     """
     Calculate the Z2n potency value.
 
@@ -185,18 +185,18 @@ def z2n(times: np.array, freq: float) -> float:
     phases = phase(times, freq)
     sin = summation(sine(phases))
     cos = summation(cosine(phases))
-    value = spectrum(square(sin), square(cos))
+    value = power(square(sin), square(cos))
     return value
 
 
 @jit(nopython=True, parallel=True, fastmath=True)
-def normalization(spec: np.array, normal: float) -> np.array:
+def normalization(spectrum: np.array, normal: float) -> np.array:
     """
     Calculate the normalization values.
 
     Parameters
     ----------
-    spec : np.array
+    spectrum : np.array
         An array that represents the z2n values.
     normal : float
         A float that represents the normalization.
@@ -206,7 +206,7 @@ def normalization(spec: np.array, normal: float) -> np.array:
     values : np.array
         An array that represents the normalized values.
     """
-    values = spec * normal
+    values = spectrum * normal
     return values
 
 
@@ -304,12 +304,18 @@ def pfraction(series) -> None:
 
 @jit(nopython=True, parallel=True, fastmath=True)
 def gaussian(x, amplitude, mean, sigma):
+    """
+    Returns a Gaussian like function.
+    """
     return amplitude * np.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
-def fitcurve(gaussian, bins, pot, guess):
-    return optimize.curve_fit(gaussian, bins, pot, guess)
+def fitcurve(function, bins, powerspec, guess):
+    """
+    Fit a input curve function to the data.
+    """
+    return optimize.curve_fit(function, bins, powerspec, guess)
 
 
 # @jit(forceobj=True, parallel=True, fastmath=True)
