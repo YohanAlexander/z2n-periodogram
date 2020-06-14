@@ -84,30 +84,38 @@ class Plot():
         self.noise = Series()
         click.secho("Background file removed.", fg='green')
 
-    def plot_peak(self) -> None:
-        """Add vertical line on the peak frequency."""
-        if click.confirm("Add a vertical line to the peak frequency"):
-            if not self.back:
-                self.axes.axvline(
-                    self.data.frequency, linestyle='dashed', color='tab:red')
-            else:
-                self.axes[0].axvline(
-                    self.data.frequency, linestyle='dashed', color='tab:red')
-            click.secho("Peak line added.", fg='green')
-
     def plot_figure(self) -> None:
         """Create the figure on the plotting window."""
         plt.close()
         plt.ion()
         if not self.back:
             self.figure, self.axes = plt.subplots(self.back + 1)
-            self.axes.plot(self.data.bins, self.data.z2n, color='tab:blue')
+            self.axes.plot(
+                self.data.bins, self.data.z2n, label='Z2n Power', linewidth=2)
+            self.axes.plot(
+                self.data.gaussx, self.data.gaussy, color='tab:grey', label='Gaussian Fit')
+            self.axes.axvline(
+                self.data.frequency, linewidth=1, color='tab:red', label='Correct Frequency')
+            self.axes.set_xlabel('Frequency (Hz)')
+            self.axes.set_ylabel('Power')
+            self.axes.legend(loc='best')
         else:
             self.figure, self.axes = plt.subplots(
                 self.back + 1, sharex=True, sharey=True)
-            self.axes[0].plot(self.data.bins, self.data.z2n, color='tab:blue')
+            self.axes[0].plot(
+                self.data.bins, self.data.z2n, label='Z2n Power', linewidth=2)
+            self.axes[0].plot(
+                self.data.gaussx, self.data.gaussy, color='tab:grey', label='Gaussian Fit')
+            self.axes[0].axvline(
+                self.data.frequency, linewidth=1, color='tab:red', label='Correct Frequency')
             self.axes[1].plot(
-                self.noise.bins, self.noise.z2n, color='tab:cyan')
+                self.noise.bins, self.noise.z2n, color='tab:cyan', label='Background')
+            self.axes[0].set_xlabel('Frequency (Hz)')
+            self.axes[0].set_ylabel('Power')
+            self.axes[1].set_xlabel('Frequency (Hz)')
+            self.axes[1].set_ylabel('Power')
+            self.axes[0].legend(loc='best')
+            self.axes[1].legend(loc='best')
 
     def plot_file(self) -> int:
         """Plot the periodogram from a file."""
@@ -158,6 +166,7 @@ class Plot():
         click.secho("The background file is needed.", fg='yellow')
         if not self.noise.set_time():
             self.noise.bins = np.array(self.data.bins)
+            self.noise.harmonics = self.data.harmonics
             plt.close()
             self.noise.set_periodogram()
             self.add_background()

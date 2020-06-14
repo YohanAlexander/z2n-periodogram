@@ -91,14 +91,18 @@ def save_ascii(series) -> None:
     -------
     None
     """
-    def pad(array, size):
-        if array.size < size:
+    def pad(array, size, bigger):
+        if array.size < bigger.size:
             array = np.hstack([array, np.zeros(size)])
         return array
     size = np.absolute(series.time.size - series.bins.size)
-    time = pad(series.time, size)
-    bins = pad(series.bins, size)
-    z2n = pad(series.z2n, size)
+    if series.time.size > series.bins.size:
+        bigger = series.time
+    else:
+        bigger = series.bins
+    time = pad(series.time, size, bigger)
+    bins = pad(series.bins, size, bigger)
+    z2n = pad(series.z2n, size, bigger)
     array = np.column_stack((time, bins, z2n))
     table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.txt', format='ascii')
@@ -120,14 +124,18 @@ def save_csv(series) -> None:
     -------
     None
     """
-    def pad(array, size):
-        if array.size < size:
+    def pad(array, size, bigger):
+        if array.size < bigger.size:
             array = np.hstack([array, np.zeros(size)])
         return array
     size = np.absolute(series.time.size - series.bins.size)
-    time = pad(series.time, size)
-    bins = pad(series.bins, size)
-    z2n = pad(series.z2n, size)
+    if series.time.size > series.bins.size:
+        bigger = series.time
+    else:
+        bigger = series.bins
+    time = pad(series.time, size, bigger)
+    bins = pad(series.bins, size, bigger)
+    z2n = pad(series.z2n, size, bigger)
     array = np.column_stack((time, bins, z2n))
     table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.csv', format='csv')
@@ -149,14 +157,18 @@ def save_fits(series) -> None:
     -------
     None
     """
-    def pad(array, size):
-        if array.size < size:
+    def pad(array, size, bigger):
+        if array.size < bigger.size:
             array = np.hstack([array, np.zeros(size)])
         return array
     size = np.absolute(series.time.size - series.bins.size)
-    time = pad(series.time, size)
-    bins = pad(series.bins, size)
-    z2n = pad(series.z2n, size)
+    if series.time.size > series.bins.size:
+        bigger = series.time
+    else:
+        bigger = series.bins
+    time = pad(series.time, size, bigger)
+    bins = pad(series.bins, size, bigger)
+    z2n = pad(series.z2n, size, bigger)
     array = np.column_stack((time, bins, z2n))
     table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.fits', format='fits')
@@ -178,14 +190,18 @@ def save_hdf5(series) -> None:
     -------
     None
     """
-    def pad(array, size):
-        if array.size < size:
+    def pad(array, size, bigger):
+        if array.size < bigger.size:
             array = np.hstack([array, np.zeros(size)])
         return array
     size = np.absolute(series.time.size - series.bins.size)
-    time = pad(series.time, size)
-    bins = pad(series.bins, size)
-    z2n = pad(series.z2n, size)
+    if series.time.size > series.bins.size:
+        bigger = series.time
+    else:
+        bigger = series.bins
+    time = pad(series.time, size, bigger)
+    bins = pad(series.bins, size, bigger)
+    z2n = pad(series.z2n, size, bigger)
     array = np.column_stack((time, bins, z2n))
     table = Table(array, names=('TIME', 'FREQUENCY', 'POTENCY'))
     table.write(f'{series.output}.hdf5', format='hdf5', compression=True)

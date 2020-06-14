@@ -48,7 +48,7 @@ def sampling(series) -> None:
 
 
 @jit(nopython=True, parallel=True, fastmath=True)
-def phase(times: np.array, freq: float) -> np.array:
+def phase(times: np.array, freq: float, harm: int) -> np.array:
     """
     Calculate the phase values.
 
@@ -58,6 +58,8 @@ def phase(times: np.array, freq: float) -> np.array:
         An array that represents the times.
     freq : float
         A float that represents the frequency.
+    harm : int
+        A int that represents the harmonics.
 
     Returns
     -------
@@ -66,7 +68,7 @@ def phase(times: np.array, freq: float) -> np.array:
     """
     values = times * freq
     values = values - np.floor(values)
-    values = values * 2 * np.pi
+    values = values * 2 * np.pi * harm
     return values
 
 
@@ -168,7 +170,7 @@ def power(sin: float, cos: float) -> float:
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
-def z2n(times: np.array, freq: float) -> float:
+def z2n(times: np.array, freq: float, harm: int) -> float:
     """
     Calculate the Z2n potency value.
 
@@ -176,13 +178,15 @@ def z2n(times: np.array, freq: float) -> float:
         An array that represents the times.
     freq : float
         A float that represents the frequency.
+    harm : int
+        A int that represents the harmonics.
 
     Returns
     -------
     value : float
         A float that represents the Z2n potency.
     """
-    phases = phase(times, freq)
+    phases = phase(times, freq, harm)
     sin = summation(sine(phases))
     cos = summation(cosine(phases))
     value = power(square(sin), square(cos))
@@ -210,6 +214,29 @@ def normalization(spectrum: np.array, normal: float) -> np.array:
     return values
 
 
+@jit(nopython=True, parallel=True, fastmath=True)
+def harmonics(time: np.array, freq: float, harm: int) -> np.array:
+    """
+    Calculate the Z2n harmonics.
+
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+    harm : int
+        A int that represents the harmonics.
+
+    Returns
+    -------
+    None
+    """
+    values = np.zeros(harm)
+    for harmonic in range(harm):
+        values[harmonic] = z2n(time, freq, harmonic + 1)
+    value = summation(values)
+    return value
+
+
 @jit(forceobj=True, parallel=True, fastmath=True)
 def periodogram(series) -> None:
     """
@@ -224,11 +251,10 @@ def periodogram(series) -> None:
     -------
     None
     """
-    for freq in trange(
-            series.bins.size, desc=click.style(
-                'Calculating the periodogram', fg='yellow')):
-        series.z2n[freq] = series.z2n[freq] + \
-            z2n(series.time, series.bins[freq])
+    for freq in trange(series.bins.size, desc=click.style(
+            'Calculating the periodogram', fg='yellow')):
+        series.z2n[freq] = harmonics(
+            series.time, series.bins[freq], series.harmonics)
     series.z2n = normalization(series.z2n, (2 / series.time.size))
 
 
@@ -348,4 +374,6 @@ def error(series) -> None:
             series.errorp = np.absolute(
                 (1 / (series.frequency + series.errorf)) - series.period)
             pfraction(series)
+            series.gaussx = series.bins[low:up]
+            series.gaussy = gaussian(series.bins[low:up], *popt)
             flag = 0

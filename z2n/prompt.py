@@ -8,12 +8,13 @@ from click_shell import shell
 # Owned Libraries
 from z2n import __docs__
 from z2n import __version__
-from z2n.plot import Plot
 
 # Instance of the Plot Object
+from z2n.plot import Plot
 figure = Plot()
 
 # Variables to display on prompt
+
 __z2n__ = f'''
         Z2n Software ({__version__}), a python program for periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
@@ -78,12 +79,6 @@ def save() -> None:
 @shell(prompt=click.style('(plt) >>> ', fg='magenta', bold=True), intro=__plt__)
 def plt() -> None:
     """Open the interactive periodogram plotting window."""
-
-
-@plt.command()
-def peak() -> None:
-    """Plot a vetical line on the peak."""
-    figure.plot_peak()
 
 
 @plt.command()

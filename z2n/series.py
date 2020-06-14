@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
+import uuid
+import pathlib
 import tempfile
 
 # Other Libraries
@@ -35,6 +37,8 @@ class Series:
     > An arrray that represents the frequency bins.
     * `z2n : np.array`
     > An arrray that represents the periodogram.
+    * `harmonics : int`
+    > An integer that represents the number of harmonics.
     * `oversample : int`
     > An integer that represents the oversample factor.
     * `fmin : float`
@@ -72,9 +76,12 @@ class Series:
         self.time = np.array([])
         self.bins = np.array([])
         self.z2n = np.array([])
+        self.gaussx = np.array([])
+        self.gaussy = np.array([])
         self.fmin = 0
         self.fmax = 0
         self.delta = 0
+        self.harmonics = 0
         self.oversample = 0
         self.exposure = 0
         self.sampling = 0
@@ -142,7 +149,6 @@ class Series:
         """Change the time series."""
         flag = 0
         if not self.load_file():
-            self.time = self.time.astype(self.time.dtype.name)
             click.secho('Time series set.', fg='green')
             self.set_exposure()
             self.set_sampling()
@@ -185,6 +191,7 @@ class Series:
                 self.bins = np.arange(self.fmin, self.fmax, self.delta)
                 click.secho('Frequency bins set.', fg='green')
                 self.get_bins()
+                self.set_harmonics()
                 flag = 0
             else:
                 click.secho("Not enough memory available.", fg='red')
@@ -198,13 +205,17 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
+        pathlib.Path('z2n').mkdir(parents=True, exist_ok=True)
         self.time = np.array(self.time)
         self.bins = np.array(self.bins)
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
         self.set_bak()
-        # self.get_bak()
+        self.output = 'z2n/' + str(uuid.uuid4().hex)
+        file.save_ascii(self)
+        file.save_fits(self)
+        click.secho(f"Periodogram saved at {self.output}", fg='green')
 
     def get_fmin(self) -> float:
         """Return the minimum frequency."""
@@ -246,6 +257,16 @@ class Series:
         self.oversample = click.prompt("Oversample factor", type=int)
         click.secho('Oversample factor set.', fg='green')
 
+    def get_harmonics(self) -> int:
+        """Return the number of harmonics."""
+        click.secho(f"Number of harmonics: {self.harmonics}", fg='cyan')
+        return self.harmonics
+
+    def set_harmonics(self) -> None:
+        """Change the number of harmonics."""
+        self.harmonics = click.prompt("Number of harmonics", type=int)
+        click.secho('Harmonics set.', fg='green')
+
     def get_exposure(self) -> float:
         """Return the period of exposure."""
         click.secho(f"Exposure time: {self.exposure} s", fg='cyan')
@@ -258,13 +279,13 @@ class Series:
 
     def get_sampling(self) -> float:
         """Return the sampling rate."""
-        click.secho(f"Sampling frequency: {self.sampling} Hz", fg='cyan')
+        click.secho(f"Sampling rate: {self.sampling} Hz", fg='cyan')
         return self.sampling
 
     def set_sampling(self) -> None:
         """Change the sampling rate."""
         stats.sampling(self)
-        click.secho('Sampling frequency set.', fg='green')
+        click.secho('Sampling rate set.', fg='green')
 
     def get_potency(self) -> float:
         """Return the peak potency."""
