@@ -28,7 +28,7 @@ __plt__ = f'''
 
 
 @click.version_option(prog_name='Z2n Software', version=__version__)
-@shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
+@shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True))
 def z2n():
     """
     This program allows the user to calculate periodograms, given a time series,
@@ -38,6 +38,8 @@ def z2n():
     the corresponding sinusoidal functions for each time. Be advised that this
     is very computationally expensive if the number of frequency bins is high.
     """
+    click.echo(__z2n__)
+    figure.plot_periodogram()
 
 
 @z2n.command()
@@ -52,9 +54,6 @@ def plot() -> None:
     """Open the interactive plotting window."""
     if figure.data.z2n.size == 0:
         click.secho("The periodogram was not calculated yet.", fg='yellow')
-        if click.confirm("Do you want to plot from a file"):
-            if not figure.plot_file():
-                plt()
     else:
         figure.plot_figure()
         plt()

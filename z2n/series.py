@@ -2,15 +2,14 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
-import uuid
-import pathlib
-import tempfile
+import copy
 
 # Other Libraries
-import h5py
 import click
 import psutil
+import termtables
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Owned Libraries
 from z2n import file
@@ -23,8 +22,8 @@ class Series:
 
     Attributes
     ----------
-    * `bak : str`
-    > A string that represents the backup file path.
+    * `gauss : str`
+    > A series object that represents the gaussian fit.
     * `input : str`
     > A string that represents the input file path.
     * `output : str`
@@ -69,15 +68,13 @@ class Series:
     """
 
     def __init__(self) -> None:
-        self.bak = ""
+        self.gauss = ""
         self.input = ""
         self.output = ""
         self.format = ""
         self.time = np.array([])
         self.bins = np.array([])
         self.z2n = np.array([])
-        self.gaussx = np.array([])
-        self.gaussy = np.array([])
         self.fmin = 0
         self.fmax = 0
         self.delta = 0
@@ -92,35 +89,22 @@ class Series:
         self.errorp = 0
         self.pulsed = 0
 
-    def get_bak(self) -> str:
-        """Return the backup file path."""
-        click.secho(f"Path of the backup: {self.bak}", fg='cyan')
-        return self.bak
+    def get_gauss(self) -> str:
+        """Return the gaussian series object."""
+        return self.gauss
 
-    def set_bak(self) -> None:
-        """Change the backup file path."""
-        self.bak = tempfile.NamedTemporaryFile(
-            suffix='.z2n', delete=False).name
-        self.bak = h5py.File(self.bak, 'a')
-        self.bak.create_dataset('TIME', data=self.time, compression='lzf')
-        self.bak.create_dataset('FREQUENCY', data=self.bins, compression='lzf')
-        self.bak.create_dataset('POTENCY', data=self.z2n, compression='lzf')
-        del self.time
-        del self.bins
-        del self.z2n
-        self.time = self.bak['TIME']
-        self.bins = self.bak['FREQUENCY']
-        self.z2n = self.bak['POTENCY']
+    def set_gauss(self) -> None:
+        """Copy the gaussian series object."""
+        self.gauss = copy.deepcopy(self)
 
     def get_input(self) -> str:
         """Return the input file path."""
-        click.secho(f"Path of the time series: {self.input}", fg='cyan')
+        click.secho(f"Path of the event file: {self.input}", fg='cyan')
         return self.input
 
     def set_input(self) -> None:
         """Change the input file path."""
-        self.input = click.prompt(
-            "Path of the time series", type=click.Path(exists=True))
+        self.input = click.prompt("Filename", type=click.Path(exists=True))
 
     def get_output(self) -> str:
         """Return the output file name."""
@@ -138,18 +122,17 @@ class Series:
 
     def set_format(self) -> None:
         """Change the file format."""
-        self.format = click.prompt("Which format [ascii, csv, fits, hdf5]")
+        self.format = click.prompt("Format [ascii, csv, fits, hdf5]")
 
     def get_time(self) -> np.array:
         """Return the time series."""
-        click.secho(f"{self.time.size} time values.", fg='cyan')
+        click.secho(f"{self.time.size} events.", fg='cyan')
         return self.time
 
     def set_time(self) -> int:
         """Change the time series."""
         flag = 0
         if not self.load_file():
-            click.secho('Time series set.', fg='green')
             self.set_exposure()
             self.set_sampling()
             self.get_time()
@@ -160,17 +143,18 @@ class Series:
         return flag
 
     def get_bins(self) -> np.array:
-        """Return the frequency bins."""
-        click.secho(f"{self.bins.size} frequency bins.", fg='cyan')
+        """Return the frequency steps."""
+        click.secho(f"{self.bins.size} frequency steps.", fg='cyan')
         return self.bins
 
     def set_bins(self) -> int:
-        """Change the frequency bins."""
+        """Change the frequency steps."""
         flag = 1
-        click.secho("The frequency bins are needed (Hz).", fg='yellow')
-        if self.bins:
+        click.secho("The frequency range is needed (Hz).", fg='yellow')
+        if self.bins.size:
             self.set_delta()
-        elif click.confirm("Use the Nyquist rate as the minimum frequency"):
+        elif click.confirm(
+                "Nyquist frequency as the minimum frequency", prompt_suffix='? '):
             self.fmin = self.sampling * 2
             self.set_fmax()
             self.set_oversample()
@@ -205,17 +189,12 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
-        pathlib.Path('z2n').mkdir(parents=True, exist_ok=True)
         self.time = np.array(self.time)
         self.bins = np.array(self.bins)
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
-        self.set_bak()
-        self.output = 'z2n/' + str(uuid.uuid4().hex)
-        file.save_ascii(self)
-        file.save_fits(self)
-        click.secho(f"Periodogram saved at {self.output}", fg='green')
+        self.save_file()
 
     def get_fmin(self) -> float:
         """Return the minimum frequency."""
@@ -224,7 +203,7 @@ class Series:
 
     def set_fmin(self) -> None:
         """Change the minimum frequency."""
-        self.fmin = click.prompt("Minimum frequency", type=float)
+        self.fmin = click.prompt("Minimum frequency (Hz)", type=float)
         click.secho('Minimum frequency set.', fg='green')
 
     def get_fmax(self) -> float:
@@ -234,7 +213,7 @@ class Series:
 
     def set_fmax(self) -> None:
         """Change the maximum frequency."""
-        self.fmax = click.prompt("Maximum frequency", type=float)
+        self.fmax = click.prompt("Maximum frequency (Hz)", type=float)
         click.secho('Maximum frequency set.', fg='green')
 
     def get_delta(self) -> float:
@@ -244,7 +223,7 @@ class Series:
 
     def set_delta(self) -> None:
         """Change the frequency steps."""
-        self.delta = click.prompt("Frequency steps", type=float)
+        self.delta = click.prompt("Frequency steps (Hz)", type=float)
         click.secho('Frequency steps set.', fg='green')
 
     def get_oversample(self) -> int:
@@ -301,7 +280,7 @@ class Series:
     def get_frequency(self) -> float:
         """Return the peak frequency."""
         click.secho(
-            f"Peak frequency: {self.frequency} +/- {self.errorf} Hz", fg='cyan')
+            f"Peak frequency: {self.frequency} Hz", fg='cyan')
         return self.frequency
 
     def set_frequency(self) -> None:
@@ -312,7 +291,7 @@ class Series:
     def get_period(self) -> float:
         """Return the peak period."""
         click.secho(
-            f"Peak period: {self.period} +/- {self.errorp} s", fg='cyan')
+            f"Peak period: {self.period} s", fg='cyan')
         return self.period
 
     def set_period(self) -> None:
@@ -357,19 +336,19 @@ class Series:
         if self.format == 'ascii':
             self.set_input()
             file.load_ascii(self)
-            click.secho("File loaded.", fg='green')
+            click.secho("Event file loaded.", fg='green')
         elif self.format == 'csv':
             self.set_input()
             file.load_csv(self)
-            click.secho("File loaded.", fg='green')
+            click.secho("Event file loaded.", fg='green')
         elif self.format == 'fits':
             self.set_input()
             file.load_fits(self)
-            click.secho("File loaded.", fg='green')
+            click.secho("Event file loaded.", fg='green')
         elif self.format == 'hdf5':
             self.set_input()
             file.load_hdf5(self)
-            click.secho("File loaded.", fg='green')
+            click.secho("Event file loaded.", fg='green')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
             flag = 1
@@ -377,33 +356,48 @@ class Series:
 
     def save_file(self) -> None:
         """Save a output file."""
+        click.secho("Save the periodogram on a file.", fg='yellow')
         self.set_format()
         if self.format == 'ascii':
             self.set_output()
             file.save_ascii(self)
-            click.secho(f"Saved at {self.output}.txt", fg='green')
+            click.secho(f"File saved at {self.output}.txt", fg='yellow')
         elif self.format == 'csv':
             self.set_output()
             file.save_csv(self)
-            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+            click.secho(
+                f"File saved at {self.output}.{self.format}", fg='yellow')
         elif self.format == 'fits':
             self.set_output()
             file.save_fits(self)
-            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+            click.secho(
+                f"File saved at {self.output}.{self.format}", fg='yellow')
         elif self.format == 'hdf5':
             self.set_output()
             file.save_hdf5(self)
-            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+            click.secho(
+                f"File saved at {self.output}.{self.format}", fg='yellow')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
 
-    def get_parameters(self) -> None:
-        """Return the parameters used on the statistic."""
-        self.get_potency()
-        self.get_frequency()
-        self.get_period()
-        self.get_pfraction()
-
-    def set_parameters(self) -> None:
-        """Change the parameters used on the statistic."""
-        stats.error(self)
+    def plot(self) -> None:
+        """Plot the series and the parameters."""
+        self.set_potency()
+        self.set_frequency()
+        self.set_period()
+        self.set_pfraction()
+        self.set_gauss()
+        plt.close()
+        plt.ion()
+        plt.plot(self.bins, self.z2n)
+        stats.error(self.gauss)
+        header = ["", "Z2N POWER", "GAUSSIAN FIT"]
+        data = [
+            ["Potency", self.potency, self.gauss.potency],
+            ["Frequency", self.frequency, self.gauss.frequency],
+            ["Frequency error", self.errorf, self.gauss.errorf],
+            ["Period", self.period, self.gauss.period],
+            ["Period error", self.errorp, self.gauss.errorp],
+            ["Pulsed Fraction", self.pulsed, self.gauss.pulsed],
+        ]
+        termtables.print(data, header)

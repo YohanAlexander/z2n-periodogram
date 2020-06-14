@@ -3,6 +3,7 @@ mkautodoc
 click
 click-shell
 matplotlib
+termtables
 colorama
 astropy
 psutil

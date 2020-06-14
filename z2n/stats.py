@@ -358,7 +358,7 @@ def error(series) -> None:
     click.secho(
         "Select the peak region to estimate uncertainty.", fg='yellow')
     while flag:
-        if click.confirm("Is the peak region selected"):
+        if click.confirm("Is the peak region selected", prompt_suffix='? '):
             axis = plt.gca().get_xlim()
             low = np.where(np.isclose(series.bins, axis[0], 0.1))[0][0]
             up = np.where(np.isclose(series.bins, axis[1], 0.1))[0][-1]
@@ -374,6 +374,6 @@ def error(series) -> None:
             series.errorp = np.absolute(
                 (1 / (series.frequency + series.errorf)) - series.period)
             pfraction(series)
-            series.gaussx = series.bins[low:up]
-            series.gaussy = gaussian(series.bins[low:up], *popt)
+            series.z2n = gaussian(series.bins[low:up], *popt)
+            series.bins = series.bins[low:up]
             flag = 0

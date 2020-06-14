@@ -12,7 +12,7 @@ from z2n import stats
 from z2n.series import Series
 
 
-class Plot():
+class Plot:
     """
     A class to represent the plot of a time series.
 
@@ -52,7 +52,7 @@ class Plot():
     def set_input(self) -> None:
         """Change the input image name."""
         self.input = click.prompt(
-            "Path of the periodogram", type=click.Path(exists=True))
+            "Filename", type=click.Path(exists=True))
 
     def get_output(self) -> str:
         """Return the output image name."""
@@ -70,7 +70,7 @@ class Plot():
 
     def set_format(self) -> None:
         """Change the image format."""
-        self.format = click.prompt("Which format [png, pdf, ps, eps]")
+        self.format = click.prompt("Format [png, pdf, ps, eps]")
 
     def add_background(self) -> None:
         """Add background on the plot."""
@@ -93,9 +93,11 @@ class Plot():
             self.axes.plot(
                 self.data.bins, self.data.z2n, label='Z2n Power', linewidth=2)
             self.axes.plot(
-                self.data.gaussx, self.data.gaussy, color='tab:grey', label='Gaussian Fit')
+                self.data.gauss.bins, self.data.gauss.z2n,
+                color='tab:grey', label='Gaussian Fit')
             self.axes.axvline(
-                self.data.frequency, linewidth=1, color='tab:red', label='Correct Frequency')
+                self.data.frequency, linewidth=1, color='tab:red',
+                label='Correct Frequency')
             self.axes.set_xlabel('Frequency (Hz)')
             self.axes.set_ylabel('Power')
             self.axes.legend(loc='best')
@@ -105,60 +107,20 @@ class Plot():
             self.axes[0].plot(
                 self.data.bins, self.data.z2n, label='Z2n Power', linewidth=2)
             self.axes[0].plot(
-                self.data.gaussx, self.data.gaussy, color='tab:grey', label='Gaussian Fit')
+                self.data.gauss.bins, self.data.gauss.z2n,
+                color='tab:grey', label='Gaussian Fit')
             self.axes[0].axvline(
-                self.data.frequency, linewidth=1, color='tab:red', label='Correct Frequency')
+                self.data.frequency, linewidth=1, color='tab:red',
+                label='Correct Frequency')
             self.axes[1].plot(
-                self.noise.bins, self.noise.z2n, color='tab:cyan', label='Background')
+                self.noise.bins, self.noise.z2n, color='tab:cyan',
+                label='Background')
             self.axes[0].set_xlabel('Frequency (Hz)')
             self.axes[0].set_ylabel('Power')
             self.axes[1].set_xlabel('Frequency (Hz)')
             self.axes[1].set_ylabel('Power')
             self.axes[0].legend(loc='best')
             self.axes[1].legend(loc='best')
-
-    def plot_file(self) -> int:
-        """Plot the periodogram from a file."""
-        flag = 0
-        click.secho("The periodogram file is needed.", fg='yellow')
-        self.data.set_format()
-        if self.data.format == 'ascii':
-            self.data.set_input()
-            file.plot_ascii(self.data)
-            click.secho("Periodogram loaded.", fg='green')
-            self.plot_figure()
-            stats.error(self.data)
-            self.plot_figure()
-            self.data.get_parameters()
-        elif self.data.format == 'csv':
-            self.data.set_input()
-            file.plot_csv(self.data)
-            click.secho("Periodogram loaded.", fg='green')
-            self.plot_figure()
-            stats.error(self.data)
-            self.plot_figure()
-            self.data.get_parameters()
-        elif self.data.format == 'fits':
-            self.data.set_input()
-            file.plot_fits(self.data)
-            click.secho("Periodogram loaded.", fg='green')
-            self.plot_figure()
-            stats.error(self.data)
-            self.plot_figure()
-            self.data.get_parameters()
-        elif self.data.format == 'hdf5':
-            self.data.set_input()
-            file.plot_hdf5(self.data)
-            click.secho("Periodogram loaded.", fg='green')
-            self.plot_figure()
-            stats.error(self.data)
-            self.plot_figure()
-            self.data.get_parameters()
-        else:
-            click.secho(
-                f"{self.data.format} format not supported.", fg='red')
-            flag = 1
-        return flag
 
     def plot_background(self) -> int:
         """Create subplot of the background."""
@@ -168,7 +130,8 @@ class Plot():
             self.noise.bins = np.array(self.data.bins)
             self.noise.harmonics = self.data.harmonics
             plt.close()
-            self.noise.set_periodogram()
+            self.noise.z2n = np.zeros(self.noise.bins.size)
+            stats.periodogram(self.noise)
             self.add_background()
             self.plot_figure()
         else:
@@ -179,56 +142,64 @@ class Plot():
         """Create plot of the periodogram."""
         flag = 0
         if not self.data.z2n.size:
-            click.secho("The time series file is needed.", fg='yellow')
+            click.secho("The event file is needed.", fg='yellow')
             if not self.data.set_time():
                 if not self.data.set_bins():
                     plt.close()
                     self.data.set_periodogram()
+                    self.data.plot()
                     self.plot_figure()
-                    self.data.set_parameters()
-                    self.plot_figure()
-                    self.data.get_parameters()
-                    if click.confirm("Do you want to add a background file"):
+                    self.save_image()
+                    if click.confirm("Add a background file", prompt_suffix='? '):
                         self.plot_background()
                 else:
                     flag = 1
             else:
                 flag = 1
         else:
-            if click.confirm("Do you want to recalculate on a selected region"):
-                click.secho(
-                    "This will recalculate the periodogram.", fg='yellow')
+            opt = click.prompt(
+                "Use another file [1] or recalculate [2]", type=int)
+            if opt in (1, 2):
                 self.rm_background()
-                self.plot_figure()
-                flag2 = 1
-                while flag2:
-                    if click.confirm("Is the region selected"):
-                        axis = plt.gca().get_xlim()
-                        self.data.fmin = axis[0]
-                        self.data.fmax = axis[1]
-                        if not self.data.set_bins():
-                            plt.close()
-                            self.data.set_periodogram()
-                            self.plot_figure()
-                            self.data.set_parameters()
-                            self.plot_figure()
-                            self.data.get_parameters()
-                            if click.confirm("Do you want to add a background file"):
-                                self.plot_background()
-                            flag = 0
-                            flag2 = 0
-                        else:
-                            flag = 1
-                            flag2 = 0
+                if opt == 1:
+                    del self.data
+                    self.data = Series()
+                    self.plot_periodogram()
+                    flag = 1
+                elif opt == 2:
+                    click.secho(
+                        "This will recalculate the periodogram.", fg='yellow')
+                    self.plot_figure()
+                    flag2 = 1
+                    while flag2:
+                        if click.confirm("Is the region selected", prompt_suffix='? '):
+                            axis = plt.gca().get_xlim()
+                            self.data.fmin = axis[0]
+                            self.data.fmax = axis[1]
+                            if not self.data.set_bins():
+                                plt.close()
+                                self.data.set_periodogram()
+                                self.data.plot()
+                                self.plot_figure()
+                                self.save_image()
+                                if click.confirm("Add a background file", prompt_suffix='? '):
+                                    self.plot_background()
+                                flag = 0
+                                flag2 = 0
+                            else:
+                                flag = 1
+                                flag2 = 0
                     else:
                         flag = 1
             else:
                 flag = 1
+                click.secho("Select '1' or '2'.", fg='red')
         return flag
 
     def save_image(self) -> None:
         """Save the image on a file."""
         plt.tight_layout()
+        click.secho("Save the periodogram on a image.", fg='yellow')
         self.set_format()
         if self.format == 'png':
             self.set_output()

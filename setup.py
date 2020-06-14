@@ -8,12 +8,13 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version='1.7.3',
+        version='1.7.4',
         license='MIT',
         install_requires=[
             'click',
             'click-shell',
             'matplotlib',
+            'termtables',
             'colorama',
             'astropy',
             'psutil',
