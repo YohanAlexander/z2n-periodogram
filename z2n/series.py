@@ -170,10 +170,9 @@ class Series:
         nbytes = np.array(self.delta).dtype.itemsize * block
         click.secho(
             f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
-        if click.confirm("Run the program with these values"):
+        if click.confirm("Run the program with these values", prompt_suffix='? '):
             if nbytes < psutil.virtual_memory()[1]:
                 self.bins = np.arange(self.fmin, self.fmax, self.delta)
-                click.secho('Frequency bins set.', fg='green')
                 self.get_bins()
                 self.set_harmonics()
                 flag = 0
@@ -204,7 +203,6 @@ class Series:
     def set_fmin(self) -> None:
         """Change the minimum frequency."""
         self.fmin = click.prompt("Minimum frequency (Hz)", type=float)
-        click.secho('Minimum frequency set.', fg='green')
 
     def get_fmax(self) -> float:
         """Return the maximum frequency."""
@@ -214,7 +212,6 @@ class Series:
     def set_fmax(self) -> None:
         """Change the maximum frequency."""
         self.fmax = click.prompt("Maximum frequency (Hz)", type=float)
-        click.secho('Maximum frequency set.', fg='green')
 
     def get_delta(self) -> float:
         """Return the frequency steps."""
@@ -224,7 +221,6 @@ class Series:
     def set_delta(self) -> None:
         """Change the frequency steps."""
         self.delta = click.prompt("Frequency steps (Hz)", type=float)
-        click.secho('Frequency steps set.', fg='green')
 
     def get_oversample(self) -> int:
         """Return the oversample factor."""
@@ -234,7 +230,6 @@ class Series:
     def set_oversample(self) -> None:
         """Change the oversample factor."""
         self.oversample = click.prompt("Oversample factor", type=int)
-        click.secho('Oversample factor set.', fg='green')
 
     def get_harmonics(self) -> int:
         """Return the number of harmonics."""
@@ -244,7 +239,6 @@ class Series:
     def set_harmonics(self) -> None:
         """Change the number of harmonics."""
         self.harmonics = click.prompt("Number of harmonics", type=int)
-        click.secho('Harmonics set.', fg='green')
 
     def get_exposure(self) -> float:
         """Return the period of exposure."""
@@ -254,7 +248,6 @@ class Series:
     def set_exposure(self) -> None:
         """Change the period of exposure."""
         stats.exposure(self)
-        click.secho('Exposure time set.', fg='green')
 
     def get_sampling(self) -> float:
         """Return the sampling rate."""
@@ -264,40 +257,33 @@ class Series:
     def set_sampling(self) -> None:
         """Change the sampling rate."""
         stats.sampling(self)
-        click.secho('Sampling rate set.', fg='green')
 
     def get_potency(self) -> float:
         """Return the peak potency."""
-        click.secho(
-            f"Peak potency: {self.potency}", fg='cyan')
+        click.secho(f"Peak potency: {self.potency}", fg='cyan')
         return self.potency
 
     def set_potency(self) -> None:
         """Change the peak potency."""
         stats.potency(self)
-        click.secho('Peak potency set.', fg='green')
 
     def get_frequency(self) -> float:
         """Return the peak frequency."""
-        click.secho(
-            f"Peak frequency: {self.frequency} Hz", fg='cyan')
+        click.secho(f"Peak frequency: {self.frequency} Hz", fg='cyan')
         return self.frequency
 
     def set_frequency(self) -> None:
         """Change the peak frequency."""
         stats.frequency(self)
-        click.secho('Peak frequency set.', fg='green')
 
     def get_period(self) -> float:
         """Return the peak period."""
-        click.secho(
-            f"Peak period: {self.period} s", fg='cyan')
+        click.secho(f"Peak period: {self.period} s", fg='cyan')
         return self.period
 
     def set_period(self) -> None:
         """Change the peak period."""
         stats.period(self)
-        click.secho('Peak period set.', fg='green')
 
     def get_pfraction(self) -> float:
         """Return the pulsed fraction."""
@@ -307,7 +293,6 @@ class Series:
     def set_pfraction(self) -> None:
         """Change the pulsed fraction."""
         stats.pfraction(self)
-        click.secho('Pulsed fraction set.', fg='green')
 
     def get_errorf(self) -> float:
         """Return the uncertainty of the frequency."""
@@ -317,7 +302,6 @@ class Series:
     def set_errorf(self) -> None:
         """Return the uncertainty of the frequency."""
         stats.error(self)
-        click.secho('Frequency uncertainty set.', fg='green')
 
     def get_errorp(self) -> float:
         """Return the uncertainty of the period."""
@@ -327,7 +311,6 @@ class Series:
     def set_errorp(self) -> None:
         """Return the uncertainty of the period."""
         stats.error(self)
-        click.secho('Period uncertainty set.', fg='green')
 
     def load_file(self) -> int:
         """Load a input file."""
@@ -336,19 +319,15 @@ class Series:
         if self.format == 'ascii':
             self.set_input()
             file.load_ascii(self)
-            click.secho("Event file loaded.", fg='green')
         elif self.format == 'csv':
             self.set_input()
             file.load_csv(self)
-            click.secho("Event file loaded.", fg='green')
         elif self.format == 'fits':
             self.set_input()
             file.load_fits(self)
-            click.secho("Event file loaded.", fg='green')
         elif self.format == 'hdf5':
             self.set_input()
             file.load_hdf5(self)
-            click.secho("Event file loaded.", fg='green')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
             flag = 1
@@ -361,22 +340,22 @@ class Series:
         if self.format == 'ascii':
             self.set_output()
             file.save_ascii(self)
-            click.secho(f"File saved at {self.output}.txt", fg='yellow')
+            click.secho(f"File saved at {self.output}.txt", fg='green')
         elif self.format == 'csv':
             self.set_output()
             file.save_csv(self)
             click.secho(
-                f"File saved at {self.output}.{self.format}", fg='yellow')
+                f"File saved at {self.output}.{self.format}", fg='green')
         elif self.format == 'fits':
             self.set_output()
             file.save_fits(self)
             click.secho(
-                f"File saved at {self.output}.{self.format}", fg='yellow')
+                f"File saved at {self.output}.{self.format}", fg='green')
         elif self.format == 'hdf5':
             self.set_output()
             file.save_hdf5(self)
             click.secho(
-                f"File saved at {self.output}.{self.format}", fg='yellow')
+                f"File saved at {self.output}.{self.format}", fg='green')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
 
@@ -394,10 +373,12 @@ class Series:
         header = ["", "Z2N POWER", "GAUSSIAN FIT"]
         data = [
             ["Potency", self.potency, self.gauss.potency],
-            ["Frequency", self.frequency, self.gauss.frequency],
-            ["Frequency error", self.errorf, self.gauss.errorf],
-            ["Period", self.period, self.gauss.period],
-            ["Period error", self.errorp, self.gauss.errorp],
-            ["Pulsed Fraction", self.pulsed, self.gauss.pulsed],
+            ["Frequency", f"{self.frequency} Hz",
+                f"{self.gauss.frequency} Hz"],
+            ["Frequency error", "- Hz", f"+/- {self.gauss.errorf} Hz"],
+            ["Period", f"{self.period} s", f"{self.gauss.period} s"],
+            ["Period error", "- Hz", f"+/- {self.gauss.errorp} s"],
+            ["Pulsed Fraction", f"{self.pulsed * 100} %",
+                f"{self.gauss.pulsed * 100} %"],
         ]
         termtables.print(data, header)

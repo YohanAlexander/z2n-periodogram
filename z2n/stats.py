@@ -340,6 +340,13 @@ def fitcurve(function, bins, powerspec, guess):
     return optimize.curve_fit(function, bins, powerspec, guess)
 
 
+@jit(forceobj=True, parallel=True, fastmath=True)
+def equal(A, B, tol=1e-05):
+    """Compare floating point numbers with tolerance."""
+    S = round(1/tol)
+    return np.in1d(np.around(A*S).astype(int), np.around(B*S).astype(int))
+
+
 # @jit(forceobj=True, parallel=True, fastmath=True)
 def error(series) -> None:
     """
@@ -360,8 +367,8 @@ def error(series) -> None:
     while flag:
         if click.confirm("Is the peak region selected", prompt_suffix='? '):
             axis = plt.gca().get_xlim()
-            low = np.where(np.isclose(series.bins, axis[0], 0.1))[0][0]
-            up = np.where(np.isclose(series.bins, axis[1], 0.1))[0][-1]
+            low = np.where(equal(series.bins, axis[0]))[0][0]
+            up = np.where(equal(series.bins, axis[1]))[0][-1]
             mean, sigma = norm.fit(series.bins[low:up])
             potency(series)
             guess = [series.potency, mean, sigma]

@@ -21,6 +21,8 @@ icc-rt = "*"
 scipy = "*"
 h5py = "*"
 tqdm = "*"
+tbb = "*"
+intel-openmp = "*"
 
 [requires]
 python_version = "3.7"

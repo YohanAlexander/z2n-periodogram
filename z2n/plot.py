@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Owned Libraries
-from z2n import file
 from z2n import stats
 from z2n.series import Series
 
@@ -51,8 +50,7 @@ class Plot:
 
     def set_input(self) -> None:
         """Change the input image name."""
-        self.input = click.prompt(
-            "Filename", type=click.Path(exists=True))
+        self.input = click.prompt("Filename", type=click.Path(exists=True))
 
     def get_output(self) -> str:
         """Return the output image name."""
@@ -182,15 +180,14 @@ class Plot:
                                 self.data.plot()
                                 self.plot_figure()
                                 self.save_image()
-                                if click.confirm("Add a background file", prompt_suffix='? '):
+                                if click.confirm(
+                                        "Add a background file", prompt_suffix='? '):
                                     self.plot_background()
                                 flag = 0
                                 flag2 = 0
                             else:
                                 flag = 1
                                 flag2 = 0
-                    else:
-                        flag = 1
             else:
                 flag = 1
                 click.secho("Select '1' or '2'.", fg='red')

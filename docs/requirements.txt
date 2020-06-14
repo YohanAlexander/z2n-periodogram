@@ -13,3 +13,5 @@ icc-rt
 scipy
 h5py
 tqdm
+tbb
+intel-openmp
