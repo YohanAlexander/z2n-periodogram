@@ -120,7 +120,7 @@ class Series:
             self.output = click.prompt(
                 "Name of the file", default, type=click.Path())
             if pathlib.Path(f"{self.output}.{self.format}").is_file():
-                click.secho(f"File already exists.", fg='red')
+                click.secho("File already exists.", fg='red')
             else:
                 flag = 0
 
@@ -379,7 +379,10 @@ class Series:
             self.set_gauss()
             plt.close()
             plt.ion()
-            plt.plot(self.bins, self.z2n)
+            plt.plot(self.bins, self.z2n, label='Z2n Power', linewidth=2)
+            plt.xlabel('Frequency (Hz)')
+            plt.ylabel('Power')
+            plt.legend(loc='best')
             try:
                 stats.error(self.gauss)
                 header = ["", "Z2N POWER", "GAUSSIAN FIT"]
@@ -387,14 +390,23 @@ class Series:
                     ["Potency", self.potency, self.gauss.potency],
                     ["Frequency", f"{self.frequency} Hz",
                         f"{self.gauss.frequency} Hz"],
-                    ["Frequency error", "- Hz", f"+/- {self.gauss.errorf} Hz"],
+                    ["Frequency error", "_", f"+/- {self.gauss.errorf} Hz"],
                     ["Period", f"{self.period} s", f"{self.gauss.period} s"],
-                    ["Period error", "- Hz", f"+/- {self.gauss.errorp} s"],
+                    ["Period error", "_", f"+/- {self.gauss.errorp} s"],
                     ["Pulsed Fraction", f"{self.pulsed * 100} %",
                         f"{self.gauss.pulsed * 100} %"],
                 ]
                 termtables.print(data, header)
+                plt.close()
+                plt.ion()
+                plt.plot(self.bins, self.z2n, label='Z2n Power', linewidth=2)
+                plt.plot(
+                    self.gauss.bins, self.gauss.z2n,
+                    color='tab:red', label='Gaussian Fit', linewidth=1)
+                plt.xlabel('Frequency (Hz)')
+                plt.ylabel('Power')
+                plt.legend(loc='best')
             except IndexError:
-                click.secho(f"Error on the selection.", fg='red')
+                click.secho("Error on the selection.", fg='red')
             if not click.confirm("Select another region for the fit"):
                 flag = 0

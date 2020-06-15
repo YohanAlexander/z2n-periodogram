@@ -6,7 +6,7 @@
 <br>
 <p align="center">
   <a href="https://github.com/yohanalexander/z2n-periodogram">
-    <img src="https://user-images.githubusercontent.com/39287022/80550543-cb789b00-8996-11ea-90af-fe2936fb703e.png" alt="Logo" width="50%" height="50%">
+    <img src="https://user-images.githubusercontent.com/39287022/84617670-23675480-aea6-11ea-90ac-93a32c01bb92.png" alt="Logo" width="50%" height="50%">
   </a>
 
   <h1 align="center">Z2n Periodogram</h1>

@@ -36,10 +36,10 @@ class Plot:
     """
 
     def __init__(self) -> None:
+        self.back = 0
         self.input = ""
         self.output = ""
         self.format = ""
-        self.back = 0
         self.data = Series()
         self.noise = Series()
         self.figure, self.axes = ((), ())
@@ -66,7 +66,7 @@ class Plot:
             self.output = click.prompt(
                 "Name of the image", default, type=click.Path())
             if pathlib.Path(f"{self.output}.{self.format}").is_file():
-                click.secho(f"File already exists.", fg='red')
+                click.secho("File already exists.", fg='red')
             else:
                 flag = 0
 
@@ -98,13 +98,11 @@ class Plot:
         if not self.back:
             self.figure, self.axes = plt.subplots(self.back + 1)
             self.axes.plot(
-                self.data.bins, self.data.z2n, label='Z2n Power', linewidth=2)
+                self.data.bins, self.data.z2n, label='Z2n Power',
+                color='tab:blue', linewidth=2)
             self.axes.plot(
                 self.data.gauss.bins, self.data.gauss.z2n,
-                color='tab:grey', label='Gaussian Fit')
-            self.axes.axvline(
-                self.data.frequency, linewidth=1, color='tab:red',
-                label='Correct Frequency')
+                color='tab:red', label='Gaussian Fit', linewidth=1)
             self.axes.set_xlabel('Frequency (Hz)')
             self.axes.set_ylabel('Power')
             self.axes.legend(loc='best')
@@ -112,13 +110,11 @@ class Plot:
             self.figure, self.axes = plt.subplots(
                 self.back + 1, sharex=True, sharey=True)
             self.axes[0].plot(
-                self.data.bins, self.data.z2n, label='Z2n Power', linewidth=2)
+                self.data.bins, self.data.z2n, label='Z2n Power',
+                color='tab:blue', linewidth=2)
             self.axes[0].plot(
                 self.data.gauss.bins, self.data.gauss.z2n,
-                color='tab:grey', label='Gaussian Fit')
-            self.axes[0].axvline(
-                self.data.frequency, linewidth=1, color='tab:red',
-                label='Correct Frequency')
+                color='tab:red', label='Gaussian Fit', linewidth=1)
             self.axes[1].plot(
                 self.noise.bins, self.noise.z2n, color='tab:cyan',
                 label='Background')
