@@ -8,6 +8,7 @@ pytest = "*"
 
 [packages]
 z2n-periodogram = {editable = true,path = "."}
+intel-openmp = "*"
 click = "*"
 click-shell = "*"
 matplotlib = "*"
@@ -22,7 +23,6 @@ scipy = "*"
 h5py = "*"
 tqdm = "*"
 tbb = "*"
-intel-openmp = "*"
 
 [requires]
 python_version = "3.7"

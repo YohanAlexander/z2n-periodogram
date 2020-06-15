@@ -1,4 +1,5 @@
 markdown-katex
+intel-openmp
 mkautodoc
 click
 click-shell
@@ -14,4 +15,3 @@ scipy
 h5py
 tqdm
 tbb
-intel-openmp

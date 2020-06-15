@@ -3,6 +3,7 @@
 
 # Other Libraries
 import click
+import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -59,7 +60,15 @@ class Plot:
 
     def set_output(self) -> None:
         """Change the output image name."""
-        self.output = click.prompt("Name of the image")
+        default = "z2n_" + pathlib.Path(self.data.input).stem
+        flag = 1
+        while flag:
+            self.output = click.prompt(
+                "Name of the image", default, type=click.Path())
+            if pathlib.Path(f"{self.output}.{self.format}").is_file():
+                click.secho(f"File already exists.", fg='red')
+            else:
+                flag = 0
 
     def get_format(self) -> str:
         """Return the image format."""
@@ -68,7 +77,7 @@ class Plot:
 
     def set_format(self) -> None:
         """Change the image format."""
-        self.format = click.prompt("Format [png, pdf, ps, eps]")
+        self.format = click.prompt("Format [png, pdf, ps, eps]", "ps")
 
     def add_background(self) -> None:
         """Add background on the plot."""
@@ -220,32 +229,33 @@ class Plot:
     def change_title(self) -> None:
         """Change the title on the figure."""
         if self.back:
-            self.figure.suptitle(click.prompt("Which title"))
+            self.figure.suptitle(click.prompt(
+                "Which title", "Z2n Periodogram"))
             click.secho("Changed title.", fg='green')
         else:
-            self.axes.set_title(click.prompt("Which title"))
+            self.axes.set_title(click.prompt("Which title", "Z2n Periodogram"))
             click.secho("Changed title.", fg='green')
 
     def change_xlabel(self) -> None:
         """Change the label on the x axis."""
         if self.back:
-            xlabel = click.prompt("Which label")
+            xlabel = click.prompt("Which label", "Frequency (Hz)")
             self.axes[0].set_xlabel(xlabel)
             self.axes[1].set_xlabel(xlabel)
             click.secho("Changed X axis label.", fg='green')
         else:
-            self.axes.set_xlabel(click.prompt("Which label"))
+            self.axes.set_xlabel(click.prompt("Which label", "Frequency (Hz)"))
             click.secho("Changed X axis label.", fg='green')
 
     def change_xscale(self) -> None:
         """Change the scale on the x axis."""
         if self.back:
             self.axes[0].set_xscale(click.prompt(
-                "Which scale [linear, log]"))
+                "Which scale [linear, log]", "linear"))
             click.secho("Changed X axis scale.", fg='green')
         else:
             self.axes.set_xscale(click.prompt(
-                "Which scale [linear, log]"))
+                "Which scale [linear, log]", "linear"))
             click.secho("Changed X axis scale.", fg='green')
 
     def change_xlim(self) -> None:
@@ -264,23 +274,23 @@ class Plot:
     def change_ylabel(self) -> None:
         """Change the label on the y axis."""
         if self.back:
-            ylabel = click.prompt("Which label")
+            ylabel = click.prompt("Which label", "Power")
             self.axes[0].set_ylabel(ylabel)
             self.axes[1].set_ylabel(ylabel)
             click.secho("Changed y axis label.", fg='green')
         else:
-            self.axes.set_ylabel(click.prompt("Which label"))
+            self.axes.set_ylabel(click.prompt("Which label", "Power"))
             click.secho("Changed y axis label.", fg='green')
 
     def change_yscale(self) -> None:
         """Change the scale on the y axis."""
         if self.back:
             self.axes[0].set_yscale(click.prompt(
-                "Which scale [linear, log]"))
+                "Which scale [linear, log]", "linear"))
             click.secho("Changed y axis scale.", fg='green')
         else:
             self.axes.set_yscale(click.prompt(
-                "Which scale [linear, log]"))
+                "Which scale [linear, log]", "linear"))
             click.secho("Changed y axis scale.", fg='green')
 
     def change_ylim(self) -> None:

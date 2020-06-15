@@ -3,10 +3,11 @@
 
 # Generic/Built-in
 import copy
+import psutil
+import pathlib
 
 # Other Libraries
 import click
-import psutil
 import termtables
 import numpy as np
 import matplotlib.pyplot as plt
@@ -113,7 +114,15 @@ class Series:
 
     def set_output(self) -> None:
         """Change the output file name."""
-        self.output = click.prompt("Name of the file", type=click.Path())
+        default = "z2n_" + pathlib.Path(self.input).stem
+        flag = 1
+        while flag:
+            self.output = click.prompt(
+                "Name of the file", default, type=click.Path())
+            if pathlib.Path(f"{self.output}.{self.format}").is_file():
+                click.secho(f"File already exists.", fg='red')
+            else:
+                flag = 0
 
     def get_format(self) -> str:
         """Return the file format."""
@@ -122,7 +131,7 @@ class Series:
 
     def set_format(self) -> None:
         """Change the file format."""
-        self.format = click.prompt("Format [ascii, csv, fits, hdf5]")
+        self.format = click.prompt("Format [ascii, csv, fits, hdf5]", "fits")
 
     def get_time(self) -> np.array:
         """Return the time series."""
@@ -154,7 +163,7 @@ class Series:
         if self.bins.size:
             self.set_delta()
         elif click.confirm(
-                "Nyquist frequency as the minimum frequency", prompt_suffix='? '):
+                "Nyquist frequency as the minimum frequency", True, prompt_suffix='? '):
             self.fmin = self.sampling * 2
             self.set_fmax()
             self.set_oversample()
@@ -170,7 +179,7 @@ class Series:
         nbytes = np.array(self.delta).dtype.itemsize * block
         click.secho(
             f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
-        if click.confirm("Run the program with these values", prompt_suffix='? '):
+        if click.confirm("Run the program with these values", True, prompt_suffix='? '):
             if nbytes < psutil.virtual_memory()[1]:
                 self.bins = np.arange(self.fmin, self.fmax, self.delta)
                 self.get_bins()
@@ -238,7 +247,7 @@ class Series:
 
     def set_harmonics(self) -> None:
         """Change the number of harmonics."""
-        self.harmonics = click.prompt("Number of harmonics", type=int)
+        self.harmonics = click.prompt("Number of harmonics", 1, type=int)
 
     def get_exposure(self) -> float:
         """Return the period of exposure."""
@@ -361,24 +370,31 @@ class Series:
 
     def plot(self) -> None:
         """Plot the series and the parameters."""
-        self.set_potency()
-        self.set_frequency()
-        self.set_period()
-        self.set_pfraction()
-        self.set_gauss()
-        plt.close()
-        plt.ion()
-        plt.plot(self.bins, self.z2n)
-        stats.error(self.gauss)
-        header = ["", "Z2N POWER", "GAUSSIAN FIT"]
-        data = [
-            ["Potency", self.potency, self.gauss.potency],
-            ["Frequency", f"{self.frequency} Hz",
-                f"{self.gauss.frequency} Hz"],
-            ["Frequency error", "- Hz", f"+/- {self.gauss.errorf} Hz"],
-            ["Period", f"{self.period} s", f"{self.gauss.period} s"],
-            ["Period error", "- Hz", f"+/- {self.gauss.errorp} s"],
-            ["Pulsed Fraction", f"{self.pulsed * 100} %",
-                f"{self.gauss.pulsed * 100} %"],
-        ]
-        termtables.print(data, header)
+        flag = 1
+        while flag:
+            self.set_potency()
+            self.set_frequency()
+            self.set_period()
+            self.set_pfraction()
+            self.set_gauss()
+            plt.close()
+            plt.ion()
+            plt.plot(self.bins, self.z2n)
+            try:
+                stats.error(self.gauss)
+                header = ["", "Z2N POWER", "GAUSSIAN FIT"]
+                data = [
+                    ["Potency", self.potency, self.gauss.potency],
+                    ["Frequency", f"{self.frequency} Hz",
+                        f"{self.gauss.frequency} Hz"],
+                    ["Frequency error", "- Hz", f"+/- {self.gauss.errorf} Hz"],
+                    ["Period", f"{self.period} s", f"{self.gauss.period} s"],
+                    ["Period error", "- Hz", f"+/- {self.gauss.errorp} s"],
+                    ["Pulsed Fraction", f"{self.pulsed * 100} %",
+                        f"{self.gauss.pulsed * 100} %"],
+                ]
+                termtables.print(data, header)
+            except IndexError:
+                click.secho(f"Error on the selection.", fg='red')
+            if not click.confirm("Select another region for the fit"):
+                flag = 0
