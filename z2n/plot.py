@@ -124,6 +124,7 @@ class Plot:
             self.axes[1].set_ylabel('Power')
             self.axes[0].legend(loc='best')
             self.axes[1].legend(loc='best')
+        plt.tight_layout()
 
     def plot_background(self) -> int:
         """Create subplot of the background."""

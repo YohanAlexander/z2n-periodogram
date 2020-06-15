@@ -366,21 +366,24 @@ def error(series) -> None:
         "Select the peak region to estimate uncertainty.", fg='yellow')
     while flag:
         if click.confirm("Is the peak region selected", prompt_suffix='? '):
-            axis = plt.gca().get_xlim()
-            low = np.where(equal(series.bins, axis[0]))[0][0]
-            up = np.where(equal(series.bins, axis[1]))[0][-1]
-            mean, sigma = norm.fit(series.bins[low:up])
-            potency(series)
-            guess = [series.potency, mean, sigma]
-            popt, _ = fitcurve(
-                gaussian, series.bins[low:up], series.z2n[low:up], guess)
-            series.potency = np.absolute(popt[0])
-            series.frequency = np.absolute(popt[1])
-            period(series)
-            series.errorf = np.absolute(popt[2])
-            series.errorp = np.absolute(
-                (1 / (series.frequency + series.errorf)) - series.period)
-            pfraction(series)
-            series.z2n = gaussian(series.bins[low:up], *popt)
-            series.bins = series.bins[low:up]
-            flag = 0
+            try:
+                axis = plt.gca().get_xlim()
+                low = np.where(equal(series.bins, axis[0]))[0][0]
+                up = np.where(equal(series.bins, axis[1]))[0][-1]
+                mean, sigma = norm.fit(series.bins[low:up])
+                potency(series)
+                guess = [series.potency, mean, sigma]
+                popt, _ = fitcurve(
+                    gaussian, series.bins[low:up], series.z2n[low:up], guess)
+                series.potency = np.absolute(popt[0])
+                series.frequency = np.absolute(popt[1])
+                period(series)
+                series.errorf = np.absolute(popt[2])
+                series.errorp = np.absolute(
+                    (1 / (series.frequency + series.errorf)) - series.period)
+                pfraction(series)
+                series.z2n = gaussian(series.bins[low:up], *popt)
+                series.bins = series.bins[low:up]
+                flag = 0
+            except IndexError:
+                click.secho("Error on the selection.", fg='red')
