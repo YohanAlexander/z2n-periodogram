@@ -143,6 +143,7 @@ class Series:
         """Change the time series."""
         flag = 0
         if not self.load_file():
+            click.secho('Event file loaded.', fg='green')
             self.set_exposure()
             self.set_sampling()
             self.get_time()
@@ -160,35 +161,36 @@ class Series:
     def set_bins(self) -> int:
         """Change the frequency steps."""
         flag = 1
-        click.secho("The frequency range is needed (Hz).", fg='yellow')
-        if self.bins.size:
-            self.set_delta()
-        elif click.confirm(
-                "Nyquist frequency as the minimum frequency", True, prompt_suffix='? '):
-            self.fmin = self.sampling * 2
-            self.set_fmax()
-            self.set_oversample()
-            self.delta = 1 / (self.oversample * self.exposure)
-        else:
-            self.set_fmin()
-            self.set_fmax()
-            self.set_delta()
-        self.get_fmin()
-        self.get_fmax()
-        self.get_delta()
-        block = (self.fmax - self.fmin) / np.array(self.delta)
-        nbytes = np.array(self.delta).dtype.itemsize * block
-        click.secho(
-            f"Computation memory {nbytes * 10e-6} MB", fg='yellow')
-        if click.confirm("Run the program with these values", True, prompt_suffix='? '):
-            if nbytes < psutil.virtual_memory()[1]:
-                self.bins = np.arange(self.fmin, self.fmax, self.delta)
-                self.get_bins()
-                self.set_harmonics()
-                flag = 0
+        while flag:
+            click.secho("The frequency range is needed (Hz).", fg='yellow')
+            if self.bins.size:
+                self.set_delta()
+            elif click.confirm(
+                    "Nyquist as the minimum frequency", True, prompt_suffix='? '):
+                self.fmin = self.sampling * 2
+                self.set_fmax()
+                self.set_oversample()
+                self.delta = 1 / (self.oversample * self.exposure)
             else:
-                click.secho("Not enough memory available.", fg='red')
-                flag = 1
+                self.set_fmin()
+                self.set_fmax()
+                self.set_delta()
+            self.get_fmin()
+            self.get_fmax()
+            self.get_delta()
+            self.set_harmonics()
+            block = (self.fmax - self.fmin) / np.array(self.delta)
+            nbytes = np.array(self.delta).dtype.itemsize * block
+            click.secho(
+                f"Computation memory {nbytes* 10e-6:.1e} MB", fg='yellow')
+            if click.confirm("Run with these values", True, prompt_suffix='? '):
+                if nbytes < psutil.virtual_memory()[1]:
+                    self.bins = np.arange(self.fmin, self.fmax, self.delta)
+                    self.get_bins()
+                    flag = 0
+                else:
+                    flag = 1
+                    click.secho("Not enough memory available.", fg='red')
         return flag
 
     def get_periodogram(self) -> np.array:
@@ -207,7 +209,7 @@ class Series:
 
     def get_fmin(self) -> float:
         """Return the minimum frequency."""
-        click.secho(f"Minimum frequency: {self.fmin} Hz", fg='cyan')
+        click.secho(f"Minimum frequency: {self.fmin:.1e} Hz", fg='cyan')
         return self.fmin
 
     def set_fmin(self) -> None:
@@ -216,7 +218,7 @@ class Series:
 
     def get_fmax(self) -> float:
         """Return the maximum frequency."""
-        click.secho(f"Maximum frequency: {self.fmax} Hz", fg='cyan')
+        click.secho(f"Maximum frequency: {self.fmax:.1e} Hz", fg='cyan')
         return self.fmax
 
     def set_fmax(self) -> None:
@@ -225,7 +227,7 @@ class Series:
 
     def get_delta(self) -> float:
         """Return the frequency steps."""
-        click.secho(f"Frequency steps: {self.delta} Hz", fg='cyan')
+        click.secho(f"Frequency steps: {self.delta:.1e} Hz", fg='cyan')
         return self.delta
 
     def set_delta(self) -> None:
@@ -252,7 +254,7 @@ class Series:
 
     def get_exposure(self) -> float:
         """Return the period of exposure."""
-        click.secho(f"Exposure time: {self.exposure} s", fg='cyan')
+        click.secho(f"Exposure time (Texp): {self.exposure:.1e} s", fg='cyan')
         return self.exposure
 
     def set_exposure(self) -> None:
@@ -261,7 +263,8 @@ class Series:
 
     def get_sampling(self) -> float:
         """Return the sampling rate."""
-        click.secho(f"Sampling rate: {self.sampling} Hz", fg='cyan')
+        click.secho(
+            f"Sampling rate (1/Texp): {self.sampling:.1e} Hz", fg='cyan')
         return self.sampling
 
     def set_sampling(self) -> None:
@@ -384,6 +387,7 @@ class Series:
             plt.xlabel('Frequency (Hz)')
             plt.ylabel('Power')
             plt.legend(loc='best')
+            plt.tight_layout()
             try:
                 stats.error(self.gauss)
                 header = ["", "Z2N POWER", "GAUSSIAN FIT"]
@@ -410,15 +414,26 @@ class Series:
                 plt.xlabel('Frequency (Hz)')
                 plt.ylabel('Power')
                 plt.legend(loc='best')
+                plt.tight_layout()
             except IndexError:
                 click.secho("Error on the selection.", fg='red')
             else:
                 if not click.confirm("Select another region for the fit"):
                     flag = 0
-                    log = "z2n_" + pathlib.Path(self.input).stem + ".log"
-                    with open(log, "w+") as file:
-                        writer = csv.writer(file, delimiter=',',
-                                            quoting=csv.QUOTE_NONE)
-                        writer.writerow(header)
-                        writer.writerows(data)
-                    click.secho(f"Saved the results at {log}", fg='green')
+                    click.secho("Save the results on a log file.", fg='yellow')
+                    default = "z2n_" + pathlib.Path(self.input).stem
+                    flag2 = 1
+                    while flag2:
+                        log = click.prompt(
+                            "Name of the file", default, type=click.Path())
+                        if pathlib.Path(f"{log}.log").is_file():
+                            click.secho("File already exists.", fg='red')
+                        else:
+                            flag2 = 0
+                            with open(f"{log}.log", "w+") as logfile:
+                                writer = csv.writer(logfile, delimiter=',',
+                                                    quoting=csv.QUOTE_NONE)
+                                writer.writerow(header)
+                                writer.writerows(data)
+                            click.secho(
+                                f"Saved the results at {log}.log", fg='green')
