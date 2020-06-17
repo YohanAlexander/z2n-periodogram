@@ -88,7 +88,7 @@ The `CLI` of the software is very interactive and it works by triggering the com
 
 Documented commands (type help <topic>):
 ========================================
-docs  plot  run  save
+docs  log  plot  run  save
 
 Undocumented commands:
 ======================

@@ -14,13 +14,11 @@ from z2n.plot import Plot
 figure = Plot()
 
 # Variables to display on prompt
-
 __z2n__ = f'''
         Z2n Software ({__version__}), a python program for periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.
         '''
-
 __plt__ = f'''
         Interactive plotting window of the Z2n Software ({__version__}).
         Type "help" for more information.
@@ -62,8 +60,16 @@ def plot() -> None:
 @z2n.command()
 def run() -> None:
     """Calculate the Z2n Statistics."""
-    if not figure.plot_periodogram():
-        plt()
+    figure.plot_periodogram()
+
+
+@z2n.command()
+def log() -> None:
+    """Save the fit of a gaussian curve."""
+    if figure.data.z2n.size == 0:
+        click.secho("The periodogram was not calculated yet.", fg='yellow')
+    else:
+        figure.data.plot()
 
 
 @z2n.command()

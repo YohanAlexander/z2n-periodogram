@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Other Libraries
 from astropy.table import Table
 import numpy as np
 

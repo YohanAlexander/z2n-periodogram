@@ -8,7 +8,6 @@ nav:
     - input.md
     - usage.md
     - plotting.md
-    - package.md
   - API:
     - series.md
     - plot.md
@@ -29,4 +28,3 @@ markdown_extensions:
       no_inline_svg: True
       insert_fonts_css: True
       macro-file: docs/macros.tex
-
