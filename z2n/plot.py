@@ -77,7 +77,7 @@ class Plot:
 
     def set_format(self) -> None:
         """Change the image format."""
-        self.format = click.prompt("Format [png, pdf, ps, eps]", "ps")
+        self.format = click.prompt("Format", "ps", type=click.Choice(['png', 'pdf', 'ps', 'eps']))
 
     def add_background(self) -> None:
         """Add background on the plot."""

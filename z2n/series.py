@@ -132,7 +132,8 @@ class Series:
 
     def set_format(self) -> None:
         """Change the file format."""
-        self.format = click.prompt("Format [ascii, csv, fits, hdf5]", "fits")
+        self.format = click.prompt(
+            "Format", "fits", type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']))
 
     def get_time(self) -> np.array:
         """Return the time series."""
@@ -142,7 +143,8 @@ class Series:
     def set_time(self) -> int:
         """Change the time series."""
         flag = 0
-        if not self.load_file():
+        self.set_input()
+        if not file.load_file(self):
             click.secho('Event file loaded.', fg='green')
             self.set_exposure()
             self.set_sampling()
@@ -166,7 +168,7 @@ class Series:
             if self.bins.size:
                 self.set_delta()
             elif click.confirm(
-                    "Nyquist as the minimum frequency", True, prompt_suffix='? '):
+                    "Nyquist 2*(1/Texp) as the minimum frequency", prompt_suffix='? '):
                 self.fmin = self.sampling * 2
                 self.set_fmax()
                 self.set_oversample()
@@ -189,7 +191,6 @@ class Series:
                     self.get_bins()
                     flag = 0
                 else:
-                    flag = 1
                     click.secho("Not enough memory available.", fg='red')
         return flag
 
@@ -431,8 +432,7 @@ class Series:
                         else:
                             flag2 = 0
                             with open(f"{log}.log", "w+") as logfile:
-                                writer = csv.writer(logfile, delimiter=',',
-                                                    quoting=csv.QUOTE_NONE)
+                                writer = csv.writer(logfile, delimiter=',')
                                 writer.writerow(header)
                                 writer.writerows(data)
                             click.secho(

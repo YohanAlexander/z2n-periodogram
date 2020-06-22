@@ -1,16 +1,25 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Generic/Built-in
+import psutil
+import pathlib
+
 # Other Libraries
 import click
+import numpy as np
 from click_shell import shell
 
 # Owned Libraries
+from z2n import file
+from z2n import stats
 from z2n import __docs__
 from z2n import __version__
 
 # Instance of the Plot Object
 from z2n.plot import Plot
+from z2n.series import Series
+data = Series()
 figure = Plot()
 
 # Variables to display on prompt
@@ -26,8 +35,20 @@ __plt__ = f'''
 
 
 @click.version_option(prog_name='Z2n Software', version=__version__)
-@shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True))
-def z2n():
+@click.option('-input', type=click.Path(exists=True), help='Name of the input file.')
+@click.option(
+    '-output', type=click.Path(),
+    help='Name of the output file.',
+    default=f'z2n_{pathlib.Path(data.input).stem}')
+@click.option(
+    '-format', type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']),
+    help='Format of the output file.', default='fits')
+@click.option('-fmin', type=float, help='Minimum frequency (Hz).')
+@click.option('-fmax', type=float, help='Maximum frequency (Hz).')
+@click.option('-delta', type=float, help='Frequency steps (Hz).')
+@click.option('-harm', type=int, help='Number of harmonics.', default=1)
+@shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
+def z2n(input, output, format, fmin, fmax, delta, harm):
     """
     This program allows the user to calculate periodograms, given a time series,
     using the Z2n statistics a la Buccheri et al. 1983.
@@ -36,8 +57,67 @@ def z2n():
     the corresponding sinusoidal functions for each time. Be advised that this
     is very computationally expensive if the number of frequency bins is high.
     """
-    click.echo(__z2n__)
-    figure.plot_periodogram()
+    if input:
+        try:
+            data.input = input
+            data.output = output
+            data.format = format
+            default = "z2n_" + pathlib.Path(data.input).stem
+            file.load_file(data)
+            click.secho('Event file loaded.', fg='green')
+            data.set_exposure()
+            data.set_sampling()
+            data.get_time()
+            data.get_exposure()
+            data.get_sampling()
+            data.fmin = fmin
+            data.fmax = fmax
+            data.delta = delta
+            data.harmonics = harm
+            block = (data.fmax - data.fmin) / np.array(data.delta)
+            nbytes = np.array(data.delta).dtype.itemsize * block
+            click.secho(
+                f"Computation memory {nbytes* 10e-6:.1e} MB", fg='yellow')
+            if nbytes < psutil.virtual_memory()[1]:
+                data.bins = np.arange(data.fmin, data.fmax, data.delta)
+                data.get_bins()
+                data.time = np.array(data.time)
+                data.bins = np.array(data.bins)
+                data.z2n = np.zeros(data.bins.size)
+                stats.periodogram(data)
+                click.secho('Periodogram calculated.', fg='green')
+                flag = 1
+                while flag:
+                    if pathlib.Path(f"{data.output}.{data.format}").is_file():
+                        click.secho("File already exists.", fg='red')
+                        data.output = click.prompt(
+                            "Name of the file", default, type=click.Path())
+                    else:
+                        flag = 0
+                if data.format == 'ascii':
+                    file.save_ascii(data)
+                elif data.format == 'csv':
+                    file.save_csv(data)
+                elif data.format == 'fits':
+                    file.save_fits(data)
+                elif data.format == 'hdf5':
+                    file.save_hdf5(data)
+                click.secho(
+                    f"File saved at {data.output}.{data.format}", fg='green')
+                data.set_potency()
+                data.set_frequency()
+                data.set_period()
+                data.set_pfraction()
+                data.get_potency()
+                data.get_frequency()
+                data.get_period()
+                data.get_pfraction()
+            else:
+                click.secho("Not enough memory available.", fg='red')
+            exit()
+        except Exception as error:
+            click.secho(f"{error}", fg='red')
+            exit()
 
 
 @z2n.command()

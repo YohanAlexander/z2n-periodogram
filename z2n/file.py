@@ -1,8 +1,28 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+
+# Other Libraries
 from astropy.table import Table
 import numpy as np
+
+
+def load_file(series) -> None:
+    """
+    Open file and store time series.
+
+    Parameters
+    ----------
+    series : Series
+        A time series object.
+
+    Returns
+    -------
+    None
+    """
+    table = Table.read(series.input)
+    series.time = table['TIME'].data
+    series.time = series.time.astype(series.time.dtype.name)
 
 
 def load_ascii(series) -> None:
