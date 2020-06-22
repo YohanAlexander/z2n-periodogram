@@ -66,7 +66,7 @@ def z2n(input, output, format, fmin, fmax, delta, harm, image, title, xlabel, yl
     is very computationally expensive if the number of frequency bins is high.
     """
     if input:
-        try:
+        if fmin and fmax and delta:
             data.input = input
             data.output = output
             data.format = format
@@ -139,8 +139,8 @@ def z2n(input, output, format, fmin, fmax, delta, harm, image, title, xlabel, yl
             else:
                 click.secho("Not enough memory available.", fg='red')
             exit()
-        except Exception as error:
-            click.secho(f"{error}", fg='red')
+        else:
+            click.secho("The frequency range is needed (Hz).", fg='red')
             exit()
 
 
