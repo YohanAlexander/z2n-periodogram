@@ -35,18 +35,18 @@ __plt__ = f'''
 
 
 @click.version_option(prog_name='Z2n Software', version=__version__)
-@click.option('-input', type=click.Path(exists=True), help='Name of the input file.')
+@click.option('--input', type=click.Path(exists=True), help='Name of the input file.')
 @click.option(
-    '-output', type=click.Path(),
+    '--output', type=click.Path(),
     help='Name of the output file.',
     default=f'z2n_{pathlib.Path(data.input).stem}')
 @click.option(
-    '-format', type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']),
+    '--format', type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']),
     help='Format of the output file.', default='fits')
-@click.option('-fmin', type=float, help='Minimum frequency (Hz).')
-@click.option('-fmax', type=float, help='Maximum frequency (Hz).')
-@click.option('-delta', type=float, help='Frequency steps (Hz).')
-@click.option('-harm', type=int, help='Number of harmonics.', default=1)
+@click.option('--fmin', type=float, help='Minimum frequency (Hz).')
+@click.option('--fmax', type=float, help='Maximum frequency (Hz).')
+@click.option('--delta', type=float, help='Frequency steps (Hz).')
+@click.option('--harm', type=int, help='Number of harmonics.', default=1)
 @shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
 def z2n(input, output, format, fmin, fmax, delta, harm):
     """

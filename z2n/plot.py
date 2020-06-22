@@ -77,7 +77,8 @@ class Plot:
 
     def set_format(self) -> None:
         """Change the image format."""
-        self.format = click.prompt("Format", "ps", type=click.Choice(['png', 'pdf', 'ps', 'eps']))
+        self.format = click.prompt(
+            "Format", "ps", type=click.Choice(['png', 'pdf', 'ps', 'eps']))
 
     def add_background(self) -> None:
         """Add background on the plot."""
@@ -124,7 +125,6 @@ class Plot:
             self.axes[1].set_ylabel('Power')
             self.axes[0].legend(loc='best')
             self.axes[1].legend(loc='best')
-        plt.tight_layout()
 
     def plot_background(self) -> int:
         """Create subplot of the background."""
