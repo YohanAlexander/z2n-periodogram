@@ -125,6 +125,7 @@ class Plot:
             self.axes[1].set_ylabel('Power')
             self.axes[0].legend(loc='best')
             self.axes[1].legend(loc='best')
+        plt.tight_layout()
 
     def plot_background(self) -> int:
         """Create subplot of the background."""
@@ -207,19 +208,23 @@ class Plot:
         if self.format == 'png':
             self.set_output()
             plt.savefig(f'{self.output}.{self.format}', format=self.format)
-            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+            click.secho(
+                f"Image saved at {self.output}.{self.format}", fg='green')
         elif self.format == 'pdf':
             self.set_output()
             plt.savefig(f'{self.output}.{self.format}', format=self.format)
-            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+            click.secho(
+                f"Image saved at {self.output}.{self.format}", fg='green')
         elif self.format == 'ps':
             self.set_output()
             plt.savefig(f'{self.output}.{self.format}', format=self.format)
-            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+            click.secho(
+                f"Image saved at {self.output}.{self.format}", fg='green')
         elif self.format == 'eps':
             self.set_output()
             plt.savefig(f'{self.output}.{self.format}', format=self.format)
-            click.secho(f"Saved at {self.output}.{self.format}", fg='green')
+            click.secho(
+                f"Image saved at {self.output}.{self.format}", fg='green')
         else:
             click.secho(f"{self.format} format not supported.", fg='red')
 

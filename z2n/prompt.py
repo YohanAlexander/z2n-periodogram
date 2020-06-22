@@ -9,6 +9,7 @@ import pathlib
 import click
 import numpy as np
 from click_shell import shell
+import matplotlib.pyplot as mplt
 
 # Owned Libraries
 from z2n import file
@@ -43,12 +44,19 @@ __plt__ = f'''
 @click.option(
     '--format', type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']),
     help='Format of the output file.', default='fits')
+@click.option(
+    '--image', type=click.Choice(['png', 'pdf', 'ps', 'eps']),
+    help='Format of the image file.', default='ps')
 @click.option('--fmin', type=float, help='Minimum frequency (Hz).')
 @click.option('--fmax', type=float, help='Maximum frequency (Hz).')
 @click.option('--delta', type=float, help='Frequency steps (Hz).')
 @click.option('--harm', type=int, help='Number of harmonics.', default=1)
+@click.option('--title', type=str, help='Title of the image file.')
+@click.option(
+    '--xlabel', type=str, help='X label of the image file.', default='Frequency (Hz)')
+@click.option('--ylabel', type=str, help='Y label of the image file.', default='Power')
 @shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
-def z2n(input, output, format, fmin, fmax, delta, harm):
+def z2n(input, output, format, fmin, fmax, delta, harm, image, title, xlabel, ylabel):
     """
     This program allows the user to calculate periodograms, given a time series,
     using the Z2n statistics a la Buccheri et al. 1983.
@@ -104,6 +112,22 @@ def z2n(input, output, format, fmin, fmax, delta, harm):
                     file.save_hdf5(data)
                 click.secho(
                     f"File saved at {data.output}.{data.format}", fg='green')
+                mplt.plot(data.bins, data.z2n, label='Z2n Power', linewidth=2)
+                mplt.title(title)
+                mplt.xlabel(xlabel)
+                mplt.ylabel(ylabel)
+                mplt.legend(loc='best')
+                mplt.tight_layout()
+                if image == 'png':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                elif image == 'pdf':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                elif image == 'ps':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                elif image == 'eps':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                click.secho(
+                    f"Image saved at {data.output}.{image}", fg='green')
                 data.set_potency()
                 data.set_frequency()
                 data.set_period()
@@ -140,7 +164,8 @@ def plot() -> None:
 @z2n.command()
 def run() -> None:
     """Calculate the Z2n Statistics."""
-    figure.plot_periodogram()
+    if not figure.plot_periodogram():
+        plt()
 
 
 @z2n.command()
