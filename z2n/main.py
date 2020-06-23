@@ -3,11 +3,12 @@
 
 # Other Libraries
 import matplotlib
-# Defalt backend
-matplotlib.use('qt5agg')
 
 # Owned Libraries
 from z2n import prompt
+
+# Defalt backend
+matplotlib.use('qt5agg')
 
 
 def cli() -> None:
