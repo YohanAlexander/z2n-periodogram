@@ -1,8 +1,10 @@
 markdown-katex
 intel-openmp
 mkautodoc
+mkdocs
 click
 pillow
+pytest
 click-shell
 matplotlib
 termtables
@@ -13,6 +15,7 @@ numpy
 numba
 icc-rt
 scipy
+pyqt5
 h5py
 tqdm
 tbb

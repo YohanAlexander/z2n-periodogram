@@ -8,8 +8,9 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version='1.8.6',
+        version='1.8.7',
         license='MIT',
+        python_requires='>=3.7',
         install_requires=[
             'intel-openmp',
             'click',
@@ -24,6 +25,7 @@ with open("README.md", "r") as fh:
             'numba',
             'icc-rt',
             'scipy',
+            'pyqt5',
             'h5py',
             'tqdm',
             'tbb',
@@ -32,6 +34,9 @@ with open("README.md", "r") as fh:
         extras_require={
             "dev": [
                 "pytest",
+                "mkdocs",
+                "mkautodoc",
+                "markdown-katex",
             ],
         },
         entry_points='''

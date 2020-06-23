@@ -5,6 +5,9 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+mkdocs = "*"
+mkautodoc = "*"
+markdown-katex = "*"
 
 [packages]
 z2n-periodogram = {editable = true,path = "."}
@@ -21,6 +24,7 @@ numpy = "*"
 numba = "*"
 icc-rt = "*"
 scipy = "*"
+pyqt5 = "*"
 h5py = "*"
 tqdm = "*"
 tbb = "*"
