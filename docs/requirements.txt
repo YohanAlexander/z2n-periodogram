@@ -2,6 +2,7 @@ markdown-katex
 intel-openmp
 mkautodoc
 click
+pillow
 click-shell
 matplotlib
 termtables

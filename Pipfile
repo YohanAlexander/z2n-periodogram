@@ -10,6 +10,7 @@ pytest = "*"
 z2n-periodogram = {editable = true,path = "."}
 intel-openmp = "*"
 click = "*"
+pillow = "*"
 click-shell = "*"
 matplotlib = "*"
 termtables = "*"
