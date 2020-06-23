@@ -184,7 +184,7 @@ class Series:
             block = (self.fmax - self.fmin) / np.array(self.delta)
             nbytes = np.array(self.delta).dtype.itemsize * block
             click.secho(
-                f"Computation memory {nbytes* 10e-6:.1e} MB", fg='yellow')
+                f"Computation memory {nbytes* 10e-6:.5f} MB", fg='yellow')
             if click.confirm("Run with these values", True, prompt_suffix='? '):
                 if nbytes < psutil.virtual_memory()[1]:
                     self.bins = np.arange(self.fmin, self.fmax, self.delta)
@@ -255,7 +255,7 @@ class Series:
 
     def get_exposure(self) -> float:
         """Return the period of exposure."""
-        click.secho(f"Exposure time (Texp): {self.exposure:.1e} s", fg='cyan')
+        click.secho(f"Exposure time (Texp): {self.exposure:.1f} s", fg='cyan')
         return self.exposure
 
     def set_exposure(self) -> None:
@@ -274,7 +274,7 @@ class Series:
 
     def get_potency(self) -> float:
         """Return the peak potency."""
-        click.secho(f"Peak potency: {self.potency}", fg='cyan')
+        click.secho(f"Peak potency: {self.potency:.5f}", fg='cyan')
         return self.potency
 
     def set_potency(self) -> None:
@@ -283,7 +283,7 @@ class Series:
 
     def get_frequency(self) -> float:
         """Return the peak frequency."""
-        click.secho(f"Peak frequency: {self.frequency} Hz", fg='cyan')
+        click.secho(f"Peak frequency: {self.frequency:.5f} Hz", fg='cyan')
         return self.frequency
 
     def set_frequency(self) -> None:
@@ -292,7 +292,7 @@ class Series:
 
     def get_period(self) -> float:
         """Return the peak period."""
-        click.secho(f"Peak period: {self.period} s", fg='cyan')
+        click.secho(f"Peak period: {self.period:.5f} s", fg='cyan')
         return self.period
 
     def set_period(self) -> None:
@@ -301,7 +301,7 @@ class Series:
 
     def get_pfraction(self) -> float:
         """Return the pulsed fraction."""
-        click.secho(f"Pulsed fraction: {self.pulsed * 100} %", fg='cyan')
+        click.secho(f"Pulsed fraction: {self.pulsed * 100:.5f} %", fg='cyan')
         return self.pulsed
 
     def set_pfraction(self) -> None:
@@ -310,7 +310,7 @@ class Series:
 
     def get_errorf(self) -> float:
         """Return the uncertainty of the frequency."""
-        click.secho(f"Frequency Uncertainty: {self.errorf} +/-", fg='cyan')
+        click.secho(f"Frequency Uncertainty: {self.errorf:.5f} +/-", fg='cyan')
         return self.errorf
 
     def set_errorf(self) -> None:
@@ -319,7 +319,7 @@ class Series:
 
     def get_errorp(self) -> float:
         """Return the uncertainty of the period."""
-        click.secho(f"Period Uncertainty: {self.errorp} +/-", fg='cyan')
+        click.secho(f"Period Uncertainty: {self.errorp:.5f} +/-", fg='cyan')
         return self.errorp
 
     def set_errorp(self) -> None:

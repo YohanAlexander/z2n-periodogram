@@ -36,27 +36,30 @@ __plt__ = f'''
 
 
 @click.version_option(prog_name='Z2n Software', version=__version__)
-@click.option('--input', type=click.Path(exists=True), help='Name of the input file.')
+@click.option('--docs', 'docs_', is_flag=True, help='Open the documentation and exit.')
+@click.option('--title', 'title_', type=str, help='Title of the image file.')
 @click.option(
-    '--output', type=click.Path(),
-    help='Name of the output file.',
-    default=f'z2n_{pathlib.Path(data.input).stem}')
+    '--ylabel', 'ylabel_', type=str, show_default=True,
+    help='Y label of the image file.', default='Power')
 @click.option(
-    '--format', type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']),
-    help='Format of the output file.', default='fits')
+    '--xlabel', 'xlabel_', type=str, show_default=True,
+    help='X label of the image file.', default='Frequency (Hz)')
 @click.option(
     '--image', type=click.Choice(['png', 'pdf', 'ps', 'eps']),
-    help='Format of the image file.', default='ps')
-@click.option('--fmin', type=float, help='Minimum frequency (Hz).')
-@click.option('--fmax', type=float, help='Maximum frequency (Hz).')
-@click.option('--delta', type=float, help='Frequency steps (Hz).')
-@click.option('--harm', type=int, help='Number of harmonics.', default=1)
-@click.option('--title', type=str, help='Title of the image file.')
+    help='Format of the image file.', default='ps', show_default=True)
 @click.option(
-    '--xlabel', type=str, help='X label of the image file.', default='Frequency (Hz)')
-@click.option('--ylabel', type=str, help='Y label of the image file.', default='Power')
+    '--format', 'format_', type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']),
+    help='Format of the output file.', default='fits', show_default=True)
+@click.option(
+    '--harm', type=int, help='Number of harmonics.', default=1, show_default=True)
+@click.option(
+    '--range', 'range_', nargs=3, type=float,
+    help='Frequency range <fmin fmax delta> (Hz).')
+@click.option('--output', 'output_', type=click.Path(), help='Name of the output file.')
+@click.option(
+    '--input', 'input_', type=click.Path(exists=True), help='Name of the input file.')
 @shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
-def z2n(input, output, format, fmin, fmax, delta, harm, image, title, xlabel, ylabel):
+def z2n(input_, output_, format_, range_, harm, image, title_, xlabel_, ylabel_, docs_):
     """
     This program allows the user to calculate periodograms, given a time series,
     using the Z2n statistics a la Buccheri et al. 1983.
@@ -65,83 +68,101 @@ def z2n(input, output, format, fmin, fmax, delta, harm, image, title, xlabel, yl
     the corresponding sinusoidal functions for each time. Be advised that this
     is very computationally expensive if the number of frequency bins is high.
     """
-    if input:
-        if fmin and fmax and delta:
-            data.input = input
-            data.output = output
-            data.format = format
-            default = "z2n_" + pathlib.Path(data.input).stem
-            file.load_file(data)
-            click.secho('Event file loaded.', fg='green')
-            data.set_exposure()
-            data.set_sampling()
-            data.get_time()
-            data.get_exposure()
-            data.get_sampling()
-            data.fmin = fmin
-            data.fmax = fmax
-            data.delta = delta
-            data.harmonics = harm
-            block = (data.fmax - data.fmin) / np.array(data.delta)
-            nbytes = np.array(data.delta).dtype.itemsize * block
-            click.secho(
-                f"Computation memory {nbytes* 10e-6:.1e} MB", fg='yellow')
-            if nbytes < psutil.virtual_memory()[1]:
-                data.bins = np.arange(data.fmin, data.fmax, data.delta)
-                data.get_bins()
-                data.time = np.array(data.time)
-                data.bins = np.array(data.bins)
-                data.z2n = np.zeros(data.bins.size)
-                stats.periodogram(data)
-                click.secho('Periodogram calculated.', fg='green')
-                flag = 1
-                while flag:
-                    if pathlib.Path(f"{data.output}.{data.format}").is_file():
-                        click.secho("File already exists.", fg='red')
-                        data.output = click.prompt(
-                            "Name of the file", default, type=click.Path())
-                    else:
-                        flag = 0
-                if data.format == 'ascii':
-                    file.save_ascii(data)
-                elif data.format == 'csv':
-                    file.save_csv(data)
-                elif data.format == 'fits':
-                    file.save_fits(data)
-                elif data.format == 'hdf5':
-                    file.save_hdf5(data)
-                click.secho(
-                    f"File saved at {data.output}.{data.format}", fg='green')
-                mplt.plot(data.bins, data.z2n, label='Z2n Power', linewidth=2)
-                mplt.title(title)
-                mplt.xlabel(xlabel)
-                mplt.ylabel(ylabel)
-                mplt.legend(loc='best')
-                mplt.tight_layout()
-                if image == 'png':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                elif image == 'pdf':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                elif image == 'ps':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                elif image == 'eps':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                click.secho(
-                    f"Image saved at {data.output}.{image}", fg='green')
-                data.set_potency()
-                data.set_frequency()
-                data.set_period()
-                data.set_pfraction()
-                data.get_potency()
-                data.get_frequency()
-                data.get_period()
-                data.get_pfraction()
-            else:
-                click.secho("Not enough memory available.", fg='red')
-            exit()
+    if docs_:
+        click.launch(__docs__)
+        click.echo(f"To read the documentation go to {__docs__}")
+        exit()
+    if input_:
+        if not range_:
+            data.set_fmin()
+            data.set_fmax()
+            data.set_delta()
         else:
-            click.secho("The frequency range is needed (Hz).", fg='red')
-            exit()
+            data.fmin = range_[0]
+            data.fmax = range_[1]
+            data.delta = range_[2]
+        data.harmonics = harm
+        data.input = input_
+        default = "z2n_" + pathlib.Path(data.input).stem
+        if output_:
+            data.output = output_
+        else:
+            data.output = default
+        data.format = format_
+        file.load_file(data)
+        click.secho('Event file loaded.', fg='green')
+        data.set_exposure()
+        data.set_sampling()
+        data.get_time()
+        data.get_exposure()
+        data.get_sampling()
+        block = (data.fmax - data.fmin) / np.array(data.delta)
+        nbytes = np.array(data.delta).dtype.itemsize * block
+        click.secho(f"Computation memory {nbytes* 10e-6:.5f} MB", fg='yellow')
+        if nbytes < psutil.virtual_memory()[1]:
+            data.bins = np.arange(data.fmin, data.fmax, data.delta)
+            data.get_bins()
+            data.time = np.array(data.time)
+            data.bins = np.array(data.bins)
+            data.z2n = np.zeros(data.bins.size)
+            stats.periodogram(data)
+            click.secho('Periodogram calculated.', fg='green')
+            click.secho("Values based on the global maximum.", fg='yellow')
+            data.set_potency()
+            data.set_frequency()
+            data.set_period()
+            data.set_pfraction()
+            data.get_potency()
+            data.get_frequency()
+            data.get_period()
+            data.get_pfraction()
+            flag = 1
+            while flag:
+                if pathlib.Path(f"{data.output}.{data.format}").is_file():
+                    click.secho("File already exists.", fg='red')
+                    data.output = click.prompt(
+                        "Name of the file", default, type=click.Path())
+                else:
+                    flag = 0
+            if data.format == 'ascii':
+                file.save_ascii(data)
+            elif data.format == 'csv':
+                file.save_csv(data)
+            elif data.format == 'fits':
+                file.save_fits(data)
+            elif data.format == 'hdf5':
+                file.save_hdf5(data)
+            click.secho(
+                f"File saved at {data.output}.{data.format}", fg='green')
+            flag = 1
+            while flag:
+                if pathlib.Path(f"{data.output}.{image}").is_file():
+                    click.secho("Image already exists.", fg='red')
+                    data.output = click.prompt(
+                        "Name of the image", default, type=click.Path())
+                else:
+                    flag = 0
+            mplt.plot(data.bins, data.z2n, label='Z2n Power', linewidth=2)
+            mplt.title(title_)
+            mplt.xlabel(xlabel_)
+            mplt.ylabel(ylabel_)
+            mplt.legend(loc='best')
+            mplt.tight_layout()
+            if image == 'png':
+                mplt.savefig(f'{data.output}.{image}', format=image)
+            elif image == 'pdf':
+                mplt.savefig(f'{data.output}.{image}', format=image)
+            elif image == 'ps':
+                mplt.savefig(f'{data.output}.{image}', format=image)
+            elif image == 'eps':
+                mplt.savefig(f'{data.output}.{image}', format=image)
+            click.secho(f"Image saved at {data.output}.{image}", fg='green')
+        else:
+            click.secho("Not enough memory available.", fg='red')
+        exit()
+    else:
+        click.echo(__z2n__)
+        figure.plot_periodogram()
 
 
 @z2n.command()
@@ -164,8 +185,7 @@ def plot() -> None:
 @z2n.command()
 def run() -> None:
     """Calculate the Z2n Statistics."""
-    if not figure.plot_periodogram():
-        plt()
+    figure.plot_periodogram()
 
 
 @z2n.command()
