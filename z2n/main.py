@@ -1,11 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Other Libraries
-import matplotlib
-
 # Owned Libraries
 from z2n import prompt
+
+# Other Libraries
+import matplotlib
 
 # Defalt backend
 matplotlib.use('qt5agg')

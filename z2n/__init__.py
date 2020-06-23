@@ -19,6 +19,5 @@ except DistributionNotFound:
     VERSION = __project__ + '-' + '(local)'
 else:
     VERSION = __project__ + '-' + __version__
-    from z2n.main import cli
     from z2n.plot import Plot
     from z2n.series import Series

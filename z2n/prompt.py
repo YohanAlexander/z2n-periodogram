@@ -89,76 +89,76 @@ def z2n(input_, output_, format_, range_, harm, image, title_, xlabel_, ylabel_,
         else:
             data.output = default
         data.format = format_
-        file.load_file(data)
-        click.secho('Event file loaded.', fg='green')
-        data.set_exposure()
-        data.set_sampling()
-        data.get_time()
-        data.get_exposure()
-        data.get_sampling()
-        block = (data.fmax - data.fmin) / np.array(data.delta)
-        nbytes = np.array(data.delta).dtype.itemsize * block
-        click.secho(f"Computation memory {nbytes* 10e-6:.5f} MB", fg='yellow')
-        if nbytes < psutil.virtual_memory()[1]:
-            data.bins = np.arange(data.fmin, data.fmax, data.delta)
-            data.get_bins()
-            data.time = np.array(data.time)
-            data.bins = np.array(data.bins)
-            data.z2n = np.zeros(data.bins.size)
-            stats.periodogram(data)
-            click.secho('Periodogram calculated.', fg='green')
-            click.secho("Values based on the global maximum.", fg='yellow')
-            data.set_potency()
-            data.set_frequency()
-            data.set_period()
-            data.set_pfraction()
-            data.get_potency()
-            data.get_frequency()
-            data.get_period()
-            data.get_pfraction()
-            flag = 1
-            while flag:
-                if pathlib.Path(f"{data.output}.{data.format}").is_file():
-                    click.secho("File already exists.", fg='red')
-                    data.output = click.prompt(
-                        "Name of the file", default, type=click.Path())
-                else:
-                    flag = 0
-            if data.format == 'ascii':
-                file.save_ascii(data)
-            elif data.format == 'csv':
-                file.save_csv(data)
-            elif data.format == 'fits':
-                file.save_fits(data)
-            elif data.format == 'hdf5':
-                file.save_hdf5(data)
-            click.secho(
-                f"File saved at {data.output}.{data.format}", fg='green')
-            flag = 1
-            while flag:
-                if pathlib.Path(f"{data.output}.{image}").is_file():
-                    click.secho("Image already exists.", fg='red')
-                    data.output = click.prompt(
-                        "Name of the image", default, type=click.Path())
-                else:
-                    flag = 0
-            mplt.plot(data.bins, data.z2n, label='Z2n Power', linewidth=2)
-            mplt.title(title_)
-            mplt.xlabel(xlabel_)
-            mplt.ylabel(ylabel_)
-            mplt.legend(loc='best')
-            mplt.tight_layout()
-            if image == 'png':
-                mplt.savefig(f'{data.output}.{image}', format=image)
-            elif image == 'pdf':
-                mplt.savefig(f'{data.output}.{image}', format=image)
-            elif image == 'ps':
-                mplt.savefig(f'{data.output}.{image}', format=image)
-            elif image == 'eps':
-                mplt.savefig(f'{data.output}.{image}', format=image)
-            click.secho(f"Image saved at {data.output}.{image}", fg='green')
-        else:
-            click.secho("Not enough memory available.", fg='red')
+        if not file.load_file(data):
+            click.secho('Event file loaded.', fg='green')
+            data.set_exposure()
+            data.set_sampling()
+            data.get_time()
+            data.get_exposure()
+            data.get_sampling()
+            block = (data.fmax - data.fmin) / np.array(data.delta)
+            nbytes = np.array(data.delta).dtype.itemsize * block
+            click.secho(f"Computation memory {nbytes* 10e-6:.5f} MB", fg='yellow')
+            if nbytes < psutil.virtual_memory()[1]:
+                data.bins = np.arange(data.fmin, data.fmax, data.delta)
+                data.get_bins()
+                data.time = np.array(data.time)
+                data.bins = np.array(data.bins)
+                data.z2n = np.zeros(data.bins.size)
+                stats.periodogram(data)
+                click.secho('Periodogram calculated.', fg='green')
+                click.secho("Values based on the global maximum.", fg='yellow')
+                data.set_potency()
+                data.set_frequency()
+                data.set_period()
+                data.set_pfraction()
+                data.get_potency()
+                data.get_frequency()
+                data.get_period()
+                data.get_pfraction()
+                flag = 1
+                while flag:
+                    if pathlib.Path(f"{data.output}.{data.format}").is_file():
+                        click.secho("File already exists.", fg='red')
+                        data.output = click.prompt(
+                            "Name of the file", default, type=click.Path())
+                    else:
+                        flag = 0
+                if data.format == 'ascii':
+                    file.save_ascii(data)
+                elif data.format == 'csv':
+                    file.save_csv(data)
+                elif data.format == 'fits':
+                    file.save_fits(data)
+                elif data.format == 'hdf5':
+                    file.save_hdf5(data)
+                click.secho(
+                    f"File saved at {data.output}.{data.format}", fg='green')
+                flag = 1
+                while flag:
+                    if pathlib.Path(f"{data.output}.{image}").is_file():
+                        click.secho("Image already exists.", fg='red')
+                        data.output = click.prompt(
+                            "Name of the image", default, type=click.Path())
+                    else:
+                        flag = 0
+                mplt.plot(data.bins, data.z2n, label='Z2n Power', linewidth=2)
+                mplt.title(title_)
+                mplt.xlabel(xlabel_)
+                mplt.ylabel(ylabel_)
+                mplt.legend(loc='best')
+                mplt.tight_layout()
+                if image == 'png':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                elif image == 'pdf':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                elif image == 'ps':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                elif image == 'eps':
+                    mplt.savefig(f'{data.output}.{image}', format=image)
+                click.secho(f"Image saved at {data.output}.{image}", fg='green')
+            else:
+                click.secho("Not enough memory available.", fg='red')
         exit()
     else:
         click.echo(__z2n__)

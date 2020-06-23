@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version='1.8.7',
+        version='1.8.8',
         license='MIT',
         python_requires='>=3.7',
         install_requires=[

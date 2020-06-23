@@ -274,7 +274,7 @@ class Series:
 
     def get_potency(self) -> float:
         """Return the peak potency."""
-        click.secho(f"Peak potency: {self.potency:.5f}", fg='cyan')
+        click.secho(f"Peak power: {self.potency:.5f}", fg='cyan')
         return self.potency
 
     def set_potency(self) -> None:
@@ -393,7 +393,7 @@ class Series:
                 stats.error(self.gauss)
                 header = ["", "Z2N POWER", "GAUSSIAN FIT"]
                 data = [
-                    ["Potency", f"{self.potency:.5f}",
+                    ["Power", f"{self.potency:.5f}",
                         f"{self.gauss.potency:.5f}"],
                     ["Frequency", f"{self.frequency:.5f} Hz",
                         f"{self.gauss.frequency:.5f} Hz"],
