@@ -28,12 +28,12 @@ def load_file(series) -> int:
     ext = pathlib.Path(series.input).suffix
     if ext in ("", ".txt"):
         flag = load_ascii(series)
-    if ext in (".csv", ".ecsv"):
+    elif ext in (".csv", ".ecsv"):
         flag = load_csv(series)
-    if ext in (".fits", ".fit", ".fts"):
-        flag = load_fits(series)
-    if ext in (".hdf", ".h5", ".hdf5", ".he5"):
+    elif ext in (".hdf", ".h5", ".hdf5", ".he5"):
         flag = load_hdf5(series)
+    else:
+        flag = load_fits(series)
     return flag
 
 
@@ -50,17 +50,30 @@ def load_ascii(series) -> int:
     -------
     None
     """
-    flag = 0
+    flag = 1
     table = Table.read(series.input, format='ascii')
-    for column in ['TIME', 'time']:
-        try:
-            series.time = table[column].data
-            series.time = series.time.astype(series.time.dtype.name)
-            flag = 0
-            break
-        except KeyError:
-            click.secho(f"Column {column} not found.", fg='red')
-            flag = 1
+    try:
+        series.time = table['TIME'].data
+        series.time = series.time.astype(series.time.dtype.name)
+        flag = 0
+    except (KeyError, TypeError, IndexError):
+        click.clear()
+        column = 'TIME'
+        flag = 1
+        while flag:
+            try:
+                click.secho(f"Column {column} not found.", fg='red')
+                table.pprint()
+                column = click.prompt(
+                    "Which column name", type=str, prompt_suffix='? ')
+                series.time = table[column].data
+                series.time = series.time.astype(series.time.dtype.name)
+                if click.confirm(f"Use column {column}", prompt_suffix='? '):
+                    flag = 0
+                else:
+                    click.clear()
+            except (KeyError, TypeError, IndexError):
+                click.clear()
     return flag
 
 
@@ -77,17 +90,30 @@ def load_csv(series) -> int:
     -------
     None
     """
-    flag = 0
+    flag = 1
     table = Table.read(series.input, format='csv')
-    for column in ['TIME', 'time']:
-        try:
-            series.time = table[column].data
-            series.time = series.time.astype(series.time.dtype.name)
-            flag = 0
-            break
-        except KeyError:
-            click.secho(f"Column {column} not found.", fg='red')
-            flag = 1
+    try:
+        series.time = table['TIME'].data
+        series.time = series.time.astype(series.time.dtype.name)
+        flag = 0
+    except (KeyError, TypeError, IndexError):
+        click.clear()
+        column = 'TIME'
+        flag = 1
+        while flag:
+            try:
+                click.secho(f"Column {column} not found.", fg='red')
+                table.pprint()
+                column = click.prompt(
+                    "Which column name", type=str, prompt_suffix='? ')
+                series.time = table[column].data
+                series.time = series.time.astype(series.time.dtype.name)
+                if click.confirm(f"Use column {column}", prompt_suffix='? '):
+                    flag = 0
+                else:
+                    click.clear()
+            except (KeyError, TypeError, IndexError):
+                click.clear()
     return flag
 
 
@@ -112,10 +138,31 @@ def load_fits(series) -> None:
                 "Which extension number", type=int, prompt_suffix='? ')
             series.time = events[hdu].data['TIME']
             series.time = series.time.astype(series.time.dtype.name)
-        flag = 0
-    except (KeyError, TypeError):
-        click.secho("Column TIME not found.", fg='red')
+            flag = 0
+    except (KeyError, TypeError, IndexError):
+        click.clear()
+        column = 'TIME'
         flag = 1
+        while flag:
+            try:
+                with fits.open(series.input) as events:
+                    events.info()
+                    click.secho(f"Column {column} not found.", fg='red')
+                    hdu = click.prompt(
+                        "Which extension number", type=int, prompt_suffix='? ')
+                    click.clear()
+                    table = Table(events[hdu].data)
+                    table.pprint()
+                    column = click.prompt(
+                        "Which column name", type=str, prompt_suffix='? ')
+                    series.time = events[hdu].data[column]
+                    series.time = series.time.astype(series.time.dtype.name)
+                    if click.confirm(f"Use column {column}", prompt_suffix='? '):
+                        flag = 0
+                    else:
+                        click.clear()
+            except (KeyError, TypeError, IndexError):
+                click.clear()
     return flag
 
 
@@ -132,17 +179,30 @@ def load_hdf5(series) -> int:
     -------
     None
     """
-    flag = 0
+    flag = 1
     table = Table.read(series.input, format='hdf5')
-    for column in ['TIME', 'time']:
-        try:
-            series.time = table[column].data
-            series.time = series.time.astype(series.time.dtype.name)
-            flag = 0
-            break
-        except KeyError:
-            click.secho(f"Column {column} not found.", fg='red')
-            flag = 1
+    try:
+        series.time = table['TIME'].data
+        series.time = series.time.astype(series.time.dtype.name)
+        flag = 0
+    except (KeyError, TypeError, IndexError):
+        click.clear()
+        column = 'TIME'
+        flag = 1
+        while flag:
+            try:
+                click.secho(f"Column {column} not found.", fg='red')
+                table.pprint()
+                column = click.prompt(
+                    "Which column name", type=str, prompt_suffix='? ')
+                series.time = table[column].data
+                series.time = series.time.astype(series.time.dtype.name)
+                if click.confirm(f"Use column {column}", prompt_suffix='? '):
+                    flag = 0
+                else:
+                    click.clear()
+            except (KeyError, TypeError, IndexError):
+                click.clear()
     return flag
 
 
