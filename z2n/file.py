@@ -62,8 +62,8 @@ def load_ascii(series) -> int:
         flag = 1
         while flag:
             try:
-                click.secho(f"Column {column} not found.", fg='red')
                 table.pprint()
+                click.secho(f"Column {column} not found.", fg='red')
                 column = click.prompt(
                     "Which column name", type=str, prompt_suffix='? ')
                 series.time = table[column].data
@@ -102,8 +102,8 @@ def load_csv(series) -> int:
         flag = 1
         while flag:
             try:
-                click.secho(f"Column {column} not found.", fg='red')
                 table.pprint()
+                click.secho(f"Column {column} not found.", fg='red')
                 column = click.prompt(
                     "Which column name", type=str, prompt_suffix='? ')
                 series.time = table[column].data
@@ -131,38 +131,61 @@ def load_fits(series) -> None:
     None
     """
     flag = 0
-    try:
-        with fits.open(series.input) as events:
-            events.info()
-            hdu = click.prompt(
-                "Which extension number", type=int, prompt_suffix='? ')
-            series.time = events[hdu].data['TIME']
+    times = 0
+    columns = ['TIME', 'time']
+    extensions = []
+    with fits.open(series.input) as events:
+        for hdu in range(1, len(events)):
+            if any(column in events[hdu].columns.names for column in columns):
+                extensions.append(hdu)
+                times += 1
+        if times == 1:
+            series.time = events[extensions[0]].data['TIME']
             series.time = series.time.astype(series.time.dtype.name)
             flag = 0
-    except (KeyError, TypeError, IndexError):
-        click.clear()
-        column = 'TIME'
-        flag = 1
-        while flag:
-            try:
-                with fits.open(series.input) as events:
-                    events.info()
-                    click.secho(f"Column {column} not found.", fg='red')
-                    hdu = click.prompt(
-                        "Which extension number", type=int, prompt_suffix='? ')
-                    click.clear()
-                    table = Table(events[hdu].data)
-                    table.pprint()
-                    column = click.prompt(
-                        "Which column name", type=str, prompt_suffix='? ')
-                    series.time = events[hdu].data[column]
-                    series.time = series.time.astype(series.time.dtype.name)
-                    if click.confirm(f"Use column {column}", prompt_suffix='? '):
+        elif times > 1:
+            click.secho("Multiple columns TIME found.", fg='yellow')
+            flag = 1
+            while flag:
+                for index in extensions:
+                    table = Table(events[index].data)
+                    table['TIME'].pprint()
+                    click.secho(
+                        f"Extension {events[index].name}.", fg='yellow')
+                    if click.confirm(f"Use column [y] or go to next [n]"):
+                        series.time = events[index].data['TIME']
+                        series.time = series.time.astype(
+                            series.time.dtype.name)
                         flag = 0
+                        break
                     else:
+                        flag = 1
                         click.clear()
-            except (KeyError, TypeError, IndexError):
-                click.clear()
+        else:
+            click.clear()
+            column = 'TIME'
+            flag = 1
+            while flag:
+                try:
+                    with fits.open(series.input) as events:
+                        events.info()
+                        click.secho(f"Column {column} not found.", fg='red')
+                        hdu = click.prompt(
+                            "Which extension number", type=int, prompt_suffix='? ')
+                        click.clear()
+                        table = Table(events[hdu].data)
+                        table.pprint()
+                        column = click.prompt(
+                            "Which column name", type=str, prompt_suffix='? ')
+                        series.time = events[hdu].data[column]
+                        series.time = series.time.astype(
+                            series.time.dtype.name)
+                        if click.confirm(f"Use column {column}", prompt_suffix='? '):
+                            flag = 0
+                        else:
+                            click.clear()
+                except (KeyError, TypeError, IndexError):
+                    click.clear()
     return flag
 
 
@@ -191,8 +214,8 @@ def load_hdf5(series) -> int:
         flag = 1
         while flag:
             try:
-                click.secho(f"Column {column} not found.", fg='red')
                 table.pprint()
+                click.secho(f"Column {column} not found.", fg='red')
                 column = click.prompt(
                     "Which column name", type=str, prompt_suffix='? ')
                 series.time = table[column].data
