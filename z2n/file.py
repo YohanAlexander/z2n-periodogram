@@ -166,26 +166,33 @@ def load_fits(series) -> None:
             column = 'TIME'
             flag = 1
             while flag:
-                try:
-                    with fits.open(series.input) as events:
-                        events.info()
-                        click.secho(f"Column {column} not found.", fg='red')
-                        hdu = click.prompt(
-                            "Which extension number", type=int, prompt_suffix='? ')
-                        click.clear()
-                        table = Table(events[hdu].data)
-                        table.pprint()
-                        column = click.prompt(
-                            "Which column name", type=str, prompt_suffix='? ')
-                        series.time = events[hdu].data[column]
-                        series.time = series.time.astype(
-                            series.time.dtype.name)
-                        if click.confirm(f"Use column {column}", prompt_suffix='? '):
-                            flag = 0
-                        else:
+                hdu = 1
+                while hdu < len(events):
+                    table = Table(events[hdu].data)
+                    table.pprint()
+                    click.secho(f"Column {column} not found.", fg='red')
+                    click.secho(f"Extension {events[hdu].name}.", fg='yellow')
+                    if click.confirm(f"Use extension [y] or go to next [n]"):
+                        try:
+                            column = click.prompt(
+                                "Which column name", type=str, prompt_suffix='? ')
+                            series.time = events[hdu].data[column]
+                            series.time = series.time.astype(
+                                series.time.dtype.name)
+                            if click.confirm(
+                                    f"Use column {column}", prompt_suffix='? '):
+                                flag = 0
+                                break
+                            else:
+                                flag = 1
+                                click.clear()
+                        except (KeyError, TypeError, IndexError):
+                            flag = 1
                             click.clear()
-                except (KeyError, TypeError, IndexError):
-                    click.clear()
+                    else:
+                        flag = 1
+                        hdu += 1
+                        click.clear()
     return flag
 
 
