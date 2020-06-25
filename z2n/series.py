@@ -6,8 +6,10 @@ import csv
 import copy
 import psutil
 import pathlib
+import tempfile
 
 # Other Libraries
+import h5py
 import click
 import termtables
 import numpy as np
@@ -24,6 +26,8 @@ class Series:
 
     Attributes
     ----------
+    * `bak : str`
+    > A string that represents the backup file path.
     * `gauss : str`
     > A series object that represents the gaussian fit.
     * `input : str`
@@ -70,6 +74,7 @@ class Series:
     """
 
     def __init__(self) -> None:
+        self.bak = ""
         self.gauss = ""
         self.input = ""
         self.output = ""
@@ -98,6 +103,26 @@ class Series:
     def set_gauss(self) -> None:
         """Copy the gaussian series object."""
         self.gauss = copy.deepcopy(self)
+
+    def get_bak(self) -> str:
+        """Return the backup file path."""
+        click.secho(f"Path of the backup: {self.bak}", fg='cyan')
+        return self.bak
+
+    def set_bak(self) -> None:
+        """Change the backup file path."""
+        self.bak = tempfile.NamedTemporaryFile(
+            suffix='.z2n', delete=False).name
+        self.bak = h5py.File(self.bak, 'a')
+        self.bak.create_dataset('TIME', data=self.time, compression='lzf')
+        self.bak.create_dataset('BINS', data=self.bins, compression='lzf')
+        self.bak.create_dataset('Z2N', data=self.z2n, compression='lzf')
+        del self.time
+        del self.bins
+        del self.z2n
+        self.time = self.bak['TIME']
+        self.bins = self.bak['BINS']
+        self.z2n = self.bak['Z2N']
 
     def get_input(self) -> str:
         """Return the input file path."""
@@ -201,11 +226,14 @@ class Series:
 
     def set_periodogram(self) -> None:
         """Change the periodogram."""
+        self.bak = ""
         self.time = np.array(self.time)
         self.bins = np.array(self.bins)
         self.z2n = np.zeros(self.bins.size)
         stats.periodogram(self)
         click.secho('Periodogram calculated.', fg='green')
+        self.set_gauss()
+        self.set_bak()
         self.save_file()
 
     def get_fmin(self) -> float:
@@ -381,7 +409,9 @@ class Series:
             self.set_frequency()
             self.set_period()
             self.set_pfraction()
-            self.set_gauss()
+            self.gauss.time = np.array(self.time)
+            self.gauss.bins = np.array(self.bins)
+            self.gauss.z2n = np.array(self.z2n)
             plt.close()
             plt.ion()
             plt.plot(self.bins, self.z2n, label='Z2n Power', linewidth=2)
