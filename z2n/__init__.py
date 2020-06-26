@@ -1,6 +1,7 @@
 from pkg_resources import get_distribution, DistributionNotFound
 
 __project__ = 'z2n-periodogram'
+__name__ = 'z2n'
 __version__ = None
 __license__ = 'MIT'
 __author__ = 'Yohan Alexander'
@@ -19,5 +20,10 @@ except DistributionNotFound:
     VERSION = __project__ + '-' + '(local)'
 else:
     VERSION = __project__ + '-' + __version__
+    # Other Libraries
+    import matplotlib
+    # Defalt backend
+    matplotlib.use('qt4agg')
+    # Owned Libraries
     from z2n.plot import Plot
     from z2n.series import Series

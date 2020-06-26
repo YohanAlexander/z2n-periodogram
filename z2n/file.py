@@ -152,7 +152,7 @@ def load_fits(series) -> None:
                     table['TIME'].pprint()
                     click.secho(
                         f"Extension {events[index].name}.", fg='yellow')
-                    if click.confirm(f"Use column [y] or go to next [n]"):
+                    if click.confirm("Use column [y] or go to next [n]"):
                         series.time = events[index].data['TIME']
                         series.time = series.time.astype(
                             series.time.dtype.name)
@@ -172,7 +172,7 @@ def load_fits(series) -> None:
                     table.pprint()
                     click.secho(f"Column {column} not found.", fg='red')
                     click.secho(f"Extension {events[hdu].name}.", fg='yellow')
-                    if click.confirm(f"Use extension [y] or go to next [n]"):
+                    if click.confirm("Use extension [y] or go to next [n]"):
                         try:
                             column = click.prompt(
                                 "Which column name", type=str, prompt_suffix='? ')
