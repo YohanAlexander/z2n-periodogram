@@ -25,8 +25,8 @@ def exposure(series) -> None:
     -------
     None
     """
-    last = np.max(series.time)
-    first = np.min(series.time)
+    last = series.time[-1]
+    first = series.time[0]
     series.exposure = last - first
 
 

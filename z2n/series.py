@@ -52,6 +52,8 @@ class Series:
     > A float that represents the maximum frequency.
     * `delta : float`
     > A float that represents the frequency steps.
+    * `nyquist : float`
+    > A float that represents the nyquist frequency.
     * `exposure : float`
     > A float that represents the exposure period.
     * `sampling : float`
@@ -85,6 +87,7 @@ class Series:
         self.fmin = 0
         self.fmax = 0
         self.delta = 0
+        self.nyquist = 0
         self.harmonics = 0
         self.oversample = 0
         self.exposure = 0
@@ -131,7 +134,8 @@ class Series:
 
     def set_input(self) -> None:
         """Change the input file path."""
-        self.input = click.prompt("Filename", type=click.Path(exists=True))
+        self.input = click.prompt(
+            "Filename", self.input, type=click.Path(exists=True))
 
     def get_output(self) -> str:
         """Return the output file name."""
@@ -169,13 +173,15 @@ class Series:
         """Change the time series."""
         flag = 0
         self.set_input()
-        if not file.load_file(self):
+        if not file.load_file(self, 0):
             click.secho('Event file loaded.', fg='green')
             self.set_exposure()
             self.set_sampling()
+            self.set_nyquist()
             self.get_time()
             self.get_exposure()
             self.get_sampling()
+            self.get_nyquist()
         else:
             flag = 1
         return flag
@@ -193,7 +199,7 @@ class Series:
             if self.bins.size:
                 self.set_delta()
             elif click.confirm(
-                    "Nyquist 2*(1/Texp) as the minimum frequency", prompt_suffix='? '):
+                    "Nyquist as the minimum frequency", prompt_suffix='? '):
                 self.fmin = self.sampling * 2
                 self.set_fmax()
                 self.set_oversample()
@@ -234,7 +240,20 @@ class Series:
         click.secho('Periodogram calculated.', fg='green')
         self.set_gauss()
         self.set_bak()
+        # self.get_bak()
         self.save_file()
+
+    def get_nyquist(self) -> float:
+        """Return the nyquist frequency."""
+        click.secho(
+            f"Nyquist 2*(1/Texp): {self.nyquist:.1e} Hz", fg='cyan')
+        return self.nyquist
+
+    def set_nyquist(self) -> None:
+        """Change the nyquist frequency."""
+        stats.exposure(self)
+        stats.sampling(self)
+        self.nyquist = 2 * self.sampling
 
     def get_fmin(self) -> float:
         """Return the minimum frequency."""
@@ -366,7 +385,7 @@ class Series:
             file.load_csv(self)
         elif self.format == 'fits':
             self.set_input()
-            file.load_fits(self)
+            file.load_fits(self, 0)
         elif self.format == 'hdf5':
             self.set_input()
             file.load_hdf5(self)
@@ -462,7 +481,8 @@ class Series:
                         else:
                             flag2 = 0
                             with open(f"{log}.log", "w+") as logfile:
-                                writer = csv.writer(logfile, delimiter=',')
+                                writer = csv.writer(
+                                    logfile, delimiter=',', quoting=csv.QUOTE_NONE)
                                 writer.writerow(header)
                                 writer.writerows(data)
                             click.secho(

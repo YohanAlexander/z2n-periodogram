@@ -3,6 +3,7 @@
 
 # Generic/Built-in
 import psutil
+import shelve
 import pathlib
 
 # Other Libraries
@@ -17,13 +18,11 @@ from z2n import stats
 from z2n import __docs__
 from z2n import __version__
 
-# Instance of the Plot Object
 from z2n.plot import Plot
 from z2n.series import Series
 data = Series()
 figure = Plot()
 
-# Variables to display on prompt
 __z2n__ = f'''
         Z2n Software ({__version__}), a python program for periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
@@ -51,6 +50,8 @@ __plt__ = f'''
     '--format', 'format_', type=click.Choice(['ascii', 'csv', 'fits', 'hdf5']),
     help='Format of the output file.', default='fits', show_default=True)
 @click.option(
+    '--ext', type=int, help='FITS extension number.', default=1, show_default=True)
+@click.option(
     '--harm', type=int, help='Number of harmonics.', default=1, show_default=True)
 @click.option(
     '--range', 'range_', nargs=3, type=float,
@@ -59,7 +60,8 @@ __plt__ = f'''
 @click.option(
     '--input', 'input_', type=click.Path(exists=True), help='Name of the input file.')
 @shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
-def z2n(input_, output_, format_, range_, harm, image, title_, xlabel_, ylabel_, docs_):
+def z2n(input_, output_, format_, range_, harm, ext,
+        image, title_, xlabel_, ylabel_, docs_):
     """
     This program allows the user to calculate periodograms, given a time series,
     using the Z2n statistics a la Buccheri et al. 1983.
@@ -68,101 +70,113 @@ def z2n(input_, output_, format_, range_, harm, image, title_, xlabel_, ylabel_,
     the corresponding sinusoidal functions for each time. Be advised that this
     is very computationally expensive if the number of frequency bins is high.
     """
-    if docs_:
-        click.launch(__docs__)
-        click.echo(f"To read the documentation go to {__docs__}")
-        exit()
-    if input_:
-        if not range_:
-            data.set_fmin()
-            data.set_fmax()
-            data.set_delta()
-        else:
-            data.fmin = range_[0]
-            data.fmax = range_[1]
-            data.delta = range_[2]
-        data.harmonics = harm
-        data.input = input_
-        default = "z2n_" + pathlib.Path(data.input).stem
-        if output_:
-            data.output = output_
-        else:
-            data.output = default
-        data.format = format_
-        if not file.load_file(data):
-            click.secho('Event file loaded.', fg='green')
-            data.set_exposure()
-            data.set_sampling()
-            data.get_time()
-            data.get_exposure()
-            data.get_sampling()
-            block = (data.fmax - data.fmin) / np.array(data.delta)
-            nbytes = np.array(data.delta).dtype.itemsize * block
-            click.secho(f"Computation memory {nbytes* 10e-6:.5f} MB", fg='yellow')
-            if nbytes < psutil.virtual_memory()[1]:
-                data.bins = np.arange(data.fmin, data.fmax, data.delta)
-                data.get_bins()
-                data.time = np.array(data.time)
-                data.bins = np.array(data.bins)
-                data.z2n = np.zeros(data.bins.size)
-                stats.periodogram(data)
-                click.secho('Periodogram calculated.', fg='green')
-                click.secho("Values based on the global maximum.", fg='yellow')
-                data.set_potency()
-                data.set_frequency()
-                data.set_period()
-                data.set_pfraction()
-                data.get_potency()
-                data.get_frequency()
-                data.get_period()
-                data.get_pfraction()
-                flag = 1
-                while flag:
-                    if pathlib.Path(f"{data.output}.{data.format}").is_file():
-                        click.secho("File already exists.", fg='red')
-                        data.output = click.prompt(
-                            "Name of the file", default, type=click.Path())
-                    else:
-                        flag = 0
-                if data.format == 'ascii':
-                    file.save_ascii(data)
-                elif data.format == 'csv':
-                    file.save_csv(data)
-                elif data.format == 'fits':
-                    file.save_fits(data)
-                elif data.format == 'hdf5':
-                    file.save_hdf5(data)
-                click.secho(
-                    f"File saved at {data.output}.{data.format}", fg='green')
-                flag = 1
-                while flag:
-                    if pathlib.Path(f"{data.output}.{image}").is_file():
-                        click.secho("Image already exists.", fg='red')
-                        data.output = click.prompt(
-                            "Name of the image", default, type=click.Path())
-                    else:
-                        flag = 0
-                mplt.plot(data.bins, data.z2n, label='Z2n Power', linewidth=2)
-                mplt.title(title_)
-                mplt.xlabel(xlabel_)
-                mplt.ylabel(ylabel_)
-                mplt.legend(loc='best')
-                mplt.tight_layout()
-                if image == 'png':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                elif image == 'pdf':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                elif image == 'ps':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                elif image == 'eps':
-                    mplt.savefig(f'{data.output}.{image}', format=image)
-                click.secho(f"Image saved at {data.output}.{image}", fg='green')
+    with shelve.open('.z2n') as database:
+        if docs_:
+            click.launch(__docs__)
+            click.echo(f"To read the documentation go to {__docs__}")
+            exit()
+        if input_:
+            if not range_:
+                data.set_fmin()
+                data.set_fmax()
+                data.set_delta()
             else:
-                click.secho("Not enough memory available.", fg='red')
-        exit()
-    else:
-        click.echo(__z2n__)
-        figure.plot_periodogram()
+                data.fmin = range_[0]
+                data.fmax = range_[1]
+                data.delta = range_[2]
+            data.harmonics = harm
+            data.input = input_
+            default = "z2n_" + pathlib.Path(data.input).stem
+            if output_:
+                data.output = output_
+            else:
+                data.output = default
+            data.format = format_
+            if not file.load_file(data, ext):
+                click.secho('Event file loaded.', fg='green')
+                data.set_exposure()
+                data.set_sampling()
+                data.set_nyquist()
+                data.get_time()
+                data.get_exposure()
+                data.get_sampling()
+                data.get_nyquist()
+                block = (data.fmax - data.fmin) / np.array(data.delta)
+                nbytes = np.array(data.delta).dtype.itemsize * block
+                click.secho(
+                    f"Computation memory {nbytes* 10e-6:.5f} MB", fg='yellow')
+                if nbytes < psutil.virtual_memory()[1]:
+                    data.bins = np.arange(data.fmin, data.fmax, data.delta)
+                    data.get_bins()
+                    data.time = np.array(data.time)
+                    data.bins = np.array(data.bins)
+                    data.z2n = np.zeros(data.bins.size)
+                    stats.periodogram(data)
+                    click.secho('Periodogram calculated.', fg='green')
+                    click.secho(
+                        "Values based on the global maximum.", fg='yellow')
+                    data.set_potency()
+                    data.set_frequency()
+                    data.set_period()
+                    data.set_pfraction()
+                    data.get_potency()
+                    data.get_frequency()
+                    data.get_period()
+                    data.get_pfraction()
+                    flag = 1
+                    while flag:
+                        if pathlib.Path(f"{data.output}.{data.format}").is_file():
+                            click.secho("File already exists.", fg='red')
+                            data.output = click.prompt(
+                                "Name of the file", default, type=click.Path())
+                        else:
+                            flag = 0
+                    if data.format == 'ascii':
+                        file.save_ascii(data)
+                    elif data.format == 'csv':
+                        file.save_csv(data)
+                    elif data.format == 'fits':
+                        file.save_fits(data)
+                    elif data.format == 'hdf5':
+                        file.save_hdf5(data)
+                    click.secho(
+                        f"File saved at {data.output}.{data.format}", fg='green')
+                    flag = 1
+                    while flag:
+                        if pathlib.Path(f"{data.output}.{image}").is_file():
+                            click.secho("Image already exists.", fg='red')
+                            data.output = click.prompt(
+                                "Name of the image", default, type=click.Path())
+                        else:
+                            flag = 0
+                    mplt.plot(
+                        data.bins, data.z2n, label='Z2n Power', linewidth=2)
+                    mplt.title(title_)
+                    mplt.xlabel(xlabel_)
+                    mplt.ylabel(ylabel_)
+                    mplt.legend(loc='best')
+                    mplt.tight_layout()
+                    if image == 'png':
+                        mplt.savefig(f'{data.output}.{image}', format=image)
+                    elif image == 'pdf':
+                        mplt.savefig(f'{data.output}.{image}', format=image)
+                    elif image == 'ps':
+                        mplt.savefig(f'{data.output}.{image}', format=image)
+                    elif image == 'eps':
+                        mplt.savefig(f'{data.output}.{image}', format=image)
+                    click.secho(
+                        f"Image saved at {data.output}.{image}", fg='green')
+                else:
+                    click.secho("Not enough memory available.", fg='red')
+            exit()
+        else:
+            try:
+                figure.data.input = database['input']
+            except (KeyError):
+                pass
+            click.echo(__z2n__)
+            figure.plot_periodogram()
+            database['input'] = figure.data.input
 
 
 @z2n.command()
@@ -185,7 +199,8 @@ def plot() -> None:
 @z2n.command()
 def run() -> None:
     """Calculate the Z2n Statistics."""
-    figure.plot_periodogram()
+    if not figure.plot_periodogram():
+        plt()
 
 
 @z2n.command()

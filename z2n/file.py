@@ -11,7 +11,7 @@ from astropy.io import fits
 from astropy.table import Table
 
 
-def load_file(series) -> int:
+def load_file(series, ext) -> int:
     """
     Open file and store time series.
 
@@ -25,15 +25,15 @@ def load_file(series) -> int:
     None
     """
     flag = 0
-    ext = pathlib.Path(series.input).suffix
-    if ext in ("", ".txt"):
+    suffix = pathlib.Path(series.input).suffix
+    if suffix in ("", ".txt"):
         flag = load_ascii(series)
-    elif ext in (".csv", ".ecsv"):
+    elif suffix in (".csv", ".ecsv"):
         flag = load_csv(series)
-    elif ext in (".hdf", ".h5", ".hdf5", ".he5"):
+    elif suffix in (".hdf", ".h5", ".hdf5", ".he5"):
         flag = load_hdf5(series)
     else:
-        flag = load_fits(series)
+        flag = load_fits(series, ext)
     return flag
 
 
@@ -117,7 +117,7 @@ def load_csv(series) -> int:
     return flag
 
 
-def load_fits(series) -> None:
+def load_fits(series, ext) -> None:
     """
     Open fits file and store time series.
 
@@ -135,64 +135,104 @@ def load_fits(series) -> None:
     columns = ['TIME', 'time']
     extensions = []
     with fits.open(series.input) as events:
-        for hdu in range(1, len(events)):
-            if any(column in events[hdu].columns.names for column in columns):
-                extensions.append(hdu)
-                times += 1
-        if times == 1:
-            series.time = events[extensions[0]].data['TIME']
-            series.time = series.time.astype(series.time.dtype.name)
-            flag = 0
-        elif times > 1:
-            click.secho("Multiple columns TIME found.", fg='yellow')
-            flag = 1
-            while flag:
-                for index in extensions:
-                    table = Table(events[index].data)
-                    table['TIME'].pprint()
-                    click.secho(
-                        f"Extension {events[index].name}.", fg='yellow')
-                    if click.confirm("Use column [y] or go to next [n]"):
-                        series.time = events[index].data['TIME']
-                        series.time = series.time.astype(
-                            series.time.dtype.name)
-                        flag = 0
-                        break
-                    else:
-                        flag = 1
-                        click.clear()
+        if ext:
+            try:
+                series.time = events[ext].data['TIME']
+                series.time = series.time.astype(series.time.dtype.name)
+                click.secho(
+                    f"Column TIME in {events[ext].name}.", fg='yellow')
+                flag = 0
+            except (KeyError, TypeError):
+                flag = 1
+                click.secho(
+                    f"Column TIME not found in {events[ext].name}.", fg='red')
+            except IndexError:
+                flag = 1
+                click.secho(
+                    f"Extension number {ext} not found.", fg='red')
         else:
-            click.clear()
-            column = 'TIME'
-            flag = 1
-            while flag:
-                hdu = 1
-                while hdu < len(events):
-                    table = Table(events[hdu].data)
+            for hdu in range(1, len(events)):
+                if any(column in events[hdu].columns.names for column in columns):
+                    extensions.append(hdu)
+                    times += 1
+            if times == 1:
+                click.secho(
+                    f"Column TIME in {events[extensions[0]].name}.", fg='yellow')
+                series.time = events[extensions[0]].data['TIME']
+                series.time = series.time.astype(series.time.dtype.name)
+                flag = 0
+            elif times > 1:
+                click.secho("Multiple columns TIME found.", fg='yellow')
+                flag = 1
+                while flag:
+                    table = Table(
+                        names=('Number', 'Extension', 'Length (Rows)'),
+                        dtype=('int64', 'str', 'int64'))
+                    for value in extensions:
+                        table.add_row(
+                            [value, events[value].name, events[value].size])
                     table.pprint()
-                    click.secho(f"Column {column} not found.", fg='red')
-                    click.secho(f"Extension {events[hdu].name}.", fg='yellow')
-                    if click.confirm("Use extension [y] or go to next [n]"):
-                        try:
-                            column = click.prompt(
-                                "Which column name", type=str, prompt_suffix='? ')
-                            series.time = events[hdu].data[column]
+                    number = click.prompt(
+                        "Which extension number", type=int, prompt_suffix='? ')
+                    try:
+                        if click.confirm(f"Use column in {events[number].name}"):
+                            series.time = events[number].data['TIME']
                             series.time = series.time.astype(
                                 series.time.dtype.name)
-                            if click.confirm(
-                                    f"Use column {column}", prompt_suffix='? '):
-                                flag = 0
-                                break
-                            else:
-                                flag = 1
-                                click.clear()
-                        except (KeyError, TypeError, IndexError):
+                            flag = 0
+                            break
+                        else:
                             flag = 1
                             click.clear()
-                    else:
+                    except (KeyError, TypeError):
                         flag = 1
-                        hdu += 1
                         click.clear()
+                        click.secho(
+                            f"Column TIME not found in {events[number].name}.", fg='red')
+                    except IndexError:
+                        flag = 1
+                        click.clear()
+                        click.secho(
+                            f"Extension number {number} not found.", fg='red')
+            else:
+                click.clear()
+                column = 'TIME'
+                flag = 1
+                while flag:
+                    hdu = 1
+                    while hdu < len(events):
+                        table = Table(events[hdu].data)
+                        table.pprint()
+                        click.secho(
+                            f"Column {column} not found in extension.", fg='red')
+                        click.secho(
+                            f"Extension {events[hdu].name}.", fg='yellow')
+                        if click.confirm("Use extension [y] or go to next [n]"):
+                            try:
+                                column = click.prompt(
+                                    "Which column name", type=str, prompt_suffix='? ')
+                                series.time = events[hdu].data[column]
+                                series.time = series.time.astype(
+                                    series.time.dtype.name)
+                                if click.confirm(
+                                        f"Use column {column}", prompt_suffix='? '):
+                                    flag = 0
+                                    break
+                                else:
+                                    flag = 1
+                                    click.clear()
+                            except (KeyError, TypeError):
+                                flag = 1
+                                click.clear()
+                            except IndexError:
+                                flag = 1
+                                click.clear()
+                                click.secho(
+                                    f"Extension number {hdu} not found.", fg='red')
+                        else:
+                            flag = 1
+                            hdu += 1
+                            click.clear()
     return flag
 
 

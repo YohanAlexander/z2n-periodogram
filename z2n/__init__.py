@@ -1,4 +1,8 @@
-from pkg_resources import get_distribution, DistributionNotFound
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+from pkg_resources import get_distribution
+from pkg_resources import DistributionNotFound
 
 __project__ = 'z2n-periodogram'
 __name__ = 'z2n'
@@ -26,9 +30,5 @@ else:
         matplotlib.use('tkagg')
     except:
         click.secho("Failed to use interactive backend.", fg='red')
-        click.secho("Please check if Tkinter is installed.", fg='yellow')
-        matplotlib.use('agg')
-        click.secho("Using non-interactive backend instead.", fg='green')
-    # Owned Libraries
-    from z2n.plot import Plot
-    from z2n.series import Series
+        click.secho(
+            "Check Tkinter dependency: sudo apt-get install python3-tk""", fg='yellow')
