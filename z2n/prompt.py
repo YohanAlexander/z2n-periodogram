@@ -172,7 +172,7 @@ def z2n(input_, output_, format_, range_, harm, ext,
         else:
             try:
                 figure.data.input = database['input']
-            except (KeyError):
+            except KeyError:
                 pass
             click.echo(__z2n__)
             figure.plot_periodogram()

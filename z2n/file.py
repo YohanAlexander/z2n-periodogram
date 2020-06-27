@@ -188,12 +188,12 @@ def load_fits(series, ext) -> None:
                         flag = 1
                         click.clear()
                         click.secho(
-                            f"Column TIME not found in {events[number].name}.", fg='red')
+                            f"Column TIME not found in {events[number].name}", fg='red')
                     except IndexError:
                         flag = 1
                         click.clear()
                         click.secho(
-                            f"Extension number {number} not found.", fg='red')
+                            f"Extension number {number} not found", fg='red')
             else:
                 click.clear()
                 column = 'TIME'

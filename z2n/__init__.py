@@ -1,11 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Generic/Built-in
 from pkg_resources import get_distribution
 from pkg_resources import DistributionNotFound
 
 __project__ = 'z2n-periodogram'
-__name__ = 'z2n'
 __version__ = None
 __license__ = 'MIT'
 __author__ = 'Yohan Alexander'
@@ -28,7 +28,7 @@ else:
     import matplotlib
     try:
         matplotlib.use('tkagg')
-    except:
+    except ImportError:
         click.secho("Failed to use interactive backend.", fg='red')
         click.secho(
             "Check Tkinter dependency: sudo apt-get install python3-tk""", fg='yellow')
