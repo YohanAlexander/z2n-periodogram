@@ -8,14 +8,13 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     setuptools.setup(
         name='z2n-periodogram',
-        version='1.9.5',
+        version='1.9.6',
         license='MIT',
         python_requires='>=3.6.9',
         install_requires=[
             'intel-openmp',
             'click',
             'pillow',
-            'pyside2',
             'click-shell',
             'matplotlib',
             'termtables',

@@ -20,10 +20,15 @@ except DistributionNotFound:
     VERSION = __project__ + '-' + '(local)'
 else:
     VERSION = __project__ + '-' + __version__
-    # Other Libraries
+    import click
     import matplotlib
-    # Defalt backend
-    matplotlib.use('qt4agg')
+    try:
+        matplotlib.use('tkagg')
+    except:
+        click.secho("Failed to use interactive backend.", fg='red')
+        click.secho("Please check if Tkinter is installed.", fg='yellow')
+        matplotlib.use('agg')
+        click.secho("Using non-interactive backend instead.", fg='green')
     # Owned Libraries
     from z2n.plot import Plot
     from z2n.series import Series

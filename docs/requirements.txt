@@ -5,7 +5,6 @@ mkdocs
 click
 pillow
 pytest
-pyside2
 click-shell
 matplotlib
 termtables
