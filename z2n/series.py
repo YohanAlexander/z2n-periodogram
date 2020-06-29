@@ -442,17 +442,17 @@ class Series:
                 stats.error(self.gauss)
                 header = ["", "Z2N POWER", "GAUSSIAN FIT"]
                 data = [
-                    ["Power", f"{self.potency:.5f}",
-                        f"{self.gauss.potency:.5f}"],
-                    ["Frequency", f"{self.frequency:.5f} Hz",
-                        f"{self.gauss.frequency:.5f} Hz"],
+                    ["Power", f"{self.potency}",
+                        f"{self.gauss.potency}"],
+                    ["Frequency", f"{self.frequency} Hz",
+                        f"{self.gauss.frequency} Hz"],
                     ["Frequency error", "_",
-                        f"+/- {self.gauss.errorf:.5f} Hz"],
-                    ["Period", f"{self.period:.5f} s",
-                        f"{self.gauss.period:.5f} s"],
-                    ["Period error", "_", f"+/- {self.gauss.errorp:.5f} s"],
-                    ["Pulsed Fraction", f"{self.pulsed* 100:.5f} %",
-                        f"{self.gauss.pulsed* 100:.5f} %"],
+                        f"+/- {self.gauss.errorf} Hz"],
+                    ["Period", f"{self.period} s",
+                        f"{self.gauss.period} s"],
+                    ["Period error", "_", f"+/- {self.gauss.errorp} s"],
+                    ["Pulsed Fraction", f"{self.pulsed* 100} %",
+                        f"{self.gauss.pulsed* 100} %"],
                 ]
                 termtables.print(data, header)
                 plt.close()
