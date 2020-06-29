@@ -18,16 +18,19 @@ from z2n import stats
 from z2n import __docs__
 from z2n import __version__
 
+# Instance of the Z2n Objects
 from z2n.plot import Plot
 from z2n.series import Series
 data = Series()
 figure = Plot()
 
+# Variables to display on the CLI
 __z2n__ = f'''
         Z2n Software ({__version__}), a python program for periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.
         '''
+
 __plt__ = f'''
         Interactive plotting window of the Z2n Software ({__version__}).
         Type "help" for more information.
@@ -54,14 +57,19 @@ __plt__ = f'''
 @click.option(
     '--harm', type=int, help='Number of harmonics.', default=1, show_default=True)
 @click.option(
-    '--range', 'range_', nargs=3, type=float,
-    help='Frequency range <fmin fmax delta> (Hz).')
+    '--over', type=int, help='Oversample factor instead of steps.')
+@click.option(
+    '--delta', type=float, help='Frequency steps on the spectrum (Hz).')
+@click.option(
+    '--fmax', type=float, help='Maximum frequency on the spectrum (Hz).')
+@click.option(
+    '--fmin', type=float, help='Minimum frequency on the spectrum (Hz).')
 @click.option('--output', 'output_', type=click.Path(), help='Name of the output file.')
 @click.option(
     '--input', 'input_', type=click.Path(exists=True), help='Name of the input file.')
 @shell(prompt=click.style('(z2n) >>> ', fg='blue', bold=True), intro=__z2n__)
-def z2n(input_, output_, format_, range_, harm, ext,
-        image, title_, xlabel_, ylabel_, docs_):
+def z2n(input_, output_, format_, fmin, fmax, delta, over,
+        harm, ext, image, title_, xlabel_, ylabel_, docs_):
     """
     This program allows the user to calculate periodograms, given a time series,
     using the Z2n statistics a la Buccheri et al. 1983.
@@ -76,14 +84,6 @@ def z2n(input_, output_, format_, range_, harm, ext,
             click.echo(f"To read the documentation go to {__docs__}")
             exit()
         if input_:
-            if not range_:
-                data.set_fmin()
-                data.set_fmax()
-                data.set_delta()
-            else:
-                data.fmin = range_[0]
-                data.fmax = range_[1]
-                data.delta = range_[2]
             data.harmonics = harm
             data.input = input_
             default = "z2n_" + pathlib.Path(data.input).stem
@@ -101,6 +101,31 @@ def z2n(input_, output_, format_, range_, harm, ext,
                 data.get_exposure()
                 data.get_sampling()
                 data.get_nyquist()
+                if not fmin:
+                    data.fmin = data.nyquist
+                else:
+                    data.fmin = fmin
+                if not fmax:
+                    data.set_fmax()
+                else:
+                    data.fmax = fmax
+                if not delta and not over:
+                    if click.confirm(
+                            "Use oversampling factor", True, prompt_suffix='? '):
+                        data.set_oversample()
+                        data.delta = 1 / (data.oversample * data.exposure)
+                    else:
+                        data.set_delta()
+                else:
+                    if delta:
+                        data.delta = delta
+                    if over:
+                        data.oversample = over
+                        data.delta = 1 / (data.oversample * data.exposure)
+                data.get_fmin()
+                data.get_fmax()
+                data.get_delta()
+                data.get_harmonics()
                 block = (data.fmax - data.fmin) / np.array(data.delta)
                 nbytes = np.array(data.delta).dtype.itemsize * block
                 click.secho(

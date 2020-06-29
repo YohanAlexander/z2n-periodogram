@@ -251,10 +251,16 @@ def periodogram(series) -> None:
     -------
     None
     """
-    for freq in trange(series.bins.size, desc=click.style(
-            'Calculating the periodogram', fg='yellow')):
-        series.z2n[freq] = harmonics(
-            series.time, series.bins[freq], series.harmonics)
+    if series.harmonics == 1:
+        for freq in trange(series.bins.size, desc=click.style(
+                'Calculating the periodogram', fg='yellow')):
+            series.z2n[freq] = z2n(
+                series.time, series.bins[freq], series.harmonics)
+    else:
+        for freq in trange(series.bins.size, desc=click.style(
+                'Calculating the periodogram', fg='yellow')):
+            series.z2n[freq] = harmonics(
+                series.time, series.bins[freq], series.harmonics)
     series.z2n = normalization(series.z2n, (2 / series.time.size))
 
 
@@ -347,7 +353,6 @@ def equal(A, B, tol=1e-05):
     return np.in1d(np.around(A*S).astype(int), np.around(B*S).astype(int))
 
 
-# @jit(forceobj=True, parallel=True, fastmath=True)
 def error(series) -> None:
     """
     Calculate the uncertainty.

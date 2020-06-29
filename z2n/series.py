@@ -197,17 +197,25 @@ class Series:
         while flag:
             click.secho("The frequency range is needed (Hz).", fg='yellow')
             if self.bins.size:
-                self.set_delta()
-            elif click.confirm(
-                    "Nyquist as the minimum frequency", prompt_suffix='? '):
-                self.fmin = self.sampling * 2
-                self.set_fmax()
-                self.set_oversample()
-                self.delta = 1 / (self.oversample * self.exposure)
+                if click.confirm(
+                        "Use oversampling factor", True, prompt_suffix='? '):
+                    self.set_oversample()
+                    self.delta = 1 / (self.oversample * self.exposure)
+                else:
+                    self.set_delta()
             else:
-                self.set_fmin()
+                if click.confirm(
+                        "Nyquist as the minimum frequency", True, prompt_suffix='? '):
+                    self.fmin = self.nyquist
+                else:
+                    self.set_fmin()
                 self.set_fmax()
-                self.set_delta()
+                if click.confirm(
+                        "Use oversampling factor", True, prompt_suffix='? '):
+                    self.set_oversample()
+                    self.delta = 1 / (self.oversample * self.exposure)
+                else:
+                    self.set_delta()
             self.get_fmin()
             self.get_fmax()
             self.get_delta()
@@ -251,8 +259,6 @@ class Series:
 
     def set_nyquist(self) -> None:
         """Change the nyquist frequency."""
-        stats.exposure(self)
-        stats.sampling(self)
         self.nyquist = 2 * self.sampling
 
     def get_fmin(self) -> float:
@@ -284,12 +290,12 @@ class Series:
 
     def get_oversample(self) -> int:
         """Return the oversample factor."""
-        click.secho(f"Oversample factor: {self.oversample}", fg='cyan')
+        click.secho(f"Oversampling factor: {self.oversample}", fg='cyan')
         return self.oversample
 
     def set_oversample(self) -> None:
         """Change the oversample factor."""
-        self.oversample = click.prompt("Oversample factor", type=int)
+        self.oversample = click.prompt("Oversampling factor", type=int)
 
     def get_harmonics(self) -> int:
         """Return the number of harmonics."""
@@ -481,8 +487,7 @@ class Series:
                         else:
                             flag2 = 0
                             with open(f"{log}.log", "w+") as logfile:
-                                writer = csv.writer(
-                                    logfile, delimiter=',', quoting=csv.QUOTE_NONE)
+                                writer = csv.writer(logfile, delimiter=',')
                                 writer.writerow(header)
                                 writer.writerows(data)
                             click.secho(
