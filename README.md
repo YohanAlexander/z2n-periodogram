@@ -12,7 +12,7 @@
   <h1 align="center">Z2n Periodogram</h1>
 
   <p align="center">
-    A program for interative periodograms analysis!
+    A package for interative periodograms analysis!
     <br />
     <a href="https://z2n-periodogram.readthedocs.io/"><strong>Explore the docs »</strong></a>
     <br />

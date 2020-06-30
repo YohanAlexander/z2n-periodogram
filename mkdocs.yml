@@ -24,8 +24,6 @@ markdown_extensions:
   - codehilite:
       linenums: true
   - mkautodoc
-  - toc:
-      permalink: true
   - markdown_katex:
       no_inline_svg: True
       insert_fonts_css: True
