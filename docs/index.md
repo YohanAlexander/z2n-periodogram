@@ -27,7 +27,7 @@
     * [Known Issues](/install/#known-issues)
 * [Usage](/input)
     * [Importing datasets](/input)
-    * [Using from the command line](/usage)
+    * [Using from the terminal](/usage)
     * [Plotting the periodogram](/plotting)
     * [Determining uncertainty](/statistics)
 * [API](/series)
