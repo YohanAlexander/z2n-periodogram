@@ -3,7 +3,7 @@ site_name: Z2n Periodogram
 nav:
   - Home: index.md
   - About: about.md
-  - How it was built?: performance.md
+  - How was it built: performance.md
   - Getting Started: install.md
   - Usage:
     - input.md
@@ -18,6 +18,9 @@ nav:
 
 theme:
     name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - python
 
 markdown_extensions:
   - admonition
