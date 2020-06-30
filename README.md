@@ -80,7 +80,7 @@ z2n
 The `CLI` of the software is very interactive and it works by triggering the commands available, for more information on the usage type `help`.
 
 ```sh
-        Z2n Software, a program for interactive periodograms analysis.
+        Z2n Software, a package for interactive periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.
 

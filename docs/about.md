@@ -22,6 +22,7 @@ Think of the loop $`\color{blue}j`$ as being within the loop $`\color{red}k`$. F
 
 ## Built With
 
-The Z2n Software was built using the `Python` open source language.
+The Z2n Software was built using the `Python` open source language, and optimized with the `Numba` JIT (just-in-time) compiler.
 
 * [Python](https://python.org)
+* [Numba](https://numba.pydata.org/)

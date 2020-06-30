@@ -26,7 +26,7 @@ figure = Plot()
 
 # Variables to display on the CLI
 __z2n__ = f'''
-        Z2n Software ({__version__}), a python program for periodograms analysis.
+        Z2n Software ({__version__}), a python package for periodograms analysis.
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.
         '''

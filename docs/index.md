@@ -14,19 +14,22 @@
   <h1 align="center">Z2n Periodogram</h1>
 
   <p align="center">
-    A program for interative periodograms analysis!
+    A package for interative periodograms analysis!
 
 ## Table of Contents
 
 * [About the Project](/about)
     * [Built with](/about/#built-with)
+    * [The core computation](/performance)
 * [Getting Started](/install)
     * [Prerequesites](/install/#prerequesites)
     * [Installation](/install/#installation)
+    * [Known Issues](/install/#known-issues)
 * [Usage](/input)
-    * [Importing data to the program](/input)
+    * [Importing datasets](/input)
     * [Using from the command line](/usage)
     * [Plotting the periodogram](/plotting)
+    * [Determining uncertainty](/statistics)
 * [API](/series)
     * [The Time Series Object](/series)
     * [The Plot Figure Object](/plot)

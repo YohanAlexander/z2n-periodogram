@@ -44,7 +44,7 @@ with open("README.md", "r") as fh:
         ''',
         author='Yohan Alexander',
         author_email='yohanfranca@gmail.com',
-        description='A program for interative periodograms analysis.',
+        description='A package for interative periodograms analysis.',
         long_description=long_description,
         long_description_content_type="text/markdown",
         url='https://z2n-periodogram.readthedocs.io',

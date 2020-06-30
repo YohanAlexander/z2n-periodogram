@@ -10,7 +10,7 @@ __version__ = None
 __license__ = 'MIT'
 __author__ = 'Yohan Alexander'
 __copyright__ = 'Copyright (C) 2020, Z2n Software, by Yohan Alexander.'
-__description__ = 'A program for interative periodograms analysis.'
+__description__ = 'A package for interative periodograms analysis.'
 __maintainer__ = 'Yohan Alexander'
 __email__ = 'yohanfranca@gmail.com'
 __status__ = 'Development'
@@ -24,8 +24,13 @@ except DistributionNotFound:
     VERSION = __project__ + '-' + '(local)'
 else:
     VERSION = __project__ + '-' + __version__
+    # Owned Libraries
+    from z2n.series import Series
+    from z2n.plot import Plot
+    # Other Libraries
     import click
     import matplotlib
+    # Check default backend
     try:
         matplotlib.use('tkagg')
     except ImportError:
