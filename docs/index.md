@@ -20,7 +20,7 @@
 
 * [About the Project](/about)
     * [Built with](/about/#built-with)
-    * [The core computation](/performance)
+* [The core computation](/performance)
 * [Getting Started](/install)
     * [Prerequesites](/install/#prerequesites)
     * [Installation](/install/#installation)

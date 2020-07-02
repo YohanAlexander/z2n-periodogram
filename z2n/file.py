@@ -152,9 +152,12 @@ def load_fits(series, ext) -> None:
                     f"Extension number {ext} not found.", fg='red')
         else:
             for hdu in range(1, len(events)):
-                if any(column in events[hdu].columns.names for column in columns):
-                    extensions.append(hdu)
-                    times += 1
+                try:
+                    if any(column in events[hdu].columns.names for column in columns):
+                        extensions.append(hdu)
+                        times += 1
+                except AttributeError:
+                    pass
             if times == 1:
                 click.secho(
                     f"Column TIME in {events[extensions[0]].name}.", fg='yellow')
