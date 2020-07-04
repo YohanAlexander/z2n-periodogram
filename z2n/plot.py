@@ -49,7 +49,8 @@ class Plot:
 
     def get_input(self) -> str:
         """Return the input image name."""
-        click.secho(f"Path of the periodogram: {self.input}", fg='cyan')
+        click.secho(
+            f"Path of the periodogram: {self.input}", self.data.input, fg='cyan')
         return self.input
 
     def set_input(self) -> None:
@@ -104,9 +105,12 @@ class Plot:
             self.axes.plot(
                 self.data.bins, self.data.z2n, label='Z2n Power',
                 color='tab:blue', linewidth=2)
-            self.axes.plot(
-                self.data.gauss.bins, self.data.gauss.z2n,
-                color='tab:red', label='Gaussian Fit', linewidth=1)
+            try:
+                self.axes.plot(
+                    self.data.gauss.bins, self.data.gauss.z2n,
+                    color='tab:red', label='Gaussian Fit', linewidth=1)
+            except AttributeError:
+                pass
             self.axes.set_xlabel('Frequency (Hz)')
             self.axes.set_ylabel('Power')
             self.axes.legend(loc='best')
@@ -116,9 +120,12 @@ class Plot:
             self.axes[0].plot(
                 self.data.bins, self.data.z2n, label='Z2n Power',
                 color='tab:blue', linewidth=2)
-            self.axes[0].plot(
-                self.data.gauss.bins, self.data.gauss.z2n,
-                color='tab:red', label='Gaussian Fit', linewidth=1)
+            try:
+                self.axes[0].plot(
+                    self.data.gauss.bins, self.data.gauss.z2n,
+                    color='tab:red', label='Gaussian Fit', linewidth=1)
+            except AttributeError:
+                pass
             self.axes[1].plot(
                 self.noise.bins, self.noise.z2n, color='tab:cyan',
                 label='Background')
@@ -209,7 +216,8 @@ class Plot:
                                 self.data.fmin = axis[0]
                                 self.data.fmax = axis[1]
                                 if click.confirm(
-                                        "Use oversampling factor", prompt_suffix='? '):
+                                        "Use oversampling factor",
+                                        True, prompt_suffix='? '):
                                     self.data.set_oversample()
                                     self.data.delta = 1 / \
                                         (self.data.oversample * self.data.exposure)
@@ -247,10 +255,12 @@ class Plot:
                                         flag2 = 0
                                     else:
                                         flag2 = 1
+                                        flag = 1
                                         click.secho(
                                             "Not enough memory available.", fg='red')
                                 else:
                                     flag2 = 1
+                                    flag = 1
                                     click.secho(
                                         "The frequency range is needed (Hz).",
                                         fg='yellow')

@@ -33,7 +33,48 @@ def load_file(series, ext) -> int:
     elif suffix in (".hdf", ".h5", ".hdf5", ".he5"):
         flag = load_hdf5(series)
     else:
-        flag = load_fits(series, ext)
+        with fits.open(series.input) as events:
+            try:
+                events['Z2N']
+                click.secho('Z2N extension already found', fg='yellow')
+                if click.confirm('Use the periodogram', prompt_suffix='? '):
+                    series.bins = events['Z2N'].data['FREQUENCY']
+                    series.bins = series.bins.astype(series.bins.dtype.name)
+                    series.z2n = events['Z2N'].data['POWER']
+                    series.z2n = series.z2n.astype(series.z2n.dtype.name)
+                    hdr = events['Z2N'].header
+                    series.exposure = float(hdr['exposure'])
+                    series.sampling = float(hdr['sampling'])
+                    series.nyquist = float(hdr['nyquist'])
+                    series.harmonics = int(hdr['harmonic'])
+                    series.fmin = float(hdr['fmin'])
+                    series.fmax = float(hdr['fmax'])
+                    series.delta = float(hdr['delta'])
+                    series.frequency = float(hdr['peak'])
+                    series.period = float(hdr['period'])
+                    series.power = float(hdr['power'])
+                    series.pulsed = float(hdr['pulsed'])
+                    click.secho(f"{hdr['events']} events.", fg='cyan')
+                    series.get_exposure()
+                    series.get_sampling()
+                    series.get_nyquist()
+                    series.get_fmin()
+                    series.get_fmax()
+                    series.get_delta()
+                    series.get_bins()
+                    series.get_harmonics()
+                    series.get_frequency()
+                    series.get_period()
+                    series.get_power()
+                    series.get_pfraction()
+                    series.set_gauss()
+                    series.set_bak()
+                    load_fits(series, ext)
+                    flag = 1
+                else:
+                    flag = load_fits(series, ext)
+            except KeyError:
+                flag = load_fits(series, ext)
     return flag
 
 
@@ -173,7 +214,9 @@ def load_fits(series, ext) -> None:
                         dtype=('int64', 'str', 'int64'))
                     for value in extensions:
                         table.add_row(
-                            [value, events[value].name, events[value].size])
+                            [value,
+                            events[value].name,
+                            events[value].data['TIME'].size])
                     table.pprint()
                     number = click.prompt(
                         "Which extension number", type=int, prompt_suffix='? ')
@@ -191,12 +234,13 @@ def load_fits(series, ext) -> None:
                         flag = 1
                         click.clear()
                         click.secho(
-                            f"Column TIME not found in {events[number].name}", fg='red')
+                            f"Column TIME not found in {events[number].name}.",
+                            fg='red')
                     except IndexError:
                         flag = 1
                         click.clear()
                         click.secho(
-                            f"Extension number {number} not found", fg='red')
+                            f"Extension number {number} not found.", fg='red')
             else:
                 click.clear()
                 column = 'TIME'

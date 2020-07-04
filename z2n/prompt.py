@@ -17,8 +17,6 @@ from z2n import file
 from z2n import stats
 from z2n import __docs__
 from z2n import __version__
-
-# Instance of the Z2n Objects
 from z2n.plot import Plot
 from z2n.series import Series
 data = Series()
@@ -202,7 +200,8 @@ def z2n(input_, output_, format_, fmin, fmax, delta, over,
             except KeyError:
                 pass
             click.echo(__z2n__)
-            figure.plot_periodogram()
+            if figure.plot_periodogram():
+                figure.plot_figure()
             database['input'] = figure.data.input
             database['fmin'] = figure.data.fmin
             database['fmax'] = figure.data.fmax
@@ -230,7 +229,8 @@ def plot() -> None:
 @z2n.command()
 def run() -> None:
     """Calculate the Z2n Statistics."""
-    figure.plot_periodogram()
+    if figure.plot_periodogram():
+        figure.plot_figure()
 
 
 @z2n.command()
