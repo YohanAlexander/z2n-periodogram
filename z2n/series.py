@@ -58,8 +58,8 @@ class Series:
     > A float that represents the exposure period.
     * `sampling : float`
     > A float that represents the sampling rate.
-    * `potency : float`
-    > A float that represents the peak potency.
+    * `power : float`
+    > A float that represents the peak power.
     * `frequency : float`
     > A float that represents the peak frequency.
     * `period : float`
@@ -92,7 +92,7 @@ class Series:
         self.oversample = 0
         self.exposure = 0
         self.sampling = 0
-        self.potency = 0
+        self.power = 0
         self.frequency = 0
         self.errorf = 0
         self.period = 0
@@ -188,7 +188,7 @@ class Series:
 
     def get_bins(self) -> np.array:
         """Return the frequency steps."""
-        click.secho(f"{self.bins.size} frequency steps.", fg='cyan')
+        click.secho(f"{self.bins.size} steps.", fg='cyan')
         return self.bins
 
     def set_bins(self) -> int:
@@ -196,26 +196,18 @@ class Series:
         flag = 1
         while flag:
             click.secho("The frequency range is needed (Hz).", fg='yellow')
-            if self.bins.size:
-                if click.confirm(
-                        "Use oversampling factor", True, prompt_suffix='? '):
-                    self.set_oversample()
-                    self.delta = 1 / (self.oversample * self.exposure)
-                else:
-                    self.set_delta()
+            if click.confirm(
+                    "Nyquist as the minimum frequency", True, prompt_suffix='? '):
+                self.fmin = self.nyquist
             else:
-                if click.confirm(
-                        "Nyquist as the minimum frequency", True, prompt_suffix='? '):
-                    self.fmin = self.nyquist
-                else:
-                    self.set_fmin()
-                self.set_fmax()
-                if click.confirm(
-                        "Use oversampling factor", True, prompt_suffix='? '):
-                    self.set_oversample()
-                    self.delta = 1 / (self.oversample * self.exposure)
-                else:
-                    self.set_delta()
+                self.set_fmin()
+            self.set_fmax()
+            if click.confirm(
+                    "Use oversampling factor", True, prompt_suffix='? '):
+                self.set_oversample()
+                self.delta = 1 / (self.oversample * self.exposure)
+            else:
+                self.set_delta()
             self.get_fmin()
             self.get_fmax()
             self.get_delta()
@@ -235,7 +227,7 @@ class Series:
 
     def get_periodogram(self) -> np.array:
         """Return the periodogram."""
-        click.secho(f"{self.z2n.size} spectrum steps.", fg='cyan')
+        click.secho(f"{self.z2n.size} steps.", fg='cyan')
         return self.z2n
 
     def set_periodogram(self) -> None:
@@ -249,7 +241,6 @@ class Series:
         self.set_gauss()
         self.set_bak()
         # self.get_bak()
-        self.save_file()
 
     def get_nyquist(self) -> float:
         """Return the nyquist frequency."""
@@ -268,7 +259,8 @@ class Series:
 
     def set_fmin(self) -> None:
         """Change the minimum frequency."""
-        self.fmin = click.prompt("Minimum frequency (Hz)", type=float)
+        self.fmin = click.prompt(
+            "Minimum frequency (Hz)", self.fmin, type=float)
 
     def get_fmax(self) -> float:
         """Return the maximum frequency."""
@@ -277,7 +269,8 @@ class Series:
 
     def set_fmax(self) -> None:
         """Change the maximum frequency."""
-        self.fmax = click.prompt("Maximum frequency (Hz)", type=float)
+        self.fmax = click.prompt(
+            "Maximum frequency (Hz)", self.fmax, type=float)
 
     def get_delta(self) -> float:
         """Return the frequency steps."""
@@ -286,7 +279,8 @@ class Series:
 
     def set_delta(self) -> None:
         """Change the frequency steps."""
-        self.delta = click.prompt("Frequency steps (Hz)", type=float)
+        self.delta = click.prompt(
+            "Frequency steps (Hz)", self.delta, type=float)
 
     def get_oversample(self) -> int:
         """Return the oversample factor."""
@@ -295,7 +289,8 @@ class Series:
 
     def set_oversample(self) -> None:
         """Change the oversample factor."""
-        self.oversample = click.prompt("Oversampling factor", type=int)
+        self.oversample = click.prompt(
+            "Oversampling factor", self.oversample, type=int)
 
     def get_harmonics(self) -> int:
         """Return the number of harmonics."""
@@ -325,14 +320,14 @@ class Series:
         """Change the sampling rate."""
         stats.sampling(self)
 
-    def get_potency(self) -> float:
-        """Return the peak potency."""
-        click.secho(f"Peak power: {self.potency:.5f}", fg='cyan')
-        return self.potency
+    def get_power(self) -> float:
+        """Return the peak power."""
+        click.secho(f"Peak power: {self.power:.5f}", fg='cyan')
+        return self.power
 
-    def set_potency(self) -> None:
-        """Change the peak potency."""
-        stats.potency(self)
+    def set_power(self) -> None:
+        """Change the peak power."""
+        stats.power(self)
 
     def get_frequency(self) -> float:
         """Return the peak frequency."""
@@ -430,7 +425,7 @@ class Series:
         """Plot the series and the parameters."""
         flag = 1
         while flag:
-            self.set_potency()
+            self.set_power()
             self.set_frequency()
             self.set_period()
             self.set_pfraction()
@@ -448,8 +443,8 @@ class Series:
                 stats.error(self.gauss)
                 header = ["", "Z2N POWER", "GAUSSIAN FIT"]
                 data = [
-                    ["Power", f"{self.potency}",
-                        f"{self.gauss.potency}"],
+                    ["Power", f"{self.power}",
+                        f"{self.gauss.power}"],
                     ["Frequency", f"{self.frequency} Hz",
                         f"{self.gauss.frequency} Hz"],
                     ["Frequency error", "_",
@@ -475,20 +470,5 @@ class Series:
                 click.secho("Error on the selection.", fg='red')
             else:
                 if not click.confirm("Select another region for the fit"):
+                    self.save_file()
                     flag = 0
-                    click.secho("Save the results on a log file.", fg='yellow')
-                    default = "z2n_" + pathlib.Path(self.input).stem
-                    flag2 = 1
-                    while flag2:
-                        log = click.prompt(
-                            "Name of the file", default, type=click.Path())
-                        if pathlib.Path(f"{log}.log").is_file():
-                            click.secho("File already exists.", fg='red')
-                        else:
-                            flag2 = 0
-                            with open(f"{log}.log", "w+") as logfile:
-                                writer = csv.writer(logfile, delimiter=',')
-                                writer.writerow(header)
-                                writer.writerows(data)
-                            click.secho(
-                                f"Saved the results at {log}.log", fg='green')

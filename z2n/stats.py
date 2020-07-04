@@ -149,9 +149,9 @@ def square(value: float) -> float:
 
 
 @jit(nopython=True, parallel=False, fastmath=True)
-def power(sin: float, cos: float) -> float:
+def summ(sin: float, cos: float) -> float:
     """
-    Calculate the Z2n potency value.
+    Calculate the Z2n power value.
 
     Parameters
     ----------
@@ -163,7 +163,7 @@ def power(sin: float, cos: float) -> float:
     Returns
     -------
     value : float
-        A float that represents the Z2n potency.
+        A float that represents the Z2n power.
     """
     value = sin + cos
     return value
@@ -172,7 +172,7 @@ def power(sin: float, cos: float) -> float:
 @jit(nopython=True, parallel=False, fastmath=True)
 def z2n(times: np.array, freq: float, harm: int) -> float:
     """
-    Calculate the Z2n potency value.
+    Calculate the Z2n power value.
 
     times : np.array
         An array that represents the times.
@@ -184,12 +184,12 @@ def z2n(times: np.array, freq: float, harm: int) -> float:
     Returns
     -------
     value : float
-        A float that represents the Z2n potency.
+        A float that represents the Z2n power.
     """
     phases = phase(times, freq, harm)
     sin = summation(sine(phases))
     cos = summation(cosine(phases))
-    value = power(square(sin), square(cos))
+    value = summ(square(sin), square(cos))
     return value
 
 
@@ -265,9 +265,9 @@ def periodogram(series) -> None:
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
-def potency(series) -> None:
+def power(series) -> None:
     """
-    Calculate the natural potency.
+    Calculate the global power.
 
     Parameters
     ----------
@@ -278,13 +278,13 @@ def potency(series) -> None:
     -------
     None
     """
-    series.potency = np.max(series.z2n)
+    series.power = np.max(series.z2n)
 
 
 @jit(forceobj=True, parallel=True, fastmath=True)
 def frequency(series) -> None:
     """
-    Calculate the natural frequency.
+    Calculate the global frequency.
 
     Parameters
     ----------
@@ -302,7 +302,7 @@ def frequency(series) -> None:
 @jit(forceobj=True, parallel=True, fastmath=True)
 def period(series) -> None:
     """
-    Calculate the peak period.
+    Calculate the global period.
 
     Parameters
     ----------
@@ -330,7 +330,7 @@ def pfraction(series) -> None:
     -------
     None
     """
-    pfrac = (2 * series.potency) / series.time.size
+    pfrac = (2 * series.power) / series.time.size
     series.pulsed = pfrac ** 0.5
 
 
@@ -376,11 +376,11 @@ def error(series) -> None:
                 low = np.where(equal(series.bins, axis[0]))[0][0]
                 up = np.where(equal(series.bins, axis[1]))[0][-1]
                 mean, sigma = norm.fit(series.bins[low:up])
-                potency(series)
-                guess = [series.potency, mean, sigma]
+                power(series)
+                guess = [series.power, mean, sigma]
                 popt, _ = fitcurve(
                     gaussian, series.bins[low:up], series.z2n[low:up], guess)
-                series.potency = np.absolute(popt[0])
+                series.power = np.absolute(popt[0])
                 series.frequency = np.absolute(popt[1])
                 period(series)
                 series.errorf = np.absolute(popt[2])

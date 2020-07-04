@@ -1,9 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Generic/Built-in
+import psutil
+import pathlib
+
 # Other Libraries
 import click
-import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -163,38 +166,95 @@ class Plot:
                 flag = 1
         else:
             opt = click.prompt(
-                "Use another file [1] or recalculate [2]", type=int)
+                "Change file [1] or frequency range [2]", type=int)
             if opt in (1, 2):
                 self.rm_background()
                 if opt == 1:
-                    del self.data
-                    self.data = Series()
-                    self.plot_periodogram()
-                    flag = 1
+                    click.secho("The event file is needed.", fg='yellow')
+                    if not self.data.set_time():
+                        if not self.data.set_bins():
+                            plt.close()
+                            self.data.set_periodogram()
+                            self.data.plot()
+                            self.plot_figure()
+                            self.save_image()
+                            if click.confirm("Add a background file", prompt_suffix='? '):
+                                self.plot_background()
+                        else:
+                            flag = 1
+                    else:
+                        flag = 1
                 elif opt == 2:
-                    click.secho(
-                        "This will recalculate the periodogram.", fg='yellow')
-                    self.plot_figure()
-                    flag2 = 1
-                    while flag2:
-                        if click.confirm("Is the region selected", prompt_suffix='? '):
-                            axis = plt.gca().get_xlim()
-                            self.data.fmin = axis[0]
-                            self.data.fmax = axis[1]
-                            if not self.data.set_bins():
-                                plt.close()
-                                self.data.set_periodogram()
-                                self.data.plot()
-                                self.plot_figure()
-                                self.save_image()
+                    if not click.confirm(
+                            "Select region on the interactive plot"):
+                        if not self.data.set_bins():
+                            plt.close()
+                            self.data.set_periodogram()
+                            self.data.plot()
+                            self.plot_figure()
+                            self.save_image()
+                            if click.confirm("Add a background file", prompt_suffix='? '):
+                                self.plot_background()
+                        else:
+                            flag = 1
+                    else:
+                        flag2 = 1
+                        click.secho(
+                            "The frequency range is needed (Hz).", fg='yellow')
+                        self.plot_figure()
+                        while flag2:
+                            if click.confirm(
+                                    "Is the region selected", prompt_suffix='? '):
+                                axis = plt.gca().get_xlim()
+                                self.data.fmin = axis[0]
+                                self.data.fmax = axis[1]
                                 if click.confirm(
-                                        "Add a background file", prompt_suffix='? '):
-                                    self.plot_background()
-                                flag = 0
-                                flag2 = 0
-                            else:
-                                flag = 1
-                                flag2 = 0
+                                        "Use oversampling factor", prompt_suffix='? '):
+                                    self.data.set_oversample()
+                                    self.data.delta = 1 / \
+                                        (self.data.oversample * self.data.exposure)
+                                else:
+                                    self.data.set_delta()
+                                self.data.get_fmin()
+                                self.data.get_fmax()
+                                self.data.get_delta()
+                                self.data.set_harmonics()
+                                block = (self.data.fmax - self.data.fmin) / \
+                                    np.array(self.data.delta)
+                                nbytes = np.array(
+                                    self.data.delta).dtype.itemsize * block
+                                click.secho(
+                                    f"Computation memory {nbytes* 10e-6:.5f} MB",
+                                    fg='yellow')
+                                if click.confirm(
+                                        "Run with these values",
+                                        True, prompt_suffix='? '):
+                                    if nbytes < psutil.virtual_memory()[1]:
+                                        self.data.bins = np.arange(
+                                            self.data.fmin, self.data.fmax,
+                                            self.data.delta)
+                                        self.data.get_bins()
+                                        plt.close()
+                                        self.data.set_periodogram()
+                                        self.data.plot()
+                                        self.plot_figure()
+                                        self.save_image()
+                                        if click.confirm(
+                                                "Add a background file",
+                                                prompt_suffix='? '):
+                                            self.plot_background()
+                                        flag = 0
+                                        flag2 = 0
+                                    else:
+                                        flag2 = 1
+                                        click.secho(
+                                            "Not enough memory available.", fg='red')
+                                else:
+                                    flag2 = 1
+                                    click.secho(
+                                        "The frequency range is needed (Hz).",
+                                        fg='yellow')
+                                    self.plot_figure()
             else:
                 flag = 1
                 click.secho("Select '1' or '2'.", fg='red')

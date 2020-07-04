@@ -328,9 +328,107 @@ def save_fits(series) -> None:
     -------
     None
     """
-    array = np.column_stack((series.bins, series.z2n))
-    table = Table(array, names=('FREQUENCY', 'POWER'))
-    table.write(f'{series.output}.fits', format='fits')
+    suffix = pathlib.Path(series.input).suffix
+    if suffix in ("", ".txt", ".csv", ".ecsv", ".hdf", ".h5", ".hdf5", ".he5"):
+        primary_hdu = fits.PrimaryHDU()
+        bins = fits.Column(
+            name='FREQUENCY', array=series.bins, format='D', unit='Hz')
+        z2n = fits.Column(name='POWER', array=series.z2n, format='D')
+        hdr = fits.Header()
+        hdr['EXTNAME'] = 'Z2N'
+        hdr.comments['EXTNAME'] = 'Name of this extension'
+        hdr['HDUNAME'] = 'Z2N'
+        hdr.comments['HDUNAME'] = 'Name of the hdu'
+        hdr['events'] = f'{series.time.size}'
+        hdr.comments['events'] = 'Number of events'
+        hdr['exposure'] = f'{series.exposure}'
+        hdr.comments['exposure'] = 'Exposure time (Texp)'
+        hdr['sampling'] = f'{series.sampling}'
+        hdr.comments['sampling'] = 'Sampling rate (1/Texp)'
+        hdr['nyquist'] = f'{series.nyquist}'
+        hdr.comments['nyquist'] = 'Nyquist 2*(1/Texp)'
+        hdr['harmonic'] = f'{series.harmonics}'
+        hdr.comments['harmonic'] = 'Number of harmonics'
+        hdr['steps'] = f'{series.z2n.size}'
+        hdr.comments['steps'] = 'Number of steps'
+        hdr['fmin'] = f'{series.fmin}'
+        hdr.comments['fmin'] = 'Minimum frequency'
+        hdr['fmax'] = f'{series.fmax}'
+        hdr.comments['fmax'] = 'Maximum frequency'
+        hdr['delta'] = f'{series.delta}'
+        hdr.comments['delta'] = 'Frequency steps'
+        hdr['peak'] = f'{series.frequency}'
+        hdr.comments['peak'] = 'Global peak frequency'
+        hdr['period'] = f'{series.period}'
+        hdr.comments['period'] = 'Global peak period'
+        hdr['power'] = f'{series.power}'
+        hdr.comments['power'] = 'Global peak power'
+        hdr['pulsed'] = f'{series.pulsed}'
+        hdr.comments['pulsed'] = 'Global pulsed fraction'
+        try:
+            hdr['gpeak'] = f'{series.gauss.frequency}'
+            hdr.comments['gpeak'] = 'Gauss peak frequency'
+            hdr['gperiod'] = f'{series.gauss.period}'
+            hdr.comments['gperiod'] = 'Gauss peak period'
+            hdr['gpower'] = f'{series.gauss.power}'
+            hdr.comments['gpower'] = 'Gauss peak power'
+            hdr['gpulsed'] = f'{series.gauss.pulsed}'
+            hdr.comments['gpulsed'] = 'Gauss pulsed fraction'
+        except AttributeError:
+            pass
+        table_hdu = fits.BinTableHDU.from_columns([bins, z2n], header=hdr)
+        hdul = fits.HDUList([primary_hdu, table_hdu])
+        hdul.writeto(f'{series.output}.fits')
+    else:
+        with fits.open(series.input) as events:
+            bins = fits.Column(
+                name='FREQUENCY', array=series.bins, format='D', unit='Hz')
+            z2n = fits.Column(name='POWER', array=series.z2n, format='D')
+            hdr = fits.Header()
+            hdr['EXTNAME'] = 'Z2N'
+            hdr.comments['EXTNAME'] = 'Name of this extension'
+            hdr['HDUNAME'] = 'Z2N'
+            hdr.comments['HDUNAME'] = 'Name of the hdu'
+            hdr['events'] = f'{series.time.size}'
+            hdr.comments['events'] = 'Number of events'
+            hdr['exposure'] = f'{series.exposure}'
+            hdr.comments['exposure'] = 'Exposure time (Texp)'
+            hdr['sampling'] = f'{series.sampling}'
+            hdr.comments['sampling'] = 'Sampling rate (1/Texp)'
+            hdr['nyquist'] = f'{series.nyquist}'
+            hdr.comments['nyquist'] = 'Nyquist 2*(1/Texp)'
+            hdr['harmonic'] = f'{series.harmonics}'
+            hdr.comments['harmonic'] = 'Number of harmonics'
+            hdr['steps'] = f'{series.z2n.size}'
+            hdr.comments['steps'] = 'Number of steps'
+            hdr['fmin'] = f'{series.fmin}'
+            hdr.comments['fmin'] = 'Minimum frequency'
+            hdr['fmax'] = f'{series.fmax}'
+            hdr.comments['fmax'] = 'Maximum frequency'
+            hdr['delta'] = f'{series.delta}'
+            hdr.comments['delta'] = 'Frequency steps'
+            hdr['peak'] = f'{series.frequency}'
+            hdr.comments['peak'] = 'Global peak frequency'
+            hdr['period'] = f'{series.period}'
+            hdr.comments['period'] = 'Global peak period'
+            hdr['power'] = f'{series.power}'
+            hdr.comments['power'] = 'Global peak power'
+            hdr['pulsed'] = f'{series.pulsed}'
+            hdr.comments['pulsed'] = 'Global pulsed fraction'
+            try:
+                hdr['gpeak'] = f'{series.gauss.frequency}'
+                hdr.comments['gpeak'] = 'Gauss peak frequency'
+                hdr['gperiod'] = f'{series.gauss.period}'
+                hdr.comments['gperiod'] = 'Gauss peak period'
+                hdr['gpower'] = f'{series.gauss.power}'
+                hdr.comments['gpower'] = 'Gauss peak power'
+                hdr['gpulsed'] = f'{series.gauss.pulsed}'
+                hdr.comments['gpulsed'] = 'Gauss pulsed fraction'
+            except AttributeError:
+                pass
+            hdu = fits.BinTableHDU.from_columns([bins, z2n], header=hdr)
+            events.append(hdu)
+            events.writeto(f'{series.output}.fits')
 
 
 def save_hdf5(series) -> None:
