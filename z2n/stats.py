@@ -375,20 +375,30 @@ def error(series) -> None:
                 axis = plt.gca().get_xlim()
                 low = np.where(equal(series.bins, axis[0]))[0][0]
                 up = np.where(equal(series.bins, axis[1]))[0][-1]
-                mean, sigma = norm.fit(series.bins[low:up])
-                power(series)
-                guess = [series.power, mean, sigma]
-                popt, _ = fitcurve(
-                    gaussian, series.bins[low:up], series.z2n[low:up], guess)
-                series.power = np.absolute(popt[0])
-                series.frequency = np.absolute(popt[1])
-                period(series)
-                series.errorf = np.absolute(popt[2])
-                series.errorp = np.absolute(
-                    (1 / (series.frequency + series.errorf)) - series.period)
-                pfraction(series)
-                series.z2n = gaussian(series.bins[low:up], *popt)
+                bins = series.bins
+                powerspec = series.z2n
                 series.bins = series.bins[low:up]
+                series.z2n = series.z2n[low:up]
+                mean, sigma = norm.fit(series.bins)
+                power(series)
+                frequency(series)
+                period(series)
+                pfraction(series)
+                guess = [series.power, mean, sigma]
+                popt, _ = fitcurve(gaussian, series.bins, series.z2n, guess)
+                series.gauss.power = np.absolute(popt[0])
+                series.gauss.frequency = np.absolute(popt[1])
+                series.gauss.period = 1 / series.gauss.frequency
+                series.gauss.errorf = np.absolute(popt[2])
+                series.gauss.errorp = np.absolute(
+                    (1 / (series.gauss.frequency + series.gauss.errorf))
+                    - series.gauss.period)
+                pfrac = (2 * series.gauss.power) / series.time.size
+                series.gauss.pulsed = pfrac ** 0.5
+                series.gauss.z2n = gaussian(series.bins, *popt)
+                series.gauss.bins = series.bins
+                series.bins = bins
+                series.z2n = powerspec
                 flag = 0
             except IndexError:
                 click.secho("Error on the selection.", fg='red')

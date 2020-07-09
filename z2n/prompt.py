@@ -74,7 +74,7 @@ def z2n(input_, output_, format_, fmin, fmax, delta, over,
     the corresponding sinusoidal functions for each time. Be advised that this
     is very computationally expensive if the number of frequency bins is high.
     """
-    with shelve.open('.z2n') as database:
+    with shelve.open(f'{pathlib.Path.home()}/.z2n') as database:
         if docs_:
             click.launch(__docs__)
             click.echo(f"To read the documentation go to {__docs__}")

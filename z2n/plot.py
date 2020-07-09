@@ -50,12 +50,12 @@ class Plot:
     def get_input(self) -> str:
         """Return the input image name."""
         click.secho(
-            f"Path of the periodogram: {self.input}", self.data.input, fg='cyan')
+            f"Name of the file: {self.input}", self.data.input, fg='cyan')
         return self.input
 
     def set_input(self) -> None:
         """Change the input image name."""
-        self.input = click.prompt("Filename", type=click.Path(exists=True))
+        self.input = click.prompt("\nFilename", type=click.Path(exists=True))
 
     def get_output(self) -> str:
         """Return the output image name."""
@@ -68,7 +68,7 @@ class Plot:
         flag = 1
         while flag:
             self.output = click.prompt(
-                "Name of the image", default, type=click.Path())
+                "\nName of the image", default, type=click.Path())
             if pathlib.Path(f"{self.output}.{self.format}").is_file():
                 click.secho("File already exists.", fg='red')
             else:
@@ -82,7 +82,7 @@ class Plot:
     def set_format(self) -> None:
         """Change the image format."""
         self.format = click.prompt(
-            "Format", "ps", type=click.Choice(['png', 'pdf', 'ps', 'eps']))
+            "\nFormat", "ps", type=click.Choice(['png', 'pdf', 'ps', 'eps']))
 
     def add_background(self) -> None:
         """Add background on the plot."""
