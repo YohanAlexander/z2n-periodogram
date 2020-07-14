@@ -213,8 +213,8 @@ def load_fits(series, ext) -> None:
                         names=('Number', 'Extension', 'Length (Rows)'),
                         dtype=('int64', 'str', 'int64'))
                     for value in extensions:
-                        table.add_row(
-                            [value,
+                        table.add_row([
+                            value,
                             events[value].name,
                             events[value].data['TIME'].size])
                     table.pprint()

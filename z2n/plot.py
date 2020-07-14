@@ -165,7 +165,7 @@ class Plot:
                     self.data.plot()
                     self.plot_figure()
                     self.save_image()
-                    if click.confirm("Add a background file", prompt_suffix='? '):
+                    if click.confirm("Add background file", prompt_suffix='? '):
                         self.plot_background()
                 else:
                     flag = 1
@@ -185,7 +185,7 @@ class Plot:
                             self.data.plot()
                             self.plot_figure()
                             self.save_image()
-                            if click.confirm("Add a background file", prompt_suffix='? '):
+                            if click.confirm("Add background file", prompt_suffix='? '):
                                 self.plot_background()
                         else:
                             flag = 1
@@ -200,7 +200,7 @@ class Plot:
                             self.data.plot()
                             self.plot_figure()
                             self.save_image()
-                            if click.confirm("Add a background file", prompt_suffix='? '):
+                            if click.confirm("Add background file", prompt_suffix='? '):
                                 self.plot_background()
                         else:
                             flag = 1
@@ -248,7 +248,7 @@ class Plot:
                                         self.plot_figure()
                                         self.save_image()
                                         if click.confirm(
-                                                "Add a background file",
+                                                "Add background file",
                                                 prompt_suffix='? '):
                                             self.plot_background()
                                         flag = 0
