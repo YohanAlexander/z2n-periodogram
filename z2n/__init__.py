@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-__version__ = '2.0.5'
+__version__ = '2.0.6'
 __license__ = 'MIT'
 __author__ = 'Yohan Alexander'
 __copyright__ = 'Copyright (C) 2020, Z2n Software, by Yohan Alexander.'

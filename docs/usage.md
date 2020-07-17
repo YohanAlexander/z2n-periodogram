@@ -18,7 +18,7 @@ z2n
 
 Documented commands (type help <topic>):
 ========================================
-docs  log  plot  run  save
+docs  gauss  plot  run  save
 
 Undocumented commands:
 ======================
@@ -65,7 +65,7 @@ Options:
 
 Commands:
   docs  Open the documentation on the software.
-  log   Save the fit of a gaussian curve.
+  gauss Select the fit of a gaussian curve.
   plot  Open the interactive plotting window.
   run   Calculate the Z2n Statistics.
   save  Save the periodogram on a file.
