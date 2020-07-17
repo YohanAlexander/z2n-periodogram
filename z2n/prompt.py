@@ -5,6 +5,7 @@
 import psutil
 import shelve
 import pathlib
+import threading
 
 # Other Libraries
 import click
@@ -27,6 +28,7 @@ __z2n__ = f'''
         Copyright (C) 2020, and MIT License, by Yohan Alexander [UFS].
         Type "help" for more information or "docs" for documentation.
         '''
+
 __plt__ = f'''
         Interactive plotting window of the Z2n Software ({__version__}).
         Type "help" for more information.
@@ -74,6 +76,8 @@ def z2n(input_, output_, format_, fmin, fmax, delta, over,
     the corresponding sinusoidal functions for each time. Be advised that this
     is very computationally expensive if the number of frequency bins is high.
     """
+    mutex = threading.Lock()
+    mutex.acquire()
     with shelve.open(f'{pathlib.Path.home()}/.z2n') as database:
         if docs_:
             click.launch(__docs__)
@@ -207,6 +211,7 @@ def z2n(input_, output_, format_, fmin, fmax, delta, over,
             database['fmax'] = figure.data.fmax
             database['delta'] = figure.data.delta
             database['oversample'] = figure.data.oversample
+    mutex.release()
 
 
 @z2n.command()
